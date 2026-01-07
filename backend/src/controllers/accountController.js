@@ -1,5 +1,6 @@
 import Account from "../models/Account.js";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 export const accountController = (req, res) => {
   res.status(200).send("Welcome to the account controller!");
@@ -55,8 +56,19 @@ export async function signin(req, res) {
       return res.status(401).json({ message: "Incorrect password!" });
     }
 
+    const accessToken = jwt.sign({ id: account.id }, process.env.JWT_SECRET, {
+      expiresIn: "15m",
+    });
+    const refreshToken = jwt.sign(
+      { id: account.id },
+      process.env.REFRESH_SECRET,
+      { expiresIn: "30d" }
+    );
+
     return res.status(200).json({
       message: "User signed in successfully",
+      accessToken,
+      refreshToken,
       account: { id: account.id, email: account.email },
     });
   } catch (error) {
