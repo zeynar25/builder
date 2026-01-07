@@ -10,6 +10,8 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, ".env") });
 
 const app = express();
+
+app.use(express.json()); // parse JSON request bodies
 const PORT = process.env.PORT || 5001;
 
 connectDb();

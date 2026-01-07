@@ -1,11 +1,13 @@
 import mongoose from "mongoose";
+import { randomUUID } from "crypto";
 
 const accountSchema = new mongoose.Schema(
   {
     id: {
-      type: Number,
+      type: String,
       required: true,
       unique: true,
+      default: () => randomUUID(),
     },
 
     email: {
