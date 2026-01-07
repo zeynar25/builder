@@ -1,9 +1,9 @@
 import accountRoutes from "./routes/accountRoutes.js";
+import express from "express";
 
-const express = require("express");
 const app = express();
 
-router.get("/", (req, res) => {
+app.get("/", (req, res) => {
   res.status(200).send("Hello, World!");
 });
 
