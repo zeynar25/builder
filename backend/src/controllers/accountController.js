@@ -5,7 +5,7 @@ export const accountController = (req, res) => {
   res.status(200).send("Welcome to the account controller!");
 };
 
-export const signup = async (req, res) => {
+export async function signup(req, res) {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -32,9 +32,9 @@ export const signup = async (req, res) => {
     console.error(error);
     return res.status(500).json({ message: "Server error" });
   }
-};
+}
 
-export const signin = async (req, res) => {
+export async function signin(req, res) {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -45,12 +45,14 @@ export const signin = async (req, res) => {
 
     const account = await Account.findOne({ email });
     if (!account) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res
+        .status(401)
+        .json({ message: `Account with email "${email}" not found` });
     }
 
     const match = await bcrypt.compare(password, account.passwordHash);
     if (!match) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({ message: "Incorrect password!" });
     }
 
     return res.status(200).json({
@@ -61,4 +63,4 @@ export const signin = async (req, res) => {
     console.error(error);
     return res.status(500).json({ message: "Server error" });
   }
-};
+}
