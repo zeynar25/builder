@@ -112,11 +112,12 @@ export default function Index() {
               <Text key={`row-${y}`}>
                 {row
                   .map((cell: any) => {
-                    if (!cell) return ".";
+                    if (!cell) return "|_";
                     const label = cell.item?.name || "#";
                     return label.length > 1 ? label[0] : label;
                   })
-                  .join(" ")}
+                  .join("")
+                  .concat("|")}
               </Text>
             ))
           ) : (
