@@ -159,7 +159,7 @@ components:
       type: object
       properties:
         map:
-          $ref: '#/components/schemas/Map'
+          $ref: "#/components/schemas/Map"
         grid:
           type: array
           description: "2D array (rows = Y) of placement objects or null for empty tiles"
@@ -167,8 +167,8 @@ components:
             type: array
             items:
               anyOf:
-                - $ref: '#/components/schemas/PlacementSimplified'
-                - type: 'null'
+                - $ref: "#/components/schemas/PlacementSimplified"
+                - type: "null"
 
 paths:
   /api/account/signup:
@@ -500,6 +500,33 @@ paths:
                 $ref: "#/components/schemas/MapWithGrid"
         "404":
           description: Map not found
+
+  /api/maps/account/{accountId}:
+    get:
+      tags: [maps]
+      summary: List maps for a given account id
+      parameters:
+        - in: path
+          name: accountId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Maps belonging to the account
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  maps:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Map"
+        "404":
+          description: Account not found
+        "500":
+          description: Server error
 
 tags:
   - name: account
