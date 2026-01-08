@@ -28,7 +28,7 @@ const PORT = process.env.PORT || 5001;
 connectDb();
 
 app.get("/", (req, res) => {
-  res.status(200).send("Hello, World!");
+  res.status(200).send("Welcome to Builder!");
 });
 
 app.use("/api/account", accountRoutes);
