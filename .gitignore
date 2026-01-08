@@ -1,10 +1,12 @@
 # Node modules
+# Node modules
 node_modules/
 **/node_modules/
 
 # Environment files
 .env
 .env.*
+.env*.local
 
 # OS files
 .DS_Store
@@ -24,3 +26,35 @@ yarn.lock
 # Build output
 dist/
 build/
+
+# Expo
+.expo/
+web-build/
+expo-env.d.ts
+
+# Native / generated
+android/
+ios/
+.kotlin/
+
+# Metro
+.metro-health-check*
+
+# Debug
+npm-debug.*
+yarn-debug.*
+
+# Keys / signing
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+
+# TypeScript
+*.tsbuildinfo
+
+# Misc
+app-example
