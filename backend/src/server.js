@@ -3,6 +3,8 @@ import { fileURLToPath } from "url";
 import path from "path";
 import { connectDb } from "./config/db.js";
 import accountRoutes from "./routes/accountRoutes.js";
+import itemRoutes from "./routes/itemRoutes.js";
+import itemCategoryRoutes from "./routes/itemCategoryRoutes.js";
 import express from "express";
 import cors from "cors";
 
@@ -28,6 +30,8 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/account", accountRoutes);
+app.use("/api/items", itemRoutes);
+app.use("/api/item-categories", itemCategoryRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
