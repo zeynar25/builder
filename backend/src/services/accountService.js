@@ -1,0 +1,39 @@
+import Account from "../models/Account.js";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+
+const HASH_ROUNDS = 10;
+
+function generateTokens(id) {
+  const access = jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "15m" });
+  const refresh = jwt.sign({ id }, process.env.REFRESH_SECRET, {
+    expiresIn: "30d",
+  });
+  return { access, refresh };
+}
+
+export async function createAccount({ email, password }) {
+  const existing = await Account.findOne({ email });
+  if (existing) return { success: false, reason: "email_taken" };
+
+  const passwordHash = await bcrypt.hash(password, HASH_ROUNDS);
+  const account = await Account.create({ email, passwordHash });
+  return { success: true, account: { id: account.id, email: account.email } };
+}
+
+export async function authenticate({ email, password }) {
+  const account = await Account.findOne({ email });
+  if (!account) return { success: false, reason: "not_found" };
+
+  const ok = await bcrypt.compare(password, account.passwordHash);
+  if (!ok) return { success: false, reason: "invalid_credentials" };
+
+  const tokens = generateTokens(account.id);
+  return {
+    success: true,
+    account: { id: account.id, email: account.email },
+    tokens,
+  };
+}
+
+export default { createAccount, authenticate, generateTokens };

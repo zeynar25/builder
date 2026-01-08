@@ -1,78 +1,29 @@
-import Account from "../models/Account.js";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-
-export const accountController = (req, res) => {
-  res.status(200).send("Welcome to the account controller!");
-};
+import accountService from "../services/accountService.js";
 
 export async function signup(req, res) {
-  try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Email and password are required" });
-    }
+  const { email, password } = req.body;
+  if (!email || !password)
+    return res.status(400).json({ message: "Email and password are required" });
 
-    const existing = await Account.findOne({ email });
-    if (existing) {
-      return res.status(409).json({ message: "Email already registered" });
-    }
+  const result = await accountService.createAccount({ email, password });
+  if (!result.success)
+    return res.status(409).json({ message: "Email already registered" });
 
-    const passwordHash = await bcrypt.hash(password, 10);
-
-    const account = new Account({ email, passwordHash });
-    await account.save();
-
-    return res.status(201).json({
-      message: "User signed up successfully",
-      account: { id: account.id, email: account.email },
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Server error" });
-  }
+  return res
+    .status(201)
+    .json({ message: "User signed up", account: result.account });
 }
 
 export async function signin(req, res) {
-  try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Email and password are required" });
-    }
+  const { email, password } = req.body;
+  if (!email || !password)
+    return res.status(400).json({ message: "Email and password are required" });
 
-    const account = await Account.findOne({ email });
-    if (!account) {
-      return res
-        .status(401)
-        .json({ message: `Account with email "${email}" not found` });
-    }
-
-    const match = await bcrypt.compare(password, account.passwordHash);
-    if (!match) {
-      return res.status(401).json({ message: "Incorrect password!" });
-    }
-
-    const accessToken = jwt.sign({ id: account.id }, process.env.JWT_SECRET, {
-      expiresIn: "15m",
-    });
-    const refreshToken = jwt.sign(
-      { id: account.id },
-      process.env.REFRESH_SECRET,
-      { expiresIn: "30d" }
-    );
-
-    return res.status(200).json({
-      message: "User signed in successfully",
-      accessToken,
-      refreshToken,
-      account: { id: account.id, email: account.email },
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Server error" });
+  const result = await accountService.authenticate({ email, password });
+  if (!result.success) {
+    const code = result.reason === "not_found" ? 401 : 401;
+    return res.status(code).json({ message: result.reason });
   }
+
+  return res.status(200).json({ message: "Signed in", ...result });
 }
