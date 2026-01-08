@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   Pressable,
   ActivityIndicator,
   StyleSheet,
+  Keyboard,
 } from "react-native";
 import { API_BASE_URL } from "../src/config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -13,6 +14,7 @@ import { useRouter } from "expo-router";
 
 export default function Login() {
   const router = useRouter();
+  const passwordRef = useRef<TextInput | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -68,11 +70,20 @@ export default function Login() {
       />
 
       <TextInput
+        ref={passwordRef}
         style={styles.input}
         placeholder="Password"
         secureTextEntry
         value={password}
         onChangeText={setPassword}
+        returnKeyType="done"
+        onSubmitEditing={() => {
+          handleSubmit();
+          passwordRef.current?.blur();
+          Keyboard.dismiss();
+        }}
+        autoCorrect={false}
+        autoCapitalize="none"
       />
 
       {error ? <Text style={styles.error}>{error}</Text> : null}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -7,12 +7,14 @@ import {
   ActivityIndicator,
   StyleSheet,
   Alert,
+  Keyboard,
 } from "react-native";
 import { API_BASE_URL } from "../src/config";
 import { useRouter } from "expo-router";
 
 export default function Signup() {
   const router = useRouter();
+  const passwordRef = useRef<TextInput | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -64,11 +66,20 @@ export default function Signup() {
       />
 
       <TextInput
+        ref={passwordRef}
         style={styles.input}
         placeholder="Password"
         secureTextEntry
         value={password}
         onChangeText={setPassword}
+        returnKeyType="done"
+        onSubmitEditing={() => {
+          handleSubmit();
+          passwordRef.current?.blur();
+          Keyboard.dismiss();
+        }}
+        autoCorrect={false}
+        autoCapitalize="none"
       />
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
