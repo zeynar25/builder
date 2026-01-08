@@ -6,7 +6,6 @@ import {
   Pressable,
   ActivityIndicator,
   StyleSheet,
-  Alert,
 } from "react-native";
 import { API_BASE_URL } from "../src/config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -90,12 +89,17 @@ export default function Login() {
         )}
       </Pressable>
 
-      <Pressable
-        style={styles.link}
-        onPress={() => Alert.alert("Register", "Implement sign up flow")}
-      >
-        <Text style={styles.linkText}>Don&apos;t have an account? Sign up</Text>
-      </Pressable>
+      <View style={styles.link}>
+        <Text>
+          Don&apos;t have an account?{" "}
+          <Text
+            style={styles.linkText}
+            onPress={() => router.replace("/signup")}
+          >
+            Sign up
+          </Text>
+        </Text>
+      </View>
     </View>
   );
 }
