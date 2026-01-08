@@ -8,8 +8,10 @@ import {
   StyleSheet,
   Alert,
   Keyboard,
+  Platform,
 } from "react-native";
 import { API_BASE_URL } from "../src/config";
+
 import { useRouter } from "expo-router";
 
 export default function Signup() {
@@ -42,9 +44,16 @@ export default function Signup() {
         return;
       }
 
-      Alert.alert("Success", "Account created. Please sign in.", [
-        { text: "OK", onPress: () => router.replace("/login") },
-      ]);
+      if (Platform.OS === "web") {
+        // React Native's Alert isn't fully supported on web; use window.alert
+        // and then redirect so the user sees the message.
+        window.alert("Account created. Please sign in.");
+        router.replace("/login");
+      } else {
+        Alert.alert("Success", "Account created. Please sign in.", [
+          { text: "OK", onPress: () => router.replace("/login") },
+        ]);
+      }
     } catch (e: any) {
       setError(e.message || String(e));
     } finally {
