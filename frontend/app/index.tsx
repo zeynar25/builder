@@ -7,6 +7,7 @@ import { useRouter } from "expo-router";
 export default function Index() {
   const router = useRouter();
   const [data, setData] = useState<string | null>(null);
+  const [mapData, setMapData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,9 +59,23 @@ export default function Index() {
           return;
         }
 
-        const res = await fetch(`${API_BASE_URL}/`);
-        const text = await res.text();
-        if (!cancelled) setData(text);
+        // try to load a map if we have a currentMapId stored
+        const mapId = await AsyncStorage.getItem("currentMapId");
+        if (mapId) {
+          const res = await fetch(`${API_BASE_URL}/api/maps/${mapId}`);
+          if (res.ok) {
+            const json = await res.json();
+            if (!cancelled) setMapData(json);
+          } else {
+            // fallback to server root
+            const text = await fetch(`${API_BASE_URL}/`).then((r) => r.text());
+            if (!cancelled) setData(text);
+          }
+        } else {
+          const res = await fetch(`${API_BASE_URL}/`);
+          const text = await res.text();
+          if (!cancelled) setData(text);
+        }
       } catch (e: any) {
         if (!cancelled) setError(e.message || String(e));
       } finally {
@@ -87,6 +102,27 @@ export default function Index() {
         <ActivityIndicator size="large" />
       ) : error ? (
         <Text>{`Error: ${error}`}</Text>
+      ) : mapData ? (
+        <View style={{ width: "100%", padding: 8 }}>
+          <Text style={{ fontWeight: "bold", fontSize: 18, marginBottom: 8 }}>
+            {mapData.map?.name || "Map"}
+          </Text>
+          {Array.isArray(mapData.grid) ? (
+            mapData.grid.map((row: any[], y: number) => (
+              <Text key={`row-${y}`}>
+                {row
+                  .map((cell: any) => {
+                    if (!cell) return ".";
+                    const label = cell.item?.name || "#";
+                    return label.length > 1 ? label[0] : label;
+                  })
+                  .join(" ")}
+              </Text>
+            ))
+          ) : (
+            <Text>No grid available</Text>
+          )}
+        </View>
       ) : (
         <Text>{data}</Text>
       )}
