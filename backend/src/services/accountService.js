@@ -2,6 +2,7 @@ import Account from "../models/Account.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import AccountDetail from "../models/AccountDetail.js";
+import MapModel from "../models/Map.js";
 
 const HASH_ROUNDS = 10;
 
@@ -25,6 +26,14 @@ export async function createAccount({ email, password }) {
     email,
     passwordHash,
     accountDetail: detail.id,
+  });
+
+  // create a default map for the new account
+  await MapModel.create({
+    name: "Unknown",
+    account: account.id,
+    heightTiles: 5,
+    widthTiles: 5,
   });
   return { success: true, account: { id: account.id, email: account.email } };
 }
