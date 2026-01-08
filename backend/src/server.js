@@ -9,6 +9,8 @@ import itemRoutes from "./routes/itemRoutes.js";
 import itemCategoryRoutes from "./routes/itemCategoryRoutes.js";
 import express from "express";
 import cors from "cors";
+import swaggerUi from "swagger-ui-express";
+import YAML from "yamljs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,6 +36,16 @@ app.get("/", (req, res) => {
 app.use("/api/account", accountRoutes);
 app.use("/api/items", itemRoutes);
 app.use("/api/item-categories", itemCategoryRoutes);
+
+// Swagger UI at /docs (serve backend/swagger.yaml)
+try {
+  const swaggerDocument = YAML.load(path.join(__dirname, "..", "swagger.yaml"));
+  app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+} catch (err) {
+  console.warn(
+    "Swagger UI not available (install 'swagger-ui-express' and 'yamljs')."
+  );
+}
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
