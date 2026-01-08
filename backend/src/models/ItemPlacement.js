@@ -56,7 +56,7 @@ itemPlacementSchema.virtual("id").get(function () {
 });
 
 // Prevent placing multiple items into the exact same tile on the same map
-itemPlacementSchema.index({ map: 1, x: 1, y: 1 }, { unique: false });
+itemPlacementSchema.index({ map: 1, x: 1, y: 1 }, { unique: true });
 
 const ItemPlacement = mongoose.model("ItemPlacement", itemPlacementSchema);
 
