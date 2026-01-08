@@ -18,6 +18,12 @@ const accountSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    accountDetail: {
+      type: String,
+      required: true,
+      index: true,
+      ref: "AccountDetail",
+    },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
