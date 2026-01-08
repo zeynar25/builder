@@ -1,3 +1,5 @@
+// Builder's backend is running on https://builder-3mjo.onrender.com
+
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import path from "path";
