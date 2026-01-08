@@ -7,6 +7,7 @@ import { connectDb } from "./config/db.js";
 import accountRoutes from "./routes/accountRoutes.js";
 import itemRoutes from "./routes/itemRoutes.js";
 import itemCategoryRoutes from "./routes/itemCategoryRoutes.js";
+import mapRoutes from "./routes/mapRoutes.js";
 import accountDetailRoutes from "./routes/accountDetailRoutes.js";
 import express from "express";
 import cors from "cors";
@@ -38,6 +39,7 @@ app.use("/api/account", accountRoutes);
 app.use("/api/items", itemRoutes);
 app.use("/api/item-categories", itemCategoryRoutes);
 app.use("/api/account-detail", accountDetailRoutes);
+app.use("/api/maps", mapRoutes);
 
 // Swagger UI at /docs (serve backend/swagger.yaml)
 try {
