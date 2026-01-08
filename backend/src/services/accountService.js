@@ -40,10 +40,10 @@ export async function createAccount({ email, password }) {
 
 export async function authenticate({ email, password }) {
   const account = await Account.findOne({ email });
-  if (!account) return { success: false, reason: "not_found" };
+  if (!account) return { success: false, reason: "account not found" };
 
   const ok = await bcrypt.compare(password, account.passwordHash);
-  if (!ok) return { success: false, reason: "invalid_credentials" };
+  if (!ok) return { success: false, reason: "incorrect password entered" };
 
   const tokens = generateTokens(account.id);
   return {

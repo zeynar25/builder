@@ -45,7 +45,20 @@ export default function Login() {
         return;
       }
 
-      const { accessToken, refreshToken } = body || {};
+      // backend may return tokens in different shapes; normalize common forms
+      const accessToken =
+        body?.accessToken ??
+        body?.tokens?.access ??
+        body?.tokens?.accessToken ??
+        body?.tokens?.access_token ??
+        body?.access;
+      const refreshToken =
+        body?.refreshToken ??
+        body?.tokens?.refresh ??
+        body?.tokens?.refreshToken ??
+        body?.tokens?.refresh_token ??
+        body?.refresh;
+
       if (accessToken) await AsyncStorage.setItem("accessToken", accessToken);
       if (refreshToken)
         await AsyncStorage.setItem("refreshToken", refreshToken);

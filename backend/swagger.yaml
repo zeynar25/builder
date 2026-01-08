@@ -100,6 +100,75 @@ components:
       properties:
         gameName:
           type: string
+    Map:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        account:
+          type: object
+          properties:
+            id:
+              type: string
+        widthTiles:
+          type: integer
+        heightTiles:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    PlacementSimplified:
+      type: object
+      properties:
+        id:
+          type: string
+        x:
+          type: integer
+        y:
+          type: integer
+        item:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            imageUrl:
+              type: string
+            sizeX:
+              type: integer
+            sizeY:
+              type: integer
+            price:
+              type: number
+              format: float
+        placedBy:
+          type: object
+          properties:
+            id:
+              type: string
+        placedAt:
+          type: string
+          format: date-time
+    MapWithGrid:
+      type: object
+      properties:
+        map:
+          $ref: '#/components/schemas/Map'
+        grid:
+          type: array
+          description: "2D array (rows = Y) of placement objects or null for empty tiles"
+          items:
+            type: array
+            items:
+              anyOf:
+                - $ref: '#/components/schemas/PlacementSimplified'
+                - type: 'null'
 
 paths:
   /api/account/signup:
@@ -412,7 +481,28 @@ paths:
         "404":
           description: Not found
 
+  /api/maps/{id}:
+    get:
+      tags: [maps]
+      summary: Get map by id along with a 2D tile grid
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Map with tile grid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MapWithGrid"
+        "404":
+          description: Map not found
+
 tags:
   - name: account
   - name: items
   - name: categories
+  - name: maps
