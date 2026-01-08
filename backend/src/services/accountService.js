@@ -1,6 +1,7 @@
 import Account from "../models/Account.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import AccountDetail from "../models/AccountDetail.js";
 
 const HASH_ROUNDS = 10;
 
@@ -17,7 +18,14 @@ export async function createAccount({ email, password }) {
   if (existing) return { success: false, reason: "email_taken" };
 
   const passwordHash = await bcrypt.hash(password, HASH_ROUNDS);
-  const account = await Account.create({ email, passwordHash });
+
+  const detail = await AccountDetail.create({ chron: 0, exp: 0 });
+
+  const account = await Account.create({
+    email,
+    passwordHash,
+    accountDetail: detail.id,
+  });
   return { success: true, account: { id: account.id, email: account.email } };
 }
 

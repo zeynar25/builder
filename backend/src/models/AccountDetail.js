@@ -10,27 +10,32 @@ const accountDetailSchema = new mongoose.Schema(
 
     firstName: {
       type: String,
-      required: true,
+      required: false,
+      default: "",
     },
 
     lastName: {
       type: String,
-      required: true,
+      required: false,
+      default: "",
     },
 
     birthday: {
       type: Date,
-      required: true,
+      required: false,
+      default: null,
     },
 
     chron: {
       type: Number,
-      required: true,
+      required: false,
+      default: 0,
     },
 
     exp: {
       type: Number,
-      required: true,
+      required: false,
+      default: 0,
     },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
