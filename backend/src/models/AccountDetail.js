@@ -8,22 +8,10 @@ const accountDetailSchema = new mongoose.Schema(
       default: () => randomUUID(),
     },
 
-    firstName: {
+    gameName: {
       type: String,
-      required: false,
-      default: "",
-    },
-
-    lastName: {
-      type: String,
-      required: false,
-      default: "",
-    },
-
-    birthday: {
-      type: Date,
-      required: false,
-      default: null,
+      required: true,
+      default: "Unknown",
     },
 
     chron: {
