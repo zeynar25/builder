@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Keyboard,
 } from "react-native";
+import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { API_BASE_URL } from "../src/config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
@@ -19,6 +20,8 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   async function handleSubmit() {
     setError(null);
@@ -98,55 +101,80 @@ export default function Login() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Sign in</Text>
+      <View style={styles.content}>
+        <Text style={styles.title}>Sign in</Text>
+        <View style={styles.titleUnderline} />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        value={email}
-        onChangeText={setEmail}
-      />
+        <Text style={styles.inputLabel}>Email or Username</Text>
+        <View style={styles.inputRow}>
+          <MaterialIcons name="mail-outline" size={24} color="#FFA500" />
+          <TextInput
+            style={styles.input}
+            placeholder="demo@email.com"
+            placeholderTextColor="#999"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
+          />
+        </View>
 
-      <TextInput
-        ref={passwordRef}
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-        returnKeyType="done"
-        onSubmitEditing={() => {
-          handleSubmit();
-          passwordRef.current?.blur();
-          Keyboard.dismiss();
-        }}
-        autoCorrect={false}
-        autoCapitalize="none"
-      />
+        <Text style={styles.inputLabel}>Password</Text>
+        <View style={styles.inputRow}>
+          <MaterialIcons name="lock-outline" size={24} color="#FFA500" />
+          <TextInput
+            ref={passwordRef}
+            style={styles.input}
+            placeholder="enter your password"
+            placeholderTextColor="#999"
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
+            returnKeyType="done"
+            onSubmitEditing={() => {
+              handleSubmit();
+              passwordRef.current?.blur();
+              Keyboard.dismiss();
+            }}
+            autoCorrect={false}
+            autoCapitalize="none"
+          />
+          <Pressable onPress={() => setShowPassword(!showPassword)}>
+            <Ionicons
+              name={showPassword ? "eye-outline" : "eye-off-outline"}
+              size={24}
+              color="#666"
+            />
+          </Pressable>
+        </View>
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+        {error && <Text style={styles.error}>{error}</Text>}
 
-      <Pressable
-        style={styles.button}
-        onPress={handleSubmit}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Sign in</Text>
-        )}
-      </Pressable>
+        <View style={styles.optionsRow}>
+          <Pressable onPress={() => setRememberMe(!rememberMe)} style={styles.checkboxRow}>
+            <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+              {rememberMe && <MaterialIcons name="check" size={16} color="#fff" />}
+            </View>
+            <Text style={styles.checkboxLabel}>Remember Me</Text>
+          </Pressable>
+          <Text style={styles.forgotPassword}>Forgot Password?</Text>
+        </View>
 
-      <View style={styles.link}>
-        <Text>
-          Don&apos;t have an account?{" "}
-          <Text
-            style={styles.linkText}
-            onPress={() => router.replace("/signup")}
-          >
+        <Pressable
+          style={[styles.button, loading && styles.buttonDisabled]}
+          onPress={handleSubmit}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Login</Text>
+          )}
+        </Pressable>
+
+        <Text style={styles.signupText}>
+          Don&apos;t have an Account?{" "}
+          <Text style={styles.signupLink} onPress={() => router.replace("/signup")}>
             Sign up
           </Text>
         </Text>
@@ -158,43 +186,114 @@ export default function Login() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    backgroundColor: "#FEFCFB",
+    paddingHorizontal: 24,
     justifyContent: "center",
   },
+  content: {
+    alignItems: "center",
+  },
   title: {
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 16,
-    textAlign: "center",
+    fontSize: 32,
+    fontWeight: "700",
+    color: "#333",
+    marginBottom: 8,
+    fontFamily: "Rubik",
+  },
+  titleUnderline: {
+    width: 60,
+    height: 4,
+    backgroundColor: "#FFA500",
+    borderRadius: 2,
+    marginBottom: 40,
+  },
+  inputLabel: {
+    fontSize: 14,
+    color: "#999",
+    marginBottom: 8,
+    alignSelf: "flex-start",
+    fontFamily: "Rubik",
+  },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: "#000",
+    marginBottom: 24,
+    paddingBottom: 8,
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
+    flex: 1,
+    fontSize: 16,
+    color: "#333",
+    marginLeft: 12,
+    fontFamily: "Rubik",
+  },
+  optionsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    marginBottom: 24,
+  },
+  checkboxRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderColor: "#FFA500",
+    borderRadius: 4,
+    marginRight: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fff",
+  },
+  checkboxChecked: {
+    backgroundColor: "#FFA500",
+  },
+  checkboxLabel: {
+    fontSize: 14,
+    color: "#333",
+    fontFamily: "Rubik",
+  },
+  forgotPassword: {
+    fontSize: 14,
+    color: "#FFA500",
+    fontWeight: "500",
+    fontFamily: "Rubik",
   },
   button: {
-    backgroundColor: "#007AFF",
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: "#FFA500",
+    paddingVertical: 16,
+    borderRadius: 12,
     alignItems: "center",
-    marginTop: 8,
+    width: "100%",
+    marginBottom: 24,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
   },
   buttonText: {
     color: "#fff",
-    fontWeight: "600",
+    fontSize: 18,
+    fontWeight: "700",
+    fontFamily: "Rubik",
   },
   error: {
     color: "#cc0000",
-    marginBottom: 8,
-    textAlign: "center",
+    marginBottom: 16,
+    fontSize: 14,
+    fontFamily: "Rubik",
   },
-  link: {
-    marginTop: 12,
-    alignItems: "center",
+  signupText: {
+    fontSize: 14,
+    color: "#333",
+    fontFamily: "Rubik",
   },
-  linkText: {
-    color: "#007AFF",
+  signupLink: {
+    color: "#FFA500",
+    fontWeight: "500",
   },
 });
