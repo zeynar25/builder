@@ -39,4 +39,8 @@ export async function getMapWithTiles(mapId) {
   return { map, grid, placements };
 }
 
-export default { getMapWithTiles };
+export async function getMapsByAccount(accountId) {
+  return MapModel.find({ account: accountId }).lean().exec();
+}
+
+export default { getMapWithTiles, getMapsByAccount };

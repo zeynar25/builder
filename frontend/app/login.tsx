@@ -60,6 +60,33 @@ export default function Login() {
       if (refreshToken)
         await AsyncStorage.setItem("refreshToken", refreshToken);
 
+      // store account id and attempt to select a default map for the user
+      const accountId =
+        body?.account?.id ?? body?.account?._id ?? body?.id ?? null;
+      if (accountId) {
+        await AsyncStorage.setItem("accountId", accountId);
+        // try to pick the first map for this account and save as currentMapId
+        try {
+          const mapsRes = await fetch(
+            `${API_BASE_URL}/api/maps/account/${accountId}`
+          );
+          if (mapsRes.ok) {
+            const json = await mapsRes.json().catch(() => null);
+            const firstMap = json?.maps?.[0];
+            const firstMapId = firstMap?._id ?? firstMap?.id ?? null;
+            if (firstMapId) {
+              await AsyncStorage.setItem("currentMapId", firstMapId);
+              console.log("firstMapId:", firstMapId);
+            }
+          }
+        } catch {
+          // ignore map fetch failures; user can pick later
+        }
+      }
+
+      console.log("accountId:", accountId);
+      console.log("access token:", accessToken);
+
       // Navigate to root (home)
       router.replace("/");
     } catch (e: any) {
