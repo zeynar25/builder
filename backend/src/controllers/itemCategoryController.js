@@ -1,17 +1,11 @@
-import ItemCategory from "../models/ItemCategory.js";
+import categoryService from "../services/itemCategoryService.js";
 
 export async function listCategories(req, res) {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.max(1, parseInt(req.query.limit) || 100);
-
-    const categories = await ItemCategory.find({ isActive: true })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .lean()
-      .exec();
-
-    return res.json({ page, limit, categories });
+    const result = await categoryService.listCategories({ page, limit });
+    return res.json(result);
   } catch (err) {
     return res
       .status(500)
@@ -23,8 +17,7 @@ export async function createCategory(req, res) {
   try {
     const { name, description } = req.body;
     if (!name) return res.status(400).json({ error: "name_required" });
-
-    const cat = await ItemCategory.create({ name, description });
+    const cat = await categoryService.createCategory({ name, description });
     return res.status(201).json(cat);
   } catch (err) {
     return res
@@ -36,9 +29,8 @@ export async function createCategory(req, res) {
 export async function getCategory(req, res) {
   try {
     const { id } = req.params;
-    const cat = await ItemCategory.findById(id).lean().exec();
-    if (!cat || !cat.isActive)
-      return res.status(404).json({ error: "not_found" });
+    const cat = await categoryService.getCategoryById(id);
+    if (!cat) return res.status(404).json({ error: "not_found" });
     return res.json(cat);
   } catch (err) {
     return res
@@ -51,10 +43,7 @@ export async function updateCategory(req, res) {
   try {
     const { id } = req.params;
     const updates = { ...req.body };
-    const cat = await ItemCategory.findByIdAndUpdate(id, updates, {
-      new: true,
-      runValidators: true,
-    }).exec();
+    const cat = await categoryService.updateCategoryById(id, updates);
     if (!cat) return res.status(404).json({ error: "not_found" });
     return res.json(cat);
   } catch (err) {
@@ -67,11 +56,7 @@ export async function updateCategory(req, res) {
 export async function deleteCategory(req, res) {
   try {
     const { id } = req.params;
-    const cat = await ItemCategory.findByIdAndUpdate(
-      id,
-      { isActive: false },
-      { new: true }
-    ).exec();
+    const cat = await categoryService.softDeleteCategoryById(id);
     if (!cat) return res.status(404).json({ error: "not_found" });
     return res.json({ success: true, category: cat });
   } catch (err) {
