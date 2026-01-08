@@ -80,10 +80,31 @@ components:
         createdAt:
           type: string
           format: date-time
+    AccountDetail:
+      type: object
+      properties:
+        id:
+          type: string
+        gameName:
+          type: string
+        chron:
+          type: number
+        exp:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+    GameNameUpdate:
+      type: object
+      required: [gameName]
+      properties:
+        gameName:
+          type: string
 
 paths:
   /api/account/signup:
     post:
+      tags: [account]
       summary: Create a new account
       requestBody:
         required: true
@@ -108,6 +129,7 @@ paths:
 
   /api/account/signin:
     post:
+      tags: [account]
       summary: Sign in and receive tokens
       requestBody:
         required: true
@@ -137,6 +159,7 @@ paths:
 
   /api/items:
     get:
+      tags: [items]
       summary: List active items (shop)
       parameters:
         - in: query
@@ -164,6 +187,7 @@ paths:
                     items:
                       $ref: "#/components/schemas/Item"
     post:
+      tags: [items]
       summary: Create an item
       requestBody:
         required: true
@@ -196,6 +220,7 @@ paths:
 
   /api/items/{id}:
     get:
+      tags: [items]
       summary: Get item by id
       parameters:
         - in: path
@@ -213,6 +238,7 @@ paths:
         "404":
           description: Not found
     put:
+      tags: [items]
       summary: Update item
       parameters:
         - in: path
@@ -229,6 +255,7 @@ paths:
         "200":
           description: Updated item
     delete:
+      tags: [items]
       summary: Soft-delete item (sets isActive=false)
       parameters:
         - in: path
@@ -242,6 +269,7 @@ paths:
 
   /api/item-categories:
     get:
+      tags: [categories]
       summary: List item categories
       parameters:
         - in: query
@@ -256,6 +284,7 @@ paths:
         "200":
           description: Paginated categories
     post:
+      tags: [categories]
       summary: Create a category
       requestBody:
         required: true
@@ -275,6 +304,7 @@ paths:
 
   /api/item-categories/{id}:
     get:
+      tags: [categories]
       summary: Get category by id
       parameters:
         - in: path
@@ -292,6 +322,7 @@ paths:
         "404":
           description: Not found
     put:
+      tags: [categories]
       summary: Update category
       parameters:
         - in: path
@@ -308,6 +339,7 @@ paths:
         "200":
           description: Updated
     delete:
+      tags: [categories]
       summary: Soft-delete category (isActive=false)
       parameters:
         - in: path
@@ -318,6 +350,67 @@ paths:
       responses:
         "200":
           description: Soft deleted
+  /api/account-detail/account/{accountId}/game-name:
+    put:
+      tags: [account]
+      summary: Update account detail's gameName by account id
+      parameters:
+        - in: path
+          name: accountId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GameNameUpdate"
+      responses:
+        "200":
+          description: Updated account detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  accountDetail:
+                    $ref: "#/components/schemas/AccountDetail"
+        "404":
+          description: Account or detail not found
+
+  /api/account-detail/{id}/game-name:
+    put:
+      tags: [account]
+      summary: Update account detail's gameName by detail id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GameNameUpdate"
+      responses:
+        "200":
+          description: Updated account detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  accountDetail:
+                    $ref: "#/components/schemas/AccountDetail"
+        "404":
+          description: Not found
 
 tags:
   - name: account
