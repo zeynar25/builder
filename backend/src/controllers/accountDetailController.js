@@ -50,8 +50,26 @@ export async function updateGameNameById(req, res) {
   }
 }
 
+export async function addChronById(req, res) {
+  try {
+    const { id } = req.params;
+    const { minutes } = req.body;
+    const mins = Math.floor(Number(minutes || 0));
+    if (mins <= 0)
+      return res.status(400).json({ error: "minutes_required_positive" });
+
+    const updated = await accountDetailService.addChronById(id, mins);
+    if (!updated)
+      return res.status(404).json({ error: "accountDetail_not_found" });
+    return res.json({ success: true, accountDetail: updated });
+  } catch (err) {
+    return res.status(400).json({ error: err.message || "cannot_add_chron" });
+  }
+}
+
 export default {
   getAccountDetailById,
   updateGameNameByAccount,
   updateGameNameById,
+  addChronById,
 };

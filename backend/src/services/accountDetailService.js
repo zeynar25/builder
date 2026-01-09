@@ -45,8 +45,27 @@ export async function updateGameNameById(detailId, gameName) {
   return updated;
 }
 
+/**
+ * Increment `chron` on an AccountDetail by a number of minutes.
+ * `minutes` should be a non-negative integer (floored by caller).
+ * Returns the updated AccountDetail or null if not found.
+ */
+export async function addChronById(detailId, minutes) {
+  const mins = Math.floor(Number(minutes) || 0);
+  if (mins <= 0) throw new Error("minutes_must_be_positive");
+
+  const updated = await AccountDetail.findByIdAndUpdate(
+    detailId,
+    { $inc: { chron: mins } },
+    { new: true, runValidators: true }
+  ).exec();
+
+  return updated;
+}
+
 export default {
   getAccountDetailById,
   updateGameNameByAccount,
   updateGameNameById,
+  addChronById,
 };

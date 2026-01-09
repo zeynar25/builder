@@ -8,6 +8,7 @@ import {
   TextInput,
   Image,
   Platform,
+  DeviceEventEmitter,
 } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { API_BASE_URL } from "../../src/config";
@@ -132,6 +133,28 @@ export default function Index() {
       cancelled = true;
     };
   }, [router]);
+
+  // Listen for chron updates emitted from other components (e.g. the Timer)
+  useEffect(() => {
+    const sub = DeviceEventEmitter.addListener(
+      "chronUpdated",
+      async (payload: any) => {
+        try {
+          const accountDetailId = await AsyncStorage.getItem("accountDetailId");
+          if (!accountDetailId) return;
+          const detailRes = await fetch(
+            `${API_BASE_URL}/api/account-detail/${accountDetailId}`
+          );
+          if (!detailRes.ok) return;
+          const detailJson = await detailRes.json();
+          setAccountDetail(detailJson);
+        } catch {
+          // ignore errors from refresh
+        }
+      }
+    );
+    return () => sub.remove();
+  }, []);
 
   // initialize center when mapData is loaded
   useEffect(() => {

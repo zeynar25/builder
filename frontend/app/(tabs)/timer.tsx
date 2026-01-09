@@ -1,14 +1,163 @@
-import React, { Component } from 'react'
-import { Text, View } from 'react-native'
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Text,
+  View,
+  Pressable,
+  Alert,
+  StyleSheet,
+  Platform,
+  DeviceEventEmitter,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE_URL } from "../../src/config";
 
-export class timer extends Component {
-  render() {
-    return (
-      <View>
-        <Text> textInComponent </Text>
-      </View>
-    )
+export default function Timer() {
+  const [running, setRunning] = useState(false);
+  const [elapsed, setElapsed] = useState(0); // seconds
+  const intervalRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (running) {
+      intervalRef.current = setInterval(() => {
+        setElapsed((e) => e + 1);
+      }, 1000);
+    } else if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [running]);
+
+  function formatTime(sec: number) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   }
+
+  async function awardChron(flooredMinutes: number) {
+    try {
+      const accountDetailId = await AsyncStorage.getItem("accountDetailId");
+      if (!accountDetailId)
+        return showAlert("No account detail", "Please log in first.");
+
+      const token = await AsyncStorage.getItem("accessToken");
+      const res = await fetch(
+        `${API_BASE_URL}/api/account-detail/${accountDetailId}/chron`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ minutes: flooredMinutes }),
+        }
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        throw new Error(err?.error || `Request failed (${res.status})`);
+      }
+      const json = await res.json();
+      const newChron = json?.accountDetail?.chron;
+      showAlert(
+        "Chron awarded",
+        `Awarded ${flooredMinutes} chron. New total: ${newChron}`
+      );
+      try {
+        DeviceEventEmitter.emit("chronUpdated", { newChron });
+      } catch {}
+    } catch (e: any) {
+      showAlert("Unable to award chron", e.message || String(e));
+    }
+  }
+
+  // Show only one control at a time: Start when stopped, Stop & Earn when running
+  // web-compatible confirm and alert helpers
+  function showAlert(title: string, message?: string) {
+    if (Platform.OS === "web" && typeof window !== "undefined") {
+      window.alert(title + (message ? "\n\n" + message : ""));
+    } else {
+      Alert.alert(title, message);
+    }
+  }
+
+  function confirmPrompt(title: string, message?: string) {
+    if (Platform.OS === "web" && typeof window !== "undefined") {
+      return Promise.resolve(
+        window.confirm(title + (message ? "\n\n" + message : ""))
+      );
+    }
+    return new Promise<boolean>((resolve) => {
+      Alert.alert(title, message || "", [
+        { text: "Cancel", style: "cancel", onPress: () => resolve(false) },
+        { text: "OK", onPress: () => resolve(true) },
+      ]);
+    });
+  }
+
+  async function confirmStopAndEarn() {
+    const minutes = Math.floor(elapsed / 60);
+    if (minutes <= 0) {
+      const ok = await confirmPrompt(
+        "Stop",
+        "Less than one minute recorded. Stop the timer? No chron will be awarded."
+      );
+      if (!ok) return;
+      setRunning(false);
+      setElapsed(0);
+      showAlert("Stopped", "No chron awarded.");
+      return;
+    }
+
+    const ok = await confirmPrompt(
+      "Stop & Earn",
+      `Stop the timer and award ${minutes} chron?`
+    );
+    if (!ok) return;
+    setRunning(false);
+    await awardChron(minutes);
+    setElapsed(0);
+  }
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.time}>{formatTime(elapsed)}</Text>
+      <View style={styles.controls}>
+        {!running ? (
+          <Pressable
+            onPress={() => setRunning(true)}
+            style={({ pressed }) => [styles.button, pressed && styles.pressed]}
+          >
+            <Text style={styles.buttonText}>Start</Text>
+          </Pressable>
+        ) : (
+          <Pressable
+            onPress={confirmStopAndEarn}
+            style={({ pressed }) => [styles.button, pressed && styles.pressed]}
+          >
+            <Text style={styles.buttonText}>Stop & Earn</Text>
+          </Pressable>
+        )}
+      </View>
+    </View>
+  );
 }
 
-export default timer
+const styles = StyleSheet.create({
+  container: { alignItems: "center", padding: 12 },
+  time: { fontSize: 36, fontWeight: "700", marginBottom: 12 },
+  controls: { flexDirection: "row" },
+  button: {
+    backgroundColor: "#333",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    marginHorizontal: 6,
+  },
+  pressed: { opacity: 0.7 },
+  buttonText: { color: "#fff", fontWeight: "600" },
+});
