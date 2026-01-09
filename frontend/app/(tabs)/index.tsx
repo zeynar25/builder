@@ -506,6 +506,25 @@ export default function Index() {
       Alert.alert("Cannot place", "Map is not ready yet.");
       return;
     }
+
+    // Check if the target tile is already occupied on the client grid
+    try {
+      if (mapData?.grid) {
+        const cy = centerY;
+        const cx = centerX;
+        const existingCell = mapData.grid[cy]?.[cx];
+        if (existingCell?.item) {
+          Alert.alert(
+            "Tile occupied",
+            "There is already an item on this tile. Please move to an empty tile before building."
+          );
+          return;
+        }
+      }
+    } catch {
+      // if anything goes wrong reading the grid, fall through to server validation
+    }
+
     try {
       setPlacing(true);
       const [accountId, accountDetailId, mapId] = await Promise.all([
@@ -571,7 +590,7 @@ export default function Index() {
     } finally {
       setPlacing(false);
     }
-  }, [buildItem, centerX, centerY]);
+  }, [buildItem, centerX, centerY, mapData]);
 
   return (
     <View
@@ -877,9 +896,15 @@ export default function Index() {
                   for (let c = 0; c < w; c++) {
                     const cell = mapData.grid[r][c];
                     const isBuildTarget = !!buildItem && r === cy && c === cx;
+                    const isOccupiedTarget = isBuildTarget && !!cell?.item;
                     const source = isBuildTarget
                       ? resolveTileImage(buildItem?.imageUrl)
                       : resolveTileImage(cell?.item?.imageUrl);
+                    const borderColor = isBuildTarget
+                      ? isOccupiedTarget
+                        ? "#EF4444" // red when trying to build over an occupied tile
+                        : "#22C55E" // green when empty
+                      : "transparent";
                     cols.push(
                       <Image
                         key={`cell-${r}-${c}`}
@@ -890,9 +915,7 @@ export default function Index() {
                           marginRight: 1,
                           marginBottom: 1,
                           borderWidth: isBuildTarget ? 2 : 0,
-                          borderColor: isBuildTarget
-                            ? "#22C55E"
-                            : "transparent",
+                          borderColor,
                         }}
                         resizeMode="cover"
                       />
@@ -954,6 +977,15 @@ export default function Index() {
           </Pressable>
         </View>
       )}
+      {buildItem &&
+        mapData?.grid &&
+        centerX != null &&
+        centerY != null &&
+        mapData.grid[centerY]?.[centerX]?.item && (
+          <Text style={{ marginTop: 4, color: "#EF4444" }}>
+            Selected tile is already occupied.
+          </Text>
+        )}
       <View
         style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}
       >
