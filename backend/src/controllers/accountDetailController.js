@@ -1,5 +1,19 @@
 import accountDetailService from "../services/accountDetailService.js";
 
+export async function getAccountDetailById(req, res) {
+  try {
+    const { id } = req.params;
+    const accountDetail = await accountDetailService.getAccountDetailById(id);
+    if (!accountDetail)
+      return res.status(404).json({ error: "accountDetail_not_found" });
+    return res.json({ success: true, accountDetail });
+  } catch (err) {
+    return res
+      .status(400)
+      .json({ error: err.message || "cannot_get_accountDetail" });
+  }
+}
+
 export async function updateGameNameByAccount(req, res) {
   try {
     const { accountId } = req.params;
@@ -36,4 +50,8 @@ export async function updateGameNameById(req, res) {
   }
 }
 
-export default { updateGameNameByAccount, updateGameNameById };
+export default {
+  getAccountDetailById,
+  updateGameNameByAccount,
+  updateGameNameById,
+};

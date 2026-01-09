@@ -63,11 +63,22 @@ export default function Login() {
       if (refreshToken)
         await AsyncStorage.setItem("refreshToken", refreshToken);
 
-      // store account id and attempt to select a default map for the user
+      // store account id, and account detail id and attempt to select a default map for the user
       const accountId =
         body?.account?.id ?? body?.account?._id ?? body?.id ?? null;
+      const accountDetailId =
+        body?.account?.detailId ??
+        body?.account?.accountDetailId ??
+        body?.account?.accountDetail ??
+        body?.accountDetailId ??
+        body?.accountDetail ??
+        null;
+
       if (accountId) {
         await AsyncStorage.setItem("accountId", accountId);
+        if (accountDetailId) {
+          await AsyncStorage.setItem("accountDetailId", accountDetailId);
+        }
         // try to pick the first map for this account and save as currentMapId
         try {
           const mapsRes = await fetch(
@@ -86,9 +97,6 @@ export default function Login() {
           // ignore map fetch failures; user can pick later
         }
       }
-
-      console.log("accountId:", accountId);
-      console.log("access token:", accessToken);
 
       // Navigate to root (home)
       router.replace("/");
@@ -151,9 +159,16 @@ export default function Login() {
         {error && <Text style={styles.error}>{error}</Text>}
 
         <View style={styles.optionsRow}>
-          <Pressable onPress={() => setRememberMe(!rememberMe)} style={styles.checkboxRow}>
-            <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-              {rememberMe && <MaterialIcons name="check" size={16} color="#fff" />}
+          <Pressable
+            onPress={() => setRememberMe(!rememberMe)}
+            style={styles.checkboxRow}
+          >
+            <View
+              style={[styles.checkbox, rememberMe && styles.checkboxChecked]}
+            >
+              {rememberMe && (
+                <MaterialIcons name="check" size={16} color="#fff" />
+              )}
             </View>
             <Text style={styles.checkboxLabel}>Remember Me</Text>
           </Pressable>
@@ -174,7 +189,10 @@ export default function Login() {
 
         <Text style={styles.signupText}>
           Don&apos;t have an Account?{" "}
-          <Text style={styles.signupLink} onPress={() => router.replace("/signup")}>
+          <Text
+            style={styles.signupLink}
+            onPress={() => router.replace("/signup")}
+          >
             Sign up
           </Text>
         </Text>

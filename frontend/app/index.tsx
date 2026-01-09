@@ -6,6 +6,7 @@ import { useRouter } from "expo-router";
 
 export default function Index() {
   const router = useRouter();
+  const [accountDetail, setAccountDetail] = useState<any | null>(null);
   const [data, setData] = useState<string | null>(null);
   const [mapData, setMapData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
@@ -59,6 +60,23 @@ export default function Index() {
           return;
         }
 
+        const accountDetailId = await AsyncStorage.getItem("accountDetailId");
+        if (accountDetailId) {
+          const detailRes = await fetch(
+            `${API_BASE_URL}/api/account-detail/${accountDetailId}`
+          );
+
+          if (!detailRes.ok) {
+            const errBody = await detailRes.json().catch(() => null);
+            throw new Error(
+              errBody?.error ||
+                `Failed to fetch account details (${detailRes.status})`
+            );
+          }
+          const detailJson = await detailRes.json();
+          setAccountDetail(detailJson);
+        }
+
         // try to load a map if we have a currentMapId stored
         const mapId = await AsyncStorage.getItem("currentMapId");
         if (mapId) {
@@ -98,6 +116,7 @@ export default function Index() {
         padding: 16,
       }}
     >
+      <Text>{accountDetail ? `Welcome, ${accountDetail.gameName}` : ""}</Text>
       {loading ? (
         <ActivityIndicator size="large" />
       ) : error ? (

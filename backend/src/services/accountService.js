@@ -48,7 +48,11 @@ export async function authenticate({ email, password }) {
   const tokens = generateTokens(account.id);
   return {
     success: true,
-    account: { id: account.id, email: account.email },
+    account: {
+      id: account.id,
+      email: account.email,
+      accountDetail: account.accountDetail,
+    },
     tokens,
   };
 }

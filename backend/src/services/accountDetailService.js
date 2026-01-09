@@ -1,6 +1,13 @@
 import Account from "../models/Account.js";
 import AccountDetail from "../models/AccountDetail.js";
 
+export async function getAccountDetailById(detailId) {
+  if (!detailId) throw new Error("detailId_required");
+
+  const accountDetail = await AccountDetail.findById(detailId).exec();
+  return accountDetail;
+}
+
 /**
  * Update gameName for an account's AccountDetail by account id.
  * Returns the updated AccountDetail or null if not found.
@@ -38,4 +45,8 @@ export async function updateGameNameById(detailId, gameName) {
   return updated;
 }
 
-export default { updateGameNameByAccount, updateGameNameById };
+export default {
+  getAccountDetailById,
+  updateGameNameByAccount,
+  updateGameNameById,
+};
