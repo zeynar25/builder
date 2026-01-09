@@ -134,7 +134,7 @@ export default function Index() {
     };
   }, [router]);
 
-  // Listen for chron updates emitted from other components (e.g. the Timer)
+  // Listen for chron updates emitted from other components (e.g. the Stopwatch)
   useEffect(() => {
     const sub = DeviceEventEmitter.addListener(
       "chronUpdated",
