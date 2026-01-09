@@ -412,14 +412,20 @@ export default function Index() {
           }
 
           // Single-finger behavior
-          const threshold = tileSize / 2;
+          // Use a full-tile threshold and at most one tile of movement
+          // per update to make movement feel slower and more controlled.
+          const threshold = tileSize;
           const dx = gestureState.dx - panLastDxRef.current;
           const dy = gestureState.dy - panLastDyRef.current;
 
-          const stepsX =
+          let stepsX =
             Math.abs(dx) >= threshold ? Math.trunc(dx / threshold) : 0;
-          const stepsY =
+          let stepsY =
             Math.abs(dy) >= threshold ? Math.trunc(dy / threshold) : 0;
+
+          // Clamp to a single-tile step per update in each direction
+          if (stepsX !== 0) stepsX = stepsX > 0 ? 1 : -1;
+          if (stepsY !== 0) stepsY = stepsY > 0 ? 1 : -1;
 
           if (stepsX === 0 && stepsY === 0) {
             return;
