@@ -100,7 +100,6 @@ export default function Index() {
             );
           }
           const detailJson = await detailRes.json();
-          console.log(detailJson);
           setAccountDetail(detailJson);
         }
 

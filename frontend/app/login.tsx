@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Keyboard,
   Image,
-  Dimensions
+  Dimensions,
 } from "react-native";
 
 import { Feather, Ionicons } from "@expo/vector-icons";
@@ -16,13 +16,10 @@ import { API_BASE_URL } from "../src/config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 
-
 import { theme } from "@/src/theme";
 import { globalStyles } from "@/src/globalstyles";
-import { useFrameSize } from "@react-navigation/elements";
 
-const { width: screenWidth } = Dimensions.get('window');
-const { height: screenHeight } = Dimensions.get('window');
+const { height: screenHeight } = Dimensions.get("window");
 
 export default function Login() {
   const router = useRouter();
@@ -77,8 +74,22 @@ export default function Login() {
       // store account id and attempt to select a default map for the user
       const accountId =
         body?.account?.id ?? body?.account?._id ?? body?.id ?? null;
+
+      const accountDetailId =
+        body?.account?.detailId ??
+        body?.account?.accountDetailId ??
+        body?.account?.accountDetail ??
+        body?.accountDetailId ??
+        body?.accountDetail ??
+        null;
+
       if (accountId) {
         await AsyncStorage.setItem("accountId", accountId);
+
+        if (accountDetailId) {
+          await AsyncStorage.setItem("accountDetailId", accountDetailId);
+        }
+
         // try to pick the first map for this account and save as currentMapId
         try {
           const mapsRes = await fetch(
@@ -98,11 +109,8 @@ export default function Login() {
         }
       }
 
-      console.log("accountId:", accountId);
-      console.log("access token:", accessToken);
-
-      // Navigate to root (home)
-      router.replace("/");
+      // Navigate to the tabs index screen
+      router.replace("/(tabs)/index");
     } catch (e: any) {
       setError(e.message || String(e));
     } finally {
@@ -121,19 +129,21 @@ export default function Login() {
       </View>
 
       <View style={[globalStyles.userform, styles.formWithHeaderOffset]}>
-        
         <Text style={globalStyles.textTitle}>Sign In</Text>
-        <View style={globalStyles.titleUnderline} /> 
+        <View style={globalStyles.titleUnderline} />
 
         <Text style={globalStyles.TextLabel}>Email or Username</Text>
         <View style={globalStyles.inputContainer}>
-
-          <Feather name="mail" size={theme.icon.form} color={theme.colors.highlight} />
+          <Feather
+            name="mail"
+            size={theme.icon.form}
+            color={theme.colors.highlight}
+          />
 
           <TextInput
             style={globalStyles.textInput}
             placeholder="demo@email.com"
-            placeholderTextColor= {theme.colors.text.secondary}
+            placeholderTextColor={theme.colors.text.secondary}
             keyboardType="email-address"
             autoCapitalize="none"
             value={email}
@@ -143,7 +153,11 @@ export default function Login() {
 
         <Text style={globalStyles.TextLabel}>Password</Text>
         <View style={globalStyles.inputContainer}>
-          <Feather name="lock" size={theme.icon.form} color={theme.colors.highlight} />
+          <Feather
+            name="lock"
+            size={theme.icon.form}
+            color={theme.colors.highlight}
+          />
           <TextInput
             ref={passwordRef}
             style={globalStyles.textInput}
@@ -172,12 +186,21 @@ export default function Login() {
 
         {error && <Text style={globalStyles.textError}>{error}</Text>}
 
-
-        <View style={styles.optionsRow}> 
-
-          <Pressable onPress={() => setRememberMe(!rememberMe)} style={styles.checkboxRow}>
-            <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-              {rememberMe && <Feather name="check" size={theme.icon.form} color={theme.colors.mono} />}
+        <View style={styles.optionsRow}>
+          <Pressable
+            onPress={() => setRememberMe(!rememberMe)}
+            style={styles.checkboxRow}
+          >
+            <View
+              style={[styles.checkbox, rememberMe && styles.checkboxChecked]}
+            >
+              {rememberMe && (
+                <Feather
+                  name="check"
+                  size={theme.icon.form}
+                  color={theme.colors.mono}
+                />
+              )}
             </View>
             <Text style={styles.checkboxLabel}>Remember Me</Text>
           </Pressable>
@@ -185,7 +208,10 @@ export default function Login() {
         </View>
 
         <Pressable
-          style={[globalStyles.primaryButton, loading && globalStyles.primaryButtonDisabled]}
+          style={[
+            globalStyles.primaryButton,
+            loading && globalStyles.primaryButtonDisabled,
+          ]}
           onPress={handleSubmit}
           disabled={loading}
         >
@@ -198,7 +224,10 @@ export default function Login() {
 
         <Text style={styles.signupText}>
           Don&apos;t have an Account?{" "}
-          <Text style={styles.signupLink} onPress={() => router.replace("/signup")}>
+          <Text
+            style={styles.signupLink}
+            onPress={() => router.replace("/signup")}
+          >
             Sign up
           </Text>
         </Text>
@@ -208,21 +237,20 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
-
   headerContainer: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
-    height: screenHeight * 0.40,
-    overflow: "hidden",  
+    height: screenHeight * 0.4,
+    overflow: "hidden",
   },
 
   headerImage: {
     width: "100%",
-    height: screenHeight * 0.40, 
+    height: screenHeight * 0.4,
     position: "absolute",
-    bottom: 0, 
+    bottom: 0,
   },
 
   formWithHeaderOffset: {
@@ -271,8 +299,6 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.fontFamily.primary,
   },
 
-  
-
   signupText: {
     fontSize: theme.typography.fontSize.text,
     color: theme.colors.text.secondary,
@@ -280,7 +306,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     width: "100%",
   },
-  
+
   signupLink: {
     color: theme.colors.highlight,
     fontWeight: theme.typography.fontWeight.medium,
