@@ -50,6 +50,11 @@ export default function Index() {
   const [centerY, setCenterY] = useState<number | null>(null);
   const [tileSize, setTileSize] = useState<number>(48); // px per tile (zoomable)
 
+  const panLastDxRef = React.useRef(0);
+  const panLastDyRef = React.useRef(0);
+  const pinchInitialDistanceRef = React.useRef<number | null>(null);
+  const pinchInitialTileSizeRef = React.useRef<number>(tileSize);
+
   const [viewportCols, setViewportCols] = useState<number>(5);
   const [viewportRows, setViewportRows] = useState<number>(5);
   const [buildItem, setBuildItem] = useState<any | null>(null);
@@ -317,13 +322,76 @@ export default function Index() {
       PanResponder.create({
         onStartShouldSetPanResponder: () => !!mapData,
         onMoveShouldSetPanResponder: () => !!mapData,
-        onPanResponderRelease: (_evt, gestureState) => {
-          if (!mapData) return;
-          const dxTiles = Math.round(-gestureState.dx / tileSize);
-          const dyTiles = Math.round(-gestureState.dy / tileSize);
-          if (dxTiles !== 0 || dyTiles !== 0) {
-            pan(dxTiles, dyTiles);
+        onPanResponderGrant: (evt) => {
+          panLastDxRef.current = 0;
+          panLastDyRef.current = 0;
+
+          const native: any = evt.nativeEvent as any;
+          const touches = native?.touches;
+          if (touches && touches.length >= 2) {
+            const [t1, t2] = touches;
+            const dx = t2.pageX - t1.pageX;
+            const dy = t2.pageY - t1.pageY;
+            const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+            pinchInitialDistanceRef.current = dist;
+            pinchInitialTileSizeRef.current = tileSize;
+          } else {
+            pinchInitialDistanceRef.current = null;
           }
+        },
+        onPanResponderMove: (evt, gestureState) => {
+          if (!mapData) return;
+
+          const native: any = evt.nativeEvent as any;
+          const touches = native?.touches;
+
+          // Pinch to zoom when using two or more touches
+          if (touches && touches.length >= 2) {
+            const [t1, t2] = touches;
+            const dx = t2.pageX - t1.pageX;
+            const dy = t2.pageY - t1.pageY;
+            const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+
+            if (pinchInitialDistanceRef.current == null) {
+              pinchInitialDistanceRef.current = dist;
+              pinchInitialTileSizeRef.current = tileSize;
+              return;
+            }
+
+            const scale = dist / (pinchInitialDistanceRef.current || 1);
+            let nextSize = pinchInitialTileSizeRef.current * scale;
+            if (!Number.isFinite(nextSize)) return;
+            if (nextSize < 12) nextSize = 12;
+            if (nextSize > 128) nextSize = 128;
+            setTileSize(nextSize);
+            return;
+          }
+
+          // Single-finger drag pans the map tile-by-tile as you move
+          const threshold = tileSize / 2;
+          const dx = gestureState.dx - panLastDxRef.current;
+          const dy = gestureState.dy - panLastDyRef.current;
+
+          if (Math.abs(dx) >= threshold) {
+            const stepsX = Math.trunc(dx / threshold);
+            if (stepsX !== 0) {
+              pan(-stepsX, 0);
+              panLastDxRef.current += stepsX * threshold;
+            }
+          }
+
+          if (Math.abs(dy) >= threshold) {
+            const stepsY = Math.trunc(dy / threshold);
+            if (stepsY !== 0) {
+              pan(0, -stepsY);
+              panLastDyRef.current += stepsY * threshold;
+            }
+          }
+        },
+        onPanResponderRelease: () => {
+          pinchInitialDistanceRef.current = null;
+          panLastDxRef.current = 0;
+          panLastDyRef.current = 0;
         },
       }),
     [mapData, tileSize, pan]
@@ -347,6 +415,67 @@ export default function Index() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [mapData, centerX, centerY, pan]);
+
+  // Touchpad / mouse wheel support for panning and pinch-zoom on web
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+
+    let accumX = 0;
+    let accumY = 0;
+
+    function onWheel(e: any) {
+      if (!mapData) return;
+
+      // Treat pinch-zoom on trackpads (often comes through as wheel + ctrlKey)
+      if (e.ctrlKey) {
+        if (e.preventDefault) e.preventDefault();
+        setTileSize((current) => {
+          let next = current;
+          if (e.deltaY < 0) {
+            next = current * 1.1;
+          } else if (e.deltaY > 0) {
+            next = current / 1.1;
+          }
+          if (!Number.isFinite(next)) return current;
+          if (next < 12) next = 12;
+          if (next > 128) next = 128;
+          return Math.round(next);
+        });
+        return;
+      }
+
+      // Two-finger scroll to pan the map
+      const threshold = tileSize / 2;
+      accumX += e.deltaX;
+      accumY += e.deltaY;
+
+      if (Math.abs(accumX) >= threshold) {
+        const stepsX = Math.trunc(accumX / threshold);
+        if (stepsX !== 0) {
+          pan(stepsX, 0);
+          accumX -= stepsX * threshold;
+        }
+      }
+
+      if (Math.abs(accumY) >= threshold) {
+        const stepsY = Math.trunc(accumY / threshold);
+        if (stepsY !== 0) {
+          pan(0, stepsY);
+          accumY -= stepsY * threshold;
+        }
+      }
+    }
+
+    try {
+      window.addEventListener("wheel", onWheel, { passive: false } as any);
+    } catch {
+      window.addEventListener("wheel", onWheel as any);
+    }
+
+    return () => {
+      window.removeEventListener("wheel", onWheel as any);
+    };
+  }, [mapData, pan, tileSize]);
 
   async function handleLogout() {
     try {
