@@ -1,6 +1,7 @@
 import express from "express";
 import {
   shop,
+  buyItem,
   createItem,
   getItem,
   updateItem,
@@ -14,5 +15,7 @@ router.post("/", createItem);
 router.get("/:id", getItem);
 router.put("/:id", updateItem);
 router.delete("/:id", deleteItem);
+
+router.patch("/buy/:id", buyItem);
 
 export default router;

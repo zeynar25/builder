@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
 import Item from "../models/Item.js";
+import AccountDetail from "../models/AccountDetail.js";
+
+import { placeSingleTile } from "./placementService.js";
 
 export async function listItems({ page = 1, limit = 100 } = {}) {
   page = Math.max(1, page);
@@ -12,6 +15,43 @@ export async function listItems({ page = 1, limit = 100 } = {}) {
     .exec();
 
   return { page, limit, items };
+}
+
+export async function buyItemById(
+  accountId,
+  accountDetailsId,
+  mapId,
+  x,
+  y,
+  itemId
+) {
+  const item = await Item.findOne({ _id: itemId, isActive: true }).exec();
+  if (!item) return null;
+
+  // load account details and validate funds
+  const accountDetails = await AccountDetail.findById(accountDetailsId).exec();
+  if (!accountDetails) throw new Error("account_details_not_found");
+
+  if (accountDetails.chrons < item.chronsValue) {
+    throw new Error("insufficient_chrons");
+  }
+
+  // attempt placement (placement service expects an object)
+  const placeRes = await placeSingleTile({
+    map: mapId,
+    x: Number(x),
+    y: Number(y),
+    item: item._id || itemId,
+    placedBy: accountId,
+  });
+
+  if (placeRes.success === false) throw new Error(placeRes.reason);
+
+  // deduct chrons and persist
+  accountDetails.chrons -= item.chronsValue;
+  await accountDetails.save();
+
+  return { success: true, item, placement: placeRes.placement };
 }
 
 export async function createItem(payload) {
@@ -52,6 +92,7 @@ export async function softDeleteItemById(id) {
 
 export default {
   listItems,
+  buyItemById,
   createItem,
   getItemById,
   updateItemById,

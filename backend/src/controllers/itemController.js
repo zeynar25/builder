@@ -13,6 +13,24 @@ export async function shop(req, res) {
   }
 }
 
+export async function buyItem(req, res) {
+  try {
+    const { accountId, accountDetailsId, mapId, x, y, itemId } = req.params;
+    const item = await itemService.buyItemById(
+      accountId,
+      accountDetailsId,
+      mapId,
+      x,
+      y,
+      itemId
+    );
+    if (!item) return res.status(404).json({ error: "item_not_found" });
+    return res.json({ success: true, item });
+  } catch (err) {
+    return res.status(500).json({ error: err.message || "cannot_buy_item" });
+  }
+}
+
 export async function createItem(req, res) {
   try {
     const payload = { ...req.body };
