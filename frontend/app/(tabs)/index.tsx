@@ -15,7 +15,7 @@ import { API_BASE_URL } from "../../src/config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 // default tile asset
-const defaultTile = require("../../assets/road-connectors/default-tile.png");
+const defaultTile = require("../../assets/images/road-connectors/default-tile.png");
 
 export default function Index() {
   const router = useRouter();
