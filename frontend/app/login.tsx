@@ -102,7 +102,7 @@ export default function Login() {
       }
 
       // Navigate to the tabs index screen
-      router.replace("/(tabs)/index");
+      router.replace("/");
     } catch (e: any) {
       setError(e.message || String(e));
     } finally {
