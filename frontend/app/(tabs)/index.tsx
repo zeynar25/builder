@@ -10,13 +10,24 @@ import {
   Platform,
   DeviceEventEmitter,
   Dimensions,
+  PanResponder,
 } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { API_BASE_URL } from "../../src/config";
+import { getImageSource } from "../../src/imageMap";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 // default tile asset
 const defaultTile = require("../../assets/images/road-connectors/default-tile.png");
+
+function resolveTileImage(imageUrl: any) {
+  if (!imageUrl) return defaultTile;
+  const mapped = getImageSource(imageUrl);
+  if (mapped) return mapped;
+  const s = String(imageUrl);
+  if (s && s.startsWith("http")) return { uri: s };
+  return defaultTile;
+}
 
 export default function Index() {
   const router = useRouter();
@@ -38,6 +49,11 @@ export default function Index() {
   const [centerX, setCenterX] = useState<number | null>(null);
   const [centerY, setCenterY] = useState<number | null>(null);
   const [tileSize, setTileSize] = useState<number>(48); // px per tile (zoomable)
+
+  const panLastDxRef = React.useRef(0);
+  const panLastDyRef = React.useRef(0);
+  const pinchInitialDistanceRef = React.useRef<number | null>(null);
+  const pinchInitialTileSizeRef = React.useRef<number>(tileSize);
 
   const [viewportCols, setViewportCols] = useState<number>(5);
   const [viewportRows, setViewportRows] = useState<number>(5);
@@ -227,8 +243,9 @@ export default function Index() {
       mapData.map.heightTiles ?? mapData.map.height ?? mapData.grid?.length ?? 0
     );
     if (w > 0 && h > 0) {
-      setCenterX(Math.floor(w / 2));
-      setCenterY(Math.floor(h / 2));
+      // start in the top-left corner
+      setCenterX(0);
+      setCenterY(0);
     }
   }, [mapData]);
 
@@ -249,6 +266,30 @@ export default function Index() {
       loadPendingBuild();
     }
   }, [mapData]);
+
+  // also refresh pending build item whenever this screen gains focus
+  useFocusEffect(
+    React.useCallback(() => {
+      let active = true;
+      (async () => {
+        try {
+          const raw = await AsyncStorage.getItem("pendingBuildItem");
+          if (!active) return;
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            setBuildItem(parsed);
+          } else {
+            setBuildItem(null);
+          }
+        } catch {
+          // ignore
+        }
+      })();
+      return () => {
+        active = false;
+      };
+    }, [])
+  );
 
   function clamp(v: number, a: number, b: number) {
     return Math.max(a, Math.min(b, v));
@@ -275,6 +316,87 @@ export default function Index() {
     [mapData, centerX, centerY]
   );
 
+  // drag-to-pan support (touch / mouse drag)
+  const dragResponder = React.useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => !!mapData,
+        onMoveShouldSetPanResponder: () => !!mapData,
+        onPanResponderGrant: (evt) => {
+          panLastDxRef.current = 0;
+          panLastDyRef.current = 0;
+
+          const native: any = evt.nativeEvent as any;
+          const touches = native?.touches;
+          if (touches && touches.length >= 2) {
+            const [t1, t2] = touches;
+            const dx = t2.pageX - t1.pageX;
+            const dy = t2.pageY - t1.pageY;
+            const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+            pinchInitialDistanceRef.current = dist;
+            pinchInitialTileSizeRef.current = tileSize;
+          } else {
+            pinchInitialDistanceRef.current = null;
+          }
+        },
+        onPanResponderMove: (evt, gestureState) => {
+          if (!mapData) return;
+
+          const native: any = evt.nativeEvent as any;
+          const touches = native?.touches;
+
+          // Pinch to zoom when using two or more touches
+          if (touches && touches.length >= 2) {
+            const [t1, t2] = touches;
+            const dx = t2.pageX - t1.pageX;
+            const dy = t2.pageY - t1.pageY;
+            const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+
+            if (pinchInitialDistanceRef.current == null) {
+              pinchInitialDistanceRef.current = dist;
+              pinchInitialTileSizeRef.current = tileSize;
+              return;
+            }
+
+            const scale = dist / (pinchInitialDistanceRef.current || 1);
+            let nextSize = pinchInitialTileSizeRef.current * scale;
+            if (!Number.isFinite(nextSize)) return;
+            if (nextSize < 12) nextSize = 12;
+            if (nextSize > 128) nextSize = 128;
+            setTileSize(nextSize);
+            return;
+          }
+
+          // Single-finger drag pans the map tile-by-tile as you move
+          const threshold = tileSize / 2;
+          const dx = gestureState.dx - panLastDxRef.current;
+          const dy = gestureState.dy - panLastDyRef.current;
+
+          if (Math.abs(dx) >= threshold) {
+            const stepsX = Math.trunc(dx / threshold);
+            if (stepsX !== 0) {
+              pan(-stepsX, 0);
+              panLastDxRef.current += stepsX * threshold;
+            }
+          }
+
+          if (Math.abs(dy) >= threshold) {
+            const stepsY = Math.trunc(dy / threshold);
+            if (stepsY !== 0) {
+              pan(0, -stepsY);
+              panLastDyRef.current += stepsY * threshold;
+            }
+          }
+        },
+        onPanResponderRelease: () => {
+          pinchInitialDistanceRef.current = null;
+          panLastDxRef.current = 0;
+          panLastDyRef.current = 0;
+        },
+      }),
+    [mapData, tileSize, pan]
+  );
+
   // keyboard panning support for web (WASD, QE, ZC for diagonals and arrows)
   useEffect(() => {
     if (Platform.OS !== "web") return;
@@ -293,6 +415,67 @@ export default function Index() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [mapData, centerX, centerY, pan]);
+
+  // Touchpad / mouse wheel support for panning and pinch-zoom on web
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+
+    let accumX = 0;
+    let accumY = 0;
+
+    function onWheel(e: any) {
+      if (!mapData) return;
+
+      // Treat pinch-zoom on trackpads (often comes through as wheel + ctrlKey)
+      if (e.ctrlKey) {
+        if (e.preventDefault) e.preventDefault();
+        setTileSize((current) => {
+          let next = current;
+          if (e.deltaY < 0) {
+            next = current * 1.1;
+          } else if (e.deltaY > 0) {
+            next = current / 1.1;
+          }
+          if (!Number.isFinite(next)) return current;
+          if (next < 12) next = 12;
+          if (next > 128) next = 128;
+          return Math.round(next);
+        });
+        return;
+      }
+
+      // Two-finger scroll to pan the map
+      const threshold = tileSize / 2;
+      accumX += e.deltaX;
+      accumY += e.deltaY;
+
+      if (Math.abs(accumX) >= threshold) {
+        const stepsX = Math.trunc(accumX / threshold);
+        if (stepsX !== 0) {
+          pan(stepsX, 0);
+          accumX -= stepsX * threshold;
+        }
+      }
+
+      if (Math.abs(accumY) >= threshold) {
+        const stepsY = Math.trunc(accumY / threshold);
+        if (stepsY !== 0) {
+          pan(0, stepsY);
+          accumY -= stepsY * threshold;
+        }
+      }
+    }
+
+    try {
+      window.addEventListener("wheel", onWheel, { passive: false } as any);
+    } catch {
+      window.addEventListener("wheel", onWheel as any);
+    }
+
+    return () => {
+      window.removeEventListener("wheel", onWheel as any);
+    };
+  }, [mapData, pan, tileSize]);
 
   async function handleLogout() {
     try {
@@ -626,7 +809,7 @@ export default function Index() {
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
                     <Text style={{ fontWeight: "bold", fontSize: 18 }}>
                       {mapData.map?.name
-                        ? `${mapData.map.name}'s Domain`
+                        ? `${mapData.map.name}`
                         : "Someone's Domain"}
                     </Text>
                     <Pressable
@@ -693,19 +876,13 @@ export default function Index() {
                   const cols = [] as any[];
                   for (let c = 0; c < w; c++) {
                     const cell = mapData.grid[r][c];
-                    const isBuildTarget =
-                      !!buildItem && r === cy && c === cx;
+                    const isBuildTarget = !!buildItem && r === cy && c === cx;
                     const source = isBuildTarget
-                      ? buildItem.imageUrl &&
-                        String(buildItem.imageUrl).startsWith("http")
-                        ? { uri: buildItem.imageUrl }
-                        : defaultTile
-                      : cell && cell.item && cell.item.imageUrl
-                      ? { uri: cell.item.imageUrl }
-                      : defaultTile;
+                      ? resolveTileImage(buildItem?.imageUrl)
+                      : resolveTileImage(cell?.item?.imageUrl);
                     cols.push(
                       <Image
-                        key={`cell-${c}-${r}`}
+                        key={`cell-${r}-${c}`}
                         source={source}
                         style={{
                           width: tileSize,
@@ -713,7 +890,9 @@ export default function Index() {
                           marginRight: 1,
                           marginBottom: 1,
                           borderWidth: isBuildTarget ? 2 : 0,
-                          borderColor: isBuildTarget ? "#22C55E" : "transparent",
+                          borderColor: isBuildTarget
+                            ? "#22C55E"
+                            : "transparent",
                         }}
                         resizeMode="cover"
                       />
@@ -730,7 +909,7 @@ export default function Index() {
                 }
 
                 return (
-                  <View style={viewportStyle}>
+                  <View style={viewportStyle} {...dragResponder.panHandlers}>
                     <View style={translateStyle}>{rows}</View>
                   </View>
                 );
@@ -742,6 +921,38 @@ export default function Index() {
         </View>
       ) : (
         <Text>{data}</Text>
+      )}
+      {buildItem && (
+        <View
+          style={{
+            marginTop: 12,
+            flexDirection: "row",
+            alignItems: "center",
+            alignSelf: "center",
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            borderRadius: 999,
+            backgroundColor: "#111",
+          }}
+        >
+          <Pressable
+            onPress={cancelBuild}
+            style={{ padding: 6, marginRight: 4 }}
+            disabled={placing}
+          >
+            <FontAwesome5 name="times" size={16} color="#EF4444" />
+          </Pressable>
+          <Text style={{ marginHorizontal: 8, color: "#fff" }}>
+            {placing ? "Placing..." : `Placing: ${buildItem.name ?? "Item"}`}
+          </Text>
+          <Pressable
+            onPress={confirmBuild}
+            style={{ padding: 6, opacity: placing ? 0.5 : 1 }}
+            disabled={placing}
+          >
+            <FontAwesome5 name="check" size={16} color="#22C55E" />
+          </Pressable>
+        </View>
       )}
       <View
         style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}
@@ -760,33 +971,6 @@ export default function Index() {
         >
           <FontAwesome5 name="search-plus" size={16} color="#FFA500" />
         </Pressable>
-        {buildItem && (
-          <>
-            <Text style={{ marginHorizontal: 8 }}>
-              {placing
-                ? "Placing..."
-                : `Placing: ${buildItem.name ?? "Item"}`}
-            </Text>
-            <Pressable
-              onPress={cancelBuild}
-              style={{ padding: 6, marginRight: 6 }}
-              disabled={placing}
-            >
-              <FontAwesome5 name="times" size={16} color="#EF4444" />
-            </Pressable>
-            <Pressable
-              onPress={confirmBuild}
-              style={{
-                padding: 6,
-                marginRight: 6,
-                opacity: placing ? 0.5 : 1,
-              }}
-              disabled={placing}
-            >
-              <FontAwesome5 name="check" size={16} color="#22C55E" />
-            </Pressable>
-          </>
-        )}
       </View>
     </View>
   );
