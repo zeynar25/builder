@@ -9,7 +9,8 @@ export const globalStyles = StyleSheet.create({
     main: {
         backgroundColor: theme.colors.mono,
         flex: 1,
-        justifyContent: 'center',
+        justifyContent: 'flex-end',
+        paddingBottom: screenWidth * 0.20,
         paddingHorizontal: screenWidth * 0.10,
     },
 
@@ -19,15 +20,16 @@ export const globalStyles = StyleSheet.create({
 
 
     titleUnderline: {
-        width: 85,
+        width: 90,
         height: 3,
         backgroundColor: theme.colors.highlight,
         borderRadius: theme.radii.sm,
-        marginBottom: theme.spacing.xl,
+        marginBottom: theme.spacing.max,
     },
 
     inputContainer: {
         flexDirection: "row",
+        width: "100%",
         alignItems: "center",
         borderBottomWidth: 1,
         borderBottomColor: theme.colors.text.secondary,

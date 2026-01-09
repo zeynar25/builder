@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Keyboard,
   Image,
+  Dimensions
 } from "react-native";
 
 import { Feather, Ionicons } from "@expo/vector-icons";
@@ -20,6 +21,8 @@ import { theme } from "@/src/theme";
 import { globalStyles } from "@/src/globalstyles";
 import { useFrameSize } from "@react-navigation/elements";
 
+const { width: screenWidth } = Dimensions.get('window');
+const { height: screenHeight } = Dimensions.get('window');
 
 export default function Login() {
   const router = useRouter();
@@ -174,7 +177,7 @@ export default function Login() {
 
           <Pressable onPress={() => setRememberMe(!rememberMe)} style={styles.checkboxRow}>
             <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-              {rememberMe && <Feather name="check" size={16} color="#fff" />}
+              {rememberMe && <Feather name="check" size={theme.icon.form} color={theme.colors.mono} />}
             </View>
             <Text style={styles.checkboxLabel}>Remember Me</Text>
           </Pressable>
@@ -211,19 +214,19 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 250,
+    height: screenHeight * 0.40,
     overflow: "hidden",  
   },
 
   headerImage: {
     width: "100%",
-    height: 500, // taller than container so it can "overflow" upwards
+    height: screenHeight * 0.40, 
     position: "absolute",
-    bottom: 0, // keep the wavy edge aligned at the bottom of the visible area
+    bottom: 0, 
   },
 
   formWithHeaderOffset: {
-    marginTop: 80, // push form content slightly below the dripping header
+    marginTop: 80,
   },
 
   optionsRow: {
@@ -274,6 +277,8 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.text,
     color: theme.colors.text.secondary,
     fontFamily: theme.typography.fontFamily.primary,
+    textAlign: "center",
+    width: "100%",
   },
   
   signupLink: {
