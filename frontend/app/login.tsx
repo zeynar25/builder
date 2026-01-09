@@ -60,16 +60,8 @@ export default function Login() {
         body?.tokens?.accessToken ??
         body?.tokens?.access_token ??
         body?.access;
-      const refreshToken =
-        body?.refreshToken ??
-        body?.tokens?.refresh ??
-        body?.tokens?.refreshToken ??
-        body?.tokens?.refresh_token ??
-        body?.refresh;
 
       if (accessToken) await AsyncStorage.setItem("accessToken", accessToken);
-      if (refreshToken)
-        await AsyncStorage.setItem("refreshToken", refreshToken);
 
       // store account id and attempt to select a default map for the user
       const accountId =
