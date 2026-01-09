@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Text, View, ActivityIndicator, Alert } from "react-native";
+import { Text, View, ActivityIndicator, Alert, Pressable } from "react-native";
 import { API_BASE_URL } from "../src/config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
@@ -74,6 +74,7 @@ export default function Index() {
             );
           }
           const detailJson = await detailRes.json();
+          console.log(detailJson);
           setAccountDetail(detailJson);
         }
 
@@ -107,6 +108,20 @@ export default function Index() {
     };
   }, [router]);
 
+  async function handleLogout() {
+    try {
+      await fetch(`${API_BASE_URL}/api/account/signout`, { method: "POST" });
+    } catch {
+      // ignore network errors; continue clearing client state
+    }
+    await AsyncStorage.removeItem("accessToken");
+    await AsyncStorage.removeItem("refreshToken");
+    await AsyncStorage.removeItem("accountId");
+    await AsyncStorage.removeItem("accountDetailId");
+    await AsyncStorage.removeItem("currentMapId");
+    router.replace("/login");
+  }
+
   return (
     <View
       style={{
@@ -116,7 +131,15 @@ export default function Index() {
         padding: 16,
       }}
     >
-      <Text>{accountDetail ? `Welcome, ${accountDetail.gameName}` : ""}</Text>
+      <Pressable
+        onPress={handleLogout}
+        style={{ position: "absolute", top: 16, right: 16, padding: 8 }}
+      >
+        <Text style={{ color: "#FFA500", fontWeight: "600" }}>Logout</Text>
+      </Pressable>
+      <Text>{accountDetail ? `Welcome ${accountDetail.gameName}` : ""}</Text>
+      <Text>{accountDetail ? `Welcom ${accountDetail.chron}` : ""}</Text>
+      <Text>{accountDetail ? `Welco ${accountDetail.exp}` : ""}</Text>
       {loading ? (
         <ActivityIndicator size="large" />
       ) : error ? (

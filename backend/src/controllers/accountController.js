@@ -27,3 +27,12 @@ export async function signin(req, res) {
 
   return res.status(200).json({ message: "Signed in", ...result });
 }
+
+export async function signout(req, res) {
+  try {
+    await accountService.signout();
+    return res.status(200).json({ message: "Signed out" });
+  } catch (err) {
+    return res.status(400).json({ message: err.message || "cannot_signout" });
+  }
+}

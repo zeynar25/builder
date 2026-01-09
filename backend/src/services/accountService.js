@@ -57,4 +57,9 @@ export async function authenticate({ email, password }) {
   };
 }
 
-export default { createAccount, authenticate, generateTokens };
+export async function signout() {
+  // No server-side token storage yet; placeholder for future revocation.
+  return { success: true };
+}
+
+export default { createAccount, authenticate, generateTokens, signout };
