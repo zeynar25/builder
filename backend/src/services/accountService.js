@@ -7,7 +7,7 @@ import MapModel from "../models/Map.js";
 const HASH_ROUNDS = 10;
 
 function generateTokens(id) {
-  const access = jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "15m" });
+  const access = jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1d" });
   const refresh = jwt.sign({ id }, process.env.REFRESH_SECRET, {
     expiresIn: "30d",
   });
