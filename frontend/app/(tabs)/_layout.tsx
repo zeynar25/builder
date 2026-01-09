@@ -1,30 +1,31 @@
 import Feather from "@expo/vector-icons/Feather";
 import { Tabs } from "expo-router";
-import { View, Dimensions, Platform } from "react-native";
+import { View, Dimensions, StyleSheet } from "react-native";
 
 import { theme } from "@/src/theme";
-import { globalStyles } from "@/src/globalstyles";
 
 const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
 
-// Responsive values
-const TAB_BAR_HEIGHT = screenHeight * 0.12;
-const IS_TABLET = screenWidth >= 768;
-const BUTTON_SIZE = IS_TABLET ? 100 : 72;
-const FLOAT_OFFSET = TAB_BAR_HEIGHT * 0.7;
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#FEAA00",
-        tabBarInactiveTintColor: "#9B9B9B",
+        tabBarShowLabel: false,
+        
+        tabBarActiveTintColor: theme.colors.mono,
+        tabBarInactiveTintColor: theme.colors.text.secondary,
+
         tabBarStyle: {
-          height: TAB_BAR_HEIGHT,
-          paddingTop: 15,
-          paddingHorizontal: 50,
-          borderTopWidth: 0,
+          position: 'absolute',
+          height: 72,
+          paddingTop: theme.spacing.md,
+          paddingHorizontal: theme.spacing.lg,
+          backgroundColor: theme.colors.mono,
+          borderRadius: theme.radii.pill,
+          marginHorizontal: screenWidth * 0.08,
+          marginBottom: theme.spacing.xl,
         },
       }}
     >
@@ -32,9 +33,10 @@ export default function TabLayout() {
       <Tabs.Screen
         name="stopwatch"
         options={{
-          title: "Stopwatch",
-          tabBarIcon: ({ color, size }) => (
-            <Feather name="clock" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
+              <Feather name="clock" size={size} color={color} />
+            </View>
           ),
         }}
       />
@@ -42,40 +44,38 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          tabBarLabel: "",
-          tabBarIcon: () => (
-            <View
-              style={{
-                width: BUTTON_SIZE,
-                height: BUTTON_SIZE,
-                borderRadius: BUTTON_SIZE / 2,
-                backgroundColor: theme.colors.highlight,
-                justifyContent: "center",
-                alignItems: "center",
-                position: "absolute",
-                top: -FLOAT_OFFSET,
-                elevation: 6, // Android shadow
-                shadowColor: theme.colors.accent_2, // iOS shadow
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.2,
-                shadowRadius: 8,
-              }}
-            >
-              <Feather name="home" size={BUTTON_SIZE * 0.5} color="#fff" />
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
+              <Feather name="home" size={size} color={color} />
             </View>
           ),
         }}
       />
 
+
       <Tabs.Screen
         name="shop"
         options={{
-          title: "Shop",
-          tabBarIcon: ({ color, size }) => (
-            <Feather name="shopping-bag" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
+              <Feather name="shopping-bag" size={size} color={color} />
+            </View>
           ),
         }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  activeIconContainer: {
+    backgroundColor: theme.colors.highlight,
+  },
+});
