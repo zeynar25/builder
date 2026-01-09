@@ -16,6 +16,6 @@ router.get("/:id", getItem);
 router.put("/:id", updateItem);
 router.delete("/:id", deleteItem);
 
-router.patch("/buy/:id", buyItem);
+router.post("/buy", buyItem);
 
 export default router;

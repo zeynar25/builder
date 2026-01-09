@@ -41,6 +41,8 @@ export default function Index() {
 
   const [viewportCols, setViewportCols] = useState<number>(5);
   const [viewportRows, setViewportRows] = useState<number>(5);
+  const [buildItem, setBuildItem] = useState<any | null>(null);
+  const [placing, setPlacing] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -230,6 +232,24 @@ export default function Index() {
     }
   }, [mapData]);
 
+  // when map is available, see if there is a pending build item from the shop
+  useEffect(() => {
+    async function loadPendingBuild() {
+      try {
+        const raw = await AsyncStorage.getItem("pendingBuildItem");
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          setBuildItem(parsed);
+        }
+      } catch {
+        // ignore
+      }
+    }
+    if (mapData) {
+      loadPendingBuild();
+    }
+  }, [mapData]);
+
   function clamp(v: number, a: number, b: number) {
     return Math.max(a, Math.min(b, v));
   }
@@ -287,6 +307,88 @@ export default function Index() {
     await AsyncStorage.removeItem("currentMapId");
     router.replace("/login");
   }
+
+  const cancelBuild = React.useCallback(async () => {
+    setBuildItem(null);
+    try {
+      await AsyncStorage.removeItem("pendingBuildItem");
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const confirmBuild = React.useCallback(async () => {
+    if (!buildItem) return;
+    if (centerX == null || centerY == null) {
+      Alert.alert("Cannot place", "Map is not ready yet.");
+      return;
+    }
+    try {
+      setPlacing(true);
+      const [accountId, accountDetailId, mapId] = await Promise.all([
+        AsyncStorage.getItem("accountId"),
+        AsyncStorage.getItem("accountDetailId"),
+        AsyncStorage.getItem("currentMapId"),
+      ]);
+
+      if (!accountId || !accountDetailId || !mapId) {
+        throw new Error("Missing account or map information");
+      }
+
+      const res = await fetch(`${API_BASE_URL}/api/items/buy`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          accountId,
+          accountDetailsId: accountDetailId,
+          mapId,
+          x: centerX,
+          y: centerY,
+          itemId: buildItem.itemId,
+        }),
+      });
+
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.success) {
+        const msg = json?.error || "Unable to place item";
+        throw new Error(msg);
+      }
+
+      // refresh map
+      try {
+        const mapRes = await fetch(`${API_BASE_URL}/api/maps/${mapId}`);
+        if (mapRes.ok) {
+          const mapJson = await mapRes.json();
+          setMapData(mapJson);
+        }
+      } catch {
+        // ignore map refresh failures
+      }
+
+      // refresh account detail (for updated chrons)
+      try {
+        if (accountDetailId) {
+          const detailRes = await fetch(
+            `${API_BASE_URL}/api/account-detail/${accountDetailId}`
+          );
+          if (detailRes.ok) {
+            const detailJson = await detailRes.json();
+            setAccountDetail(detailJson);
+          }
+        }
+      } catch {
+        // ignore
+      }
+
+      await AsyncStorage.removeItem("pendingBuildItem");
+      setBuildItem(null);
+      Alert.alert("Success", "Item placed on the map.");
+    } catch (e: any) {
+      Alert.alert("Cannot build", e.message || String(e));
+    } finally {
+      setPlacing(false);
+    }
+  }, [buildItem, centerX, centerY]);
 
   return (
     <View
@@ -591,10 +693,16 @@ export default function Index() {
                   const cols = [] as any[];
                   for (let c = 0; c < w; c++) {
                     const cell = mapData.grid[r][c];
-                    const source =
-                      cell && cell.item && cell.item.imageUrl
-                        ? { uri: cell.item.imageUrl }
-                        : defaultTile;
+                    const isBuildTarget =
+                      !!buildItem && r === cy && c === cx;
+                    const source = isBuildTarget
+                      ? buildItem.imageUrl &&
+                        String(buildItem.imageUrl).startsWith("http")
+                        ? { uri: buildItem.imageUrl }
+                        : defaultTile
+                      : cell && cell.item && cell.item.imageUrl
+                      ? { uri: cell.item.imageUrl }
+                      : defaultTile;
                     cols.push(
                       <Image
                         key={`cell-${c}-${r}`}
@@ -604,6 +712,8 @@ export default function Index() {
                           height: tileSize,
                           marginRight: 1,
                           marginBottom: 1,
+                          borderWidth: isBuildTarget ? 2 : 0,
+                          borderColor: isBuildTarget ? "#22C55E" : "transparent",
                         }}
                         resizeMode="cover"
                       />
@@ -633,7 +743,9 @@ export default function Index() {
       ) : (
         <Text>{data}</Text>
       )}
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <View
+        style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}
+      >
         <Pressable
           onPress={() => setTileSize((s) => Math.max(12, Math.round(s / 1.25)))}
           style={{ padding: 6, marginRight: 6 }}
@@ -648,6 +760,33 @@ export default function Index() {
         >
           <FontAwesome5 name="search-plus" size={16} color="#FFA500" />
         </Pressable>
+        {buildItem && (
+          <>
+            <Text style={{ marginHorizontal: 8 }}>
+              {placing
+                ? "Placing..."
+                : `Placing: ${buildItem.name ?? "Item"}`}
+            </Text>
+            <Pressable
+              onPress={cancelBuild}
+              style={{ padding: 6, marginRight: 6 }}
+              disabled={placing}
+            >
+              <FontAwesome5 name="times" size={16} color="#EF4444" />
+            </Pressable>
+            <Pressable
+              onPress={confirmBuild}
+              style={{
+                padding: 6,
+                marginRight: 6,
+                opacity: placing ? 0.5 : 1,
+              }}
+              disabled={placing}
+            >
+              <FontAwesome5 name="check" size={16} color="#22C55E" />
+            </Pressable>
+          </>
+        )}
       </View>
     </View>
   );
