@@ -69,9 +69,9 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 36,
+    width: theme.icon.navbar,
+    height: theme.icon.navbar,
+    borderRadius: theme.icon.navbar / 2,
     justifyContent: 'center',
     alignItems: 'center',
   },

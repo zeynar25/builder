@@ -46,7 +46,7 @@ export const theme = {
 
   icon: {
     form: 16,
-    navbar: 36,
+    navbar: 48,
   },
 
   radii: {
