@@ -414,9 +414,11 @@ export default function Index() {
           }
 
           // Single-finger behavior
-          // Use a full-tile threshold and at most one tile of movement
-          // per update to make movement feel slower and more controlled.
-          const threshold = tileSize;
+          // Use a threshold based on tile size and at most one tile of
+          // movement per update. In build/move mode, require roughly
+          // double the drag distance per tile to slow ghost movement.
+          const isGhostMode = !!(buildItem || moveSource);
+          const threshold = tileSize * (isGhostMode ? 2 : 1);
           const dx = gestureState.dx - panLastDxRef.current;
           const dy = gestureState.dy - panLastDyRef.current;
 
