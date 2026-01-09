@@ -411,26 +411,114 @@ export default function Index() {
             return;
           }
 
-          // Single-finger drag pans the map tile-by-tile as you move
+          // Single-finger behavior
           const threshold = tileSize / 2;
           const dx = gestureState.dx - panLastDxRef.current;
           const dy = gestureState.dy - panLastDyRef.current;
 
-          if (Math.abs(dx) >= threshold) {
-            const stepsX = Math.trunc(dx / threshold);
-            if (stepsX !== 0) {
-              pan(-stepsX, 0);
-              panLastDxRef.current += stepsX * threshold;
-            }
+          const stepsX =
+            Math.abs(dx) >= threshold ? Math.trunc(dx / threshold) : 0;
+          const stepsY =
+            Math.abs(dy) >= threshold ? Math.trunc(dy / threshold) : 0;
+
+          if (stepsX === 0 && stepsY === 0) {
+            return;
           }
 
-          if (Math.abs(dy) >= threshold) {
-            const stepsY = Math.trunc(dy / threshold);
+          panLastDxRef.current += stepsX * threshold;
+          panLastDyRef.current += stepsY * threshold;
+
+          // On web, keep existing panning behavior.
+          if (Platform.OS === "web" || !buildItem) {
+            if (stepsX !== 0) {
+              pan(-stepsX, 0);
+            }
             if (stepsY !== 0) {
               pan(0, -stepsY);
-              panLastDyRef.current += stepsY * threshold;
             }
+            return;
           }
+
+          // On mobile while in build mode: move the build item, and only
+          // pan the map when pushing the build item against the viewport edges.
+          if (!mapData?.map || centerX == null || centerY == null) return;
+
+          const mapW = Number(
+            mapData.map.widthTiles ??
+              mapData.map.width ??
+              mapData.grid?.[0]?.length ??
+              0
+          );
+          const mapH = Number(
+            mapData.map.heightTiles ??
+              mapData.map.height ??
+              mapData.grid?.length ??
+              0
+          );
+          if (!mapW || !mapH) return;
+
+          let targetX = buildX ?? centerX;
+          let targetY = buildY ?? centerY;
+
+          // apply tile steps to the build target in world space
+          if (stepsX !== 0) {
+            targetX = clamp(targetX + stepsX, 0, mapW - 1);
+          }
+          if (stepsY !== 0) {
+            targetY = clamp(targetY + stepsY, 0, mapH - 1);
+          }
+
+          // ensure build target stays within the visible viewport by
+          // adjusting the camera center only when needed (i.e. when
+          // the target would go past the viewport edges)
+          const visibleCols = Math.min(viewportCols, mapW || viewportCols);
+          const visibleRows = Math.min(viewportRows, mapH || viewportRows);
+
+          let cx = centerX;
+          let cy = centerY;
+          const maxIterations = mapW + mapH + 10;
+          for (let i = 0; i < maxIterations; i++) {
+            let changed = false;
+
+            let startRow = cy - Math.floor(visibleRows / 2);
+            let startCol = cx - Math.floor(visibleCols / 2);
+            const maxStartRow = Math.max(0, mapH - visibleRows);
+            const maxStartCol = Math.max(0, mapW - visibleCols);
+            if (startRow < 0) startRow = 0;
+            if (startCol < 0) startCol = 0;
+            if (startRow > maxStartRow) startRow = maxStartRow;
+            if (startCol > maxStartCol) startCol = maxStartCol;
+
+            const endRow = startRow + visibleRows - 1;
+            const endCol = startCol + visibleCols - 1;
+
+            if (targetX < startCol && cx > 0) {
+              cx -= 1;
+              changed = true;
+            } else if (targetX > endCol && cx < mapW - 1) {
+              cx += 1;
+              changed = true;
+            }
+
+            if (targetY < startRow && cy > 0) {
+              cy -= 1;
+              changed = true;
+            } else if (targetY > endRow && cy < mapH - 1) {
+              cy += 1;
+              changed = true;
+            }
+
+            if (!changed) break;
+          }
+
+          const dCenterX = cx - centerX;
+          const dCenterY = cy - centerY;
+          if (dCenterX !== 0 || dCenterY !== 0) {
+            pan(dCenterX, dCenterY);
+          }
+
+          setBuildX(targetX);
+          setBuildY(targetY);
         },
         onPanResponderRelease: () => {
           pinchInitialDistanceRef.current = null;
@@ -438,7 +526,18 @@ export default function Index() {
           panLastDyRef.current = 0;
         },
       }),
-    [mapData, tileSize, pan]
+    [
+      mapData,
+      tileSize,
+      pan,
+      buildItem,
+      buildX,
+      buildY,
+      viewportCols,
+      viewportRows,
+      centerX,
+      centerY,
+    ]
   );
 
   // keyboard panning support for web (WASD, QE, ZC for diagonals and arrows)
