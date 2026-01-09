@@ -80,6 +80,9 @@ export default function Index() {
   const [viewportRows, setViewportRows] = useState<number>(5);
   const [buildItem, setBuildItem] = useState<any | null>(null);
   const [placing, setPlacing] = useState(false);
+  const [buildX, setBuildX] = useState<number | null>(null);
+  const [buildY, setBuildY] = useState<number | null>(null);
+  const [buildFollowHover, setBuildFollowHover] = useState<boolean>(true);
   const [selectedTile, setSelectedTile] = useState<{
     x: number;
     y: number;
@@ -294,6 +297,20 @@ export default function Index() {
     }
   }, [mapData]);
 
+  // keep build target in sync with camera center when build starts
+  useEffect(() => {
+    if (buildItem && centerX != null && centerY != null) {
+      setBuildX(centerX);
+      setBuildY(centerY);
+      setBuildFollowHover(true);
+    }
+    if (!buildItem) {
+      setBuildX(null);
+      setBuildY(null);
+      setBuildFollowHover(true);
+    }
+  }, [buildItem, centerX, centerY]);
+
   // also refresh pending build item whenever this screen gains focus
   useFocusEffect(
     React.useCallback(() => {
@@ -479,7 +496,8 @@ export default function Index() {
       if (Math.abs(accumX) >= threshold) {
         const stepsX = Math.trunc(accumX / threshold);
         if (stepsX !== 0) {
-          pan(stepsX, 0);
+          // invert horizontal scroll so scrolling left moves the view left
+          pan(-stepsX, 0);
           accumX -= stepsX * threshold;
         }
       }
@@ -487,7 +505,8 @@ export default function Index() {
       if (Math.abs(accumY) >= threshold) {
         const stepsY = Math.trunc(accumY / threshold);
         if (stepsY !== 0) {
-          pan(0, stepsY);
+          // invert vertical scroll so scrolling up moves the view up
+          pan(0, -stepsY);
           accumY -= stepsY * threshold;
         }
       }
@@ -529,7 +548,10 @@ export default function Index() {
 
   const confirmBuild = React.useCallback(async () => {
     if (!buildItem) return;
-    if (centerX == null || centerY == null) {
+    const targetX = buildX ?? centerX;
+    const targetY = buildY ?? centerY;
+
+    if (targetX == null || targetY == null) {
       Alert.alert("Cannot place", "Map is not ready yet.");
       return;
     }
@@ -537,8 +559,8 @@ export default function Index() {
     // Check if the target tile is already occupied on the client grid
     try {
       if (mapData?.grid) {
-        const cy = centerY;
-        const cx = centerX;
+        const cy = targetY;
+        const cx = targetX;
         const existingCell = mapData.grid[cy]?.[cx];
         if (existingCell?.item) {
           Alert.alert(
@@ -571,8 +593,8 @@ export default function Index() {
           accountId,
           accountDetailsId: accountDetailId,
           mapId,
-          x: centerX,
-          y: centerY,
+          x: targetX,
+          y: targetY,
           itemId: buildItem.itemId,
         }),
       });
@@ -617,7 +639,7 @@ export default function Index() {
     } finally {
       setPlacing(false);
     }
-  }, [buildItem, centerX, centerY, mapData]);
+  }, [buildItem, centerX, centerY, buildX, buildY, mapData]);
 
   const handleSellSelectedTile = React.useCallback(async () => {
     if (!selectedTile) return;
@@ -993,7 +1015,10 @@ export default function Index() {
                   const cols = [] as any[];
                   for (let c = 0; c < w; c++) {
                     const cell = mapData.grid[r][c];
-                    const isBuildTarget = !!buildItem && r === cy && c === cx;
+                    const targetCol = buildX ?? cx;
+                    const targetRow = buildY ?? cy;
+                    const isBuildTarget =
+                      !!buildItem && r === targetRow && c === targetCol;
                     const isOccupiedTarget = isBuildTarget && !!cell?.item;
                     const isSelected =
                       !!selectedTile &&
@@ -1013,10 +1038,28 @@ export default function Index() {
                       <Pressable
                         key={`cell-${r}-${c}`}
                         onPress={() => {
-                          if (cell?.item) {
+                          if (buildItem) {
+                            // in build mode, tapping moves the build target
+                            // and toggles whether it keeps following hover
+                            if (Platform.OS === "web") {
+                              setBuildFollowHover((prev) => !prev);
+                            }
+                            setBuildX(c);
+                            setBuildY(r);
+                          } else if (cell?.item) {
                             setSelectedTile({ x: c, y: r, cell });
                           } else {
                             setSelectedTile(null);
+                          }
+                        }}
+                        onHoverIn={() => {
+                          if (
+                            Platform.OS === "web" &&
+                            buildItem &&
+                            buildFollowHover
+                          ) {
+                            setBuildX(c);
+                            setBuildY(r);
                           }
                         }}
                       >
@@ -1149,9 +1192,9 @@ export default function Index() {
       )}
       {buildItem &&
         mapData?.grid &&
-        centerX != null &&
-        centerY != null &&
-        mapData.grid[centerY]?.[centerX]?.item && (
+        (buildX != null || centerX != null) &&
+        (buildY != null || centerY != null) &&
+        mapData.grid[buildY ?? centerY!]?.[buildX ?? centerX!]?.item && (
           <Text style={{ marginTop: 4, color: "#EF4444" }}>
             Selected tile is already occupied.
           </Text>
