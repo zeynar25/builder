@@ -306,11 +306,12 @@ export default function Index() {
           position: "relative",
         }}
       >
-        <Pressable
-          onPress={handleLogout}
-          style={{ position: "absolute", top: 8, right: 8, padding: 8 }}
-        >
-          <Text style={{ color: "#FFA500", fontWeight: "600" }}>Logout</Text>
+        <Pressable onPress={handleLogout}>
+          <Text
+            style={{ color: "#FFA500", fontWeight: "600", textAlign: "right" }}
+          >
+            Logout
+          </Text>
         </Pressable>
         {editingGameName ? (
           <View>
@@ -367,19 +368,21 @@ export default function Index() {
             </View>
           </View>
         ) : (
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={{ fontSize: 16, flex: 1 }}>
-              {accountDetail ? `${accountDetail.accountDetail.gameName}` : ""}
-            </Text>
-            <Pressable
-              onPress={() => {
-                setNewGameName(accountDetail?.accountDetail?.gameName ?? "");
-                setEditingGameName(true);
-              }}
-              style={{ padding: 6 }}
-            >
-              <FontAwesome5 name="edit" size={16} color="#FFA500" />
-            </Pressable>
+          <View style={{ alignSelf: "flex-start" }}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={{ fontSize: 16, marginRight: 8 }}>
+                {accountDetail ? `${accountDetail.accountDetail.gameName}` : ""}
+              </Text>
+              <Pressable
+                onPress={() => {
+                  setNewGameName(accountDetail?.accountDetail?.gameName ?? "");
+                  setEditingGameName(true);
+                }}
+                style={{ padding: 6 }}
+              >
+                <FontAwesome5 name="edit" size={16} color="#FFA500" />
+              </Pressable>
+            </View>
           </View>
         )}
 
