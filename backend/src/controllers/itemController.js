@@ -69,6 +69,35 @@ export async function sellPlacement(req, res) {
   }
 }
 
+export async function movePlacement(req, res) {
+  try {
+    const { accountId, mapId, fromX, fromY, toX, toY } = req.body;
+    const result = await itemService.movePlacementByCoords(
+      accountId,
+      mapId,
+      fromX,
+      fromY,
+      toX,
+      toY
+    );
+
+    if (!result) {
+      return res.status(404).json({ error: "placement_not_found" });
+    }
+
+    return res.json(result);
+  } catch (err) {
+    const msg = err?.message || "cannot_move_item";
+    if (msg === "occupied") {
+      return res.status(400).json({ error: msg });
+    }
+    if (msg === "not_owner") {
+      return res.status(403).json({ error: msg });
+    }
+    return res.status(500).json({ error: msg });
+  }
+}
+
 export async function createItem(req, res) {
   try {
     const payload = { ...req.body };

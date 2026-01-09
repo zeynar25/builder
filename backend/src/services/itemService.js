@@ -118,6 +118,52 @@ export async function sellPlacementByCoords(
   };
 }
 
+export async function movePlacementByCoords(
+  accountId,
+  mapId,
+  fromX,
+  fromY,
+  toX,
+  toY
+) {
+  const placement = await ItemPlacement.findOne({
+    map: mapId,
+    x: Number(fromX),
+    y: Number(fromY),
+  }).exec();
+
+  if (!placement) {
+    return null; // placement_not_found
+  }
+
+  // Optional ownership check: only allow the original placer to move
+  if (placement.placedBy && accountId && placement.placedBy !== accountId) {
+    const err = new Error("not_owner");
+    throw err;
+  }
+
+  placement.x = Number(toX);
+  placement.y = Number(toY);
+
+  try {
+    await placement.save();
+  } catch (err) {
+    // unique index on (map, x, y) means this fires when destination is occupied
+    if (err && err.code === 11000) {
+      const e = new Error("occupied");
+      throw e;
+    }
+    throw err;
+  }
+
+  return {
+    success: true,
+    placementId: placement._id,
+    from: { x: Number(fromX), y: Number(fromY) },
+    to: { x: Number(toX), y: Number(toY) },
+  };
+}
+
 export async function createItem(payload) {
   const data = { ...payload };
   if (data.price != null)
@@ -162,4 +208,5 @@ export default {
   getItemById,
   updateItemById,
   softDeleteItemById,
+  movePlacementByCoords,
 };

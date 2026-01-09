@@ -3,6 +3,7 @@ import {
   shop,
   buyItem,
   sellPlacement,
+  movePlacement,
   createItem,
   getItem,
   updateItem,
@@ -19,5 +20,6 @@ router.delete("/:id", deleteItem);
 
 router.post("/buy", buyItem);
 router.post("/sell", sellPlacement);
+router.post("/move", movePlacement);
 
 export default router;

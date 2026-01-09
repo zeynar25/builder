@@ -83,6 +83,8 @@ export default function Index() {
   const [buildX, setBuildX] = useState<number | null>(null);
   const [buildY, setBuildY] = useState<number | null>(null);
   const [buildFollowHover, setBuildFollowHover] = useState<boolean>(true);
+  const [moveSource, setMoveSource] = useState<any | null>(null);
+  const [moving, setMoving] = useState(false);
   const [selectedTile, setSelectedTile] = useState<{
     x: number;
     y: number;
@@ -434,8 +436,8 @@ export default function Index() {
           panLastDxRef.current += stepsX * threshold;
           panLastDyRef.current += stepsY * threshold;
 
-          // When not in build mode, drag continues to pan the map.
-          if (!buildItem) {
+          // When not in build or move mode, drag continues to pan the map.
+          if (!buildItem && !moveSource) {
             if (stepsX !== 0) {
               pan(-stepsX, 0);
             }
@@ -445,8 +447,8 @@ export default function Index() {
             return;
           }
 
-          // In build mode, drag moves the build target across the map. The
-          // viewport will follow it based on buildX/buildY when rendering.
+          // In build or move mode, drag moves the ghost target across the map.
+          // The viewport will follow it based on buildX/buildY when rendering.
           if (!mapData?.map) return;
 
           const mapW = Number(
@@ -482,7 +484,17 @@ export default function Index() {
           panLastDyRef.current = 0;
         },
       }),
-    [mapData, tileSize, pan, buildItem, buildX, buildY, centerX, centerY]
+    [
+      mapData,
+      tileSize,
+      pan,
+      buildItem,
+      moveSource,
+      buildX,
+      buildY,
+      centerX,
+      centerY,
+    ]
   );
 
   // keyboard panning support for web (WASD, QE, ZC for diagonals and arrows)
@@ -590,6 +602,13 @@ export default function Index() {
     }
   }, []);
 
+  const cancelMove = React.useCallback(() => {
+    setMoveSource(null);
+    setBuildX(null);
+    setBuildY(null);
+    setBuildFollowHover(true);
+  }, []);
+
   const confirmBuild = React.useCallback(async () => {
     if (!buildItem) return;
     const targetX = buildX ?? centerX;
@@ -684,6 +703,95 @@ export default function Index() {
       setPlacing(false);
     }
   }, [buildItem, centerX, centerY, buildX, buildY, mapData]);
+
+  const confirmMove = React.useCallback(async () => {
+    if (!moveSource) return;
+
+    const fromX = moveSource.x;
+    const fromY = moveSource.y;
+    const targetX = buildX ?? centerX;
+    const targetY = buildY ?? centerY;
+
+    if (targetX == null || targetY == null) {
+      Alert.alert("Cannot move", "Map is not ready yet.");
+      return;
+    }
+
+    // no-op if destination is same as source
+    if (targetX === fromX && targetY === fromY) {
+      cancelMove();
+      return;
+    }
+
+    // Check if the destination tile is already occupied on the client grid
+    try {
+      if (mapData?.grid) {
+        const existingCell = mapData.grid[targetY]?.[targetX];
+        if (existingCell?.item) {
+          Alert.alert(
+            "Tile occupied",
+            "There is already an item on this tile. Please move to an empty tile before relocating."
+          );
+          return;
+        }
+      }
+    } catch {
+      // if anything goes wrong reading the grid, fall through to server validation
+    }
+
+    try {
+      setMoving(true);
+
+      const [accountId, mapId] = await Promise.all([
+        AsyncStorage.getItem("accountId"),
+        AsyncStorage.getItem("currentMapId"),
+      ]);
+
+      if (!accountId || !mapId) {
+        throw new Error("Missing account or map information");
+      }
+
+      const res = await fetch(`${API_BASE_URL}/api/items/move`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          accountId,
+          mapId,
+          fromX,
+          fromY,
+          toX: targetX,
+          toY: targetY,
+        }),
+      });
+
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.success) {
+        const msg = json?.error || "Unable to move item";
+        throw new Error(msg);
+      }
+
+      // refresh map
+      try {
+        const mapRes = await fetch(`${API_BASE_URL}/api/maps/${mapId}`);
+        if (mapRes.ok) {
+          const mapJson = await mapRes.json();
+          setMapData(mapJson);
+        }
+      } catch {
+        // ignore map refresh failures
+      }
+
+      setMoveSource(null);
+      setBuildX(null);
+      setBuildY(null);
+      setSelectedTile(null);
+      Alert.alert("Moved", "Item has been relocated.");
+    } catch (e: any) {
+      Alert.alert("Cannot move", e.message || String(e));
+    } finally {
+      setMoving(false);
+    }
+  }, [moveSource, buildX, buildY, centerX, centerY, mapData, cancelMove]);
 
   const handleSellSelectedTile = React.useCallback(async () => {
     if (!selectedTile) return;
@@ -1031,18 +1139,18 @@ export default function Index() {
                 const visibleCols = Math.min(viewportCols, w || viewportCols);
                 const visibleRows = Math.min(viewportRows, h || viewportRows);
 
-                // Decide the viewport start based on build target if present,
-                // otherwise use the camera center.
+                // Decide the viewport start based on ghost target (build/move)
+                // if present, otherwise use the camera center.
                 let startRow: number;
                 let startCol: number;
 
-                if (buildItem && buildY != null) {
+                if ((buildItem || moveSource) && buildY != null) {
                   startRow = buildY - 1;
                 } else {
                   startRow = centerRow - Math.floor(visibleRows / 2);
                 }
 
-                if (buildItem && buildX != null) {
+                if ((buildItem || moveSource) && buildX != null) {
                   startCol = buildX - 1;
                 } else {
                   startCol = centerCol - Math.floor(visibleCols / 2);
@@ -1069,23 +1177,25 @@ export default function Index() {
                 };
 
                 const rows = [] as any[];
+                const activeGhostItem = moveSource?.item || buildItem;
+                const hasGhost = !!activeGhostItem;
                 for (let r = 0; r < h; r++) {
                   const cols = [] as any[];
                   for (let c = 0; c < w; c++) {
                     const cell = mapData.grid[r][c];
                     const targetCol = buildX ?? centerCol;
                     const targetRow = buildY ?? centerRow;
-                    const isBuildTarget =
-                      !!buildItem && r === targetRow && c === targetCol;
-                    const isOccupiedTarget = isBuildTarget && !!cell?.item;
+                    const isGhostTarget =
+                      hasGhost && r === targetRow && c === targetCol;
+                    const isOccupiedTarget = isGhostTarget && !!cell?.item;
                     const isSelected =
                       !!selectedTile &&
                       selectedTile.x === c &&
                       selectedTile.y === r;
-                    const source = isBuildTarget
-                      ? resolveTileImage(buildItem?.imageUrl)
+                    const source = isGhostTarget
+                      ? resolveTileImage(activeGhostItem?.imageUrl)
                       : resolveTileImage(cell?.item?.imageUrl);
-                    const borderColor = isBuildTarget
+                    const borderColor = isGhostTarget
                       ? isOccupiedTarget
                         ? "#EF4444" // red when trying to build over an occupied tile
                         : "#22C55E" // green when empty
@@ -1096,9 +1206,9 @@ export default function Index() {
                       <Pressable
                         key={`cell-${r}-${c}`}
                         onPress={() => {
-                          if (buildItem) {
-                            // in build mode, tapping moves the build target
-                            // and toggles whether it keeps following hover
+                          if (buildItem || moveSource) {
+                            // in build or move mode, tapping moves the ghost target
+                            // and (on web) toggles whether it keeps following hover
                             if (Platform.OS === "web") {
                               setBuildFollowHover((prev) => !prev);
                             }
@@ -1113,7 +1223,7 @@ export default function Index() {
                         onHoverIn={() => {
                           if (
                             Platform.OS === "web" &&
-                            buildItem &&
+                            (buildItem || moveSource) &&
                             buildFollowHover
                           ) {
                             setBuildX(c);
@@ -1128,7 +1238,7 @@ export default function Index() {
                             height: tileSize,
                             marginRight: 1,
                             marginBottom: 1,
-                            borderWidth: isBuildTarget || isSelected ? 2 : 0,
+                            borderWidth: isGhostTarget || isSelected ? 2 : 0,
                             borderColor,
                           }}
                           resizeMode="cover"
@@ -1160,7 +1270,7 @@ export default function Index() {
       ) : (
         <Text>{data}</Text>
       )}
-      {selectedTile && selectedTile.cell?.item && (
+      {selectedTile && selectedTile.cell?.item && !moveSource && (
         <View
           style={{
             marginTop: 12,
@@ -1202,7 +1312,15 @@ export default function Index() {
             </Pressable>
             <Pressable
               onPress={() => {
-                Alert.alert("Move", "Move is not implemented yet.");
+                if (!selectedTile?.cell?.item) return;
+                setMoveSource({
+                  x: selectedTile.x,
+                  y: selectedTile.y,
+                  item: selectedTile.cell.item,
+                });
+                setBuildX(selectedTile.x);
+                setBuildY(selectedTile.y);
+                setBuildFollowHover(true);
               }}
               style={{
                 paddingHorizontal: 10,
@@ -1216,7 +1334,7 @@ export default function Index() {
           </View>
         </View>
       )}
-      {buildItem && (
+      {(buildItem || moveSource) && (
         <View
           style={{
             marginTop: 12,
@@ -1230,29 +1348,42 @@ export default function Index() {
           }}
         >
           <Pressable
-            onPress={cancelBuild}
+            onPress={moveSource ? cancelMove : cancelBuild}
             style={{ padding: 6, marginRight: 4 }}
-            disabled={placing}
+            disabled={placing || moving}
           >
             <FontAwesome5 name="times" size={16} color="#EF4444" />
           </Pressable>
           <Text style={{ marginHorizontal: 8, color: "#fff" }}>
-            {placing ? "Placing..." : `Placing: ${buildItem.name ?? "Item"}`}
+            {placing || moving
+              ? moveSource
+                ? "Moving..."
+                : "Placing..."
+              : moveSource
+              ? `Moving: ${moveSource.item?.name ?? "Item"}`
+              : `Placing: ${buildItem?.name ?? "Item"}`}
           </Text>
           <Pressable
-            onPress={confirmBuild}
-            style={{ padding: 6, opacity: placing ? 0.5 : 1 }}
-            disabled={placing}
+            onPress={moveSource ? confirmMove : confirmBuild}
+            style={{ padding: 6, opacity: placing || moving ? 0.5 : 1 }}
+            disabled={placing || moving}
           >
             <FontAwesome5 name="check" size={16} color="#22C55E" />
           </Pressable>
         </View>
       )}
-      {buildItem &&
+      {(buildItem || moveSource) &&
         mapData?.grid &&
         (buildX != null || centerX != null) &&
         (buildY != null || centerY != null) &&
-        mapData.grid[buildY ?? centerY!]?.[buildX ?? centerX!]?.item && (
+        (() => {
+          const tx = buildX ?? centerX!;
+          const ty = buildY ?? centerY!;
+          const cell = mapData.grid[ty]?.[tx];
+          const sameSource =
+            moveSource && tx === moveSource.x && ty === moveSource.y;
+          return cell?.item && !sameSource;
+        })() && (
           <Text style={{ marginTop: 4, color: "#EF4444" }}>
             Selected tile is already occupied.
           </Text>
