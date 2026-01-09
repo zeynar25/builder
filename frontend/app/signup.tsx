@@ -10,7 +10,7 @@ import {
   Keyboard,
   Platform,
   Image,
-  Dimensions
+  Dimensions,
 } from "react-native";
 
 import { Feather, Ionicons } from "@expo/vector-icons";
@@ -20,8 +20,7 @@ import { useRouter } from "expo-router";
 import { theme } from "@/src/theme";
 import { globalStyles } from "@/src/globalstyles";
 
-const { width: screenWidth } = Dimensions.get('window');
-const { height: screenHeight } = Dimensions.get('window');
+const { height: screenHeight } = Dimensions.get("window");
 
 export default function Signup() {
   const router = useRouter();
@@ -82,14 +81,16 @@ export default function Signup() {
       </View>
 
       <View style={[globalStyles.userform, styles.formWithHeaderOffset]}>
-        
         <Text style={globalStyles.textTitle}>Sign Up</Text>
-        <View style={globalStyles.titleUnderline} /> 
+        <View style={globalStyles.titleUnderline} />
 
         <Text style={globalStyles.TextLabel}>Email or Username</Text>
         <View style={globalStyles.inputContainer}>
-
-          <Feather name="mail" size={theme.icon.form} color={theme.colors.highlight} />
+          <Feather
+            name="mail"
+            size={theme.icon.form}
+            color={theme.colors.highlight}
+          />
 
           <TextInput
             style={globalStyles.textInput}
@@ -104,7 +105,11 @@ export default function Signup() {
 
         <Text style={globalStyles.TextLabel}>Password</Text>
         <View style={globalStyles.inputContainer}>
-          <Feather name="lock" size={theme.icon.form} color={theme.colors.highlight} />
+          <Feather
+            name="lock"
+            size={theme.icon.form}
+            color={theme.colors.highlight}
+          />
           <TextInput
             ref={passwordRef}
             style={globalStyles.textInput}
@@ -134,7 +139,11 @@ export default function Signup() {
         {error && <Text style={globalStyles.textError}>{error}</Text>}
 
         <Pressable
-          style={[globalStyles.primaryButton, styles.customButton,loading && globalStyles.primaryButtonDisabled]}
+          style={[
+            globalStyles.primaryButton,
+            styles.customButton,
+            loading && globalStyles.primaryButtonDisabled,
+          ]}
           onPress={handleSubmit}
           disabled={loading}
         >
@@ -147,7 +156,10 @@ export default function Signup() {
 
         <Text style={styles.signupText}>
           Already have an account?{" "}
-          <Text style={styles.signupLink} onPress={() => router.replace("/login")}>
+          <Text
+            style={styles.signupLink}
+            onPress={() => router.replace("/login")}
+          >
             Sign in
           </Text>
         </Text>
@@ -157,21 +169,20 @@ export default function Signup() {
 }
 
 const styles = StyleSheet.create({
-
   headerContainer: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
-    height: screenHeight * 0.40,
-    overflow: "hidden",  
+    height: screenHeight * 0.4,
+    overflow: "hidden",
   },
 
   headerImage: {
     width: "100%",
-    height: screenHeight * 0.40, 
+    height: screenHeight * 0.4,
     position: "absolute",
-    bottom: 0, 
+    bottom: 0,
   },
 
   formWithHeaderOffset: {
@@ -187,7 +198,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     width: "100%",
   },
-  
+
   signupLink: {
     color: theme.colors.highlight,
     fontWeight: theme.typography.fontWeight.medium,
