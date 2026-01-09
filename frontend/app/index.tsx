@@ -137,9 +137,15 @@ export default function Index() {
       >
         <Text style={{ color: "#FFA500", fontWeight: "600" }}>Logout</Text>
       </Pressable>
-      <Text>{accountDetail ? `Welcome ${accountDetail.gameName}` : ""}</Text>
-      <Text>{accountDetail ? `Welcom ${accountDetail.chron}` : ""}</Text>
-      <Text>{accountDetail ? `Welco ${accountDetail.exp}` : ""}</Text>
+      <Text>
+        {accountDetail ? `Welcome ${accountDetail.accountDetail.gameName}` : ""}
+      </Text>
+      <Text>
+        {accountDetail ? `Chron: ${accountDetail.accountDetail.chron}` : ""}
+      </Text>
+      <Text>
+        {accountDetail ? `Exp: ${accountDetail.accountDetail.exp}` : ""}
+      </Text>
       {loading ? (
         <ActivityIndicator size="large" />
       ) : error ? (
