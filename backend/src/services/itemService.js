@@ -28,11 +28,18 @@ export async function buyItemById(
   const item = await Item.findOne({ _id: itemId, isActive: true }).exec();
   if (!item) return null;
 
+  // normalize price to a plain number (Decimal128 -> number)
+  const priceNumber =
+    item.price != null && typeof item.price !== "number"
+      ? parseFloat(item.price.toString())
+      : Number(item.price ?? 0);
+
   // load account details and validate funds
   const accountDetails = await AccountDetail.findById(accountDetailsId).exec();
   if (!accountDetails) throw new Error("account_details_not_found");
 
-  if (accountDetails.chrons < item.chronsValue) {
+  // AccountDetail uses `chron` (singular) as the field name
+  if ((accountDetails.chron ?? 0) < priceNumber) {
     throw new Error("insufficient_chrons");
   }
 
@@ -48,7 +55,7 @@ export async function buyItemById(
   if (placeRes.success === false) throw new Error(placeRes.reason);
 
   // deduct chrons and persist
-  accountDetails.chrons -= item.chronsValue;
+  accountDetails.chron = (accountDetails.chron ?? 0) - priceNumber;
   await accountDetails.save();
 
   return { success: true, item, placement: placeRes.placement };

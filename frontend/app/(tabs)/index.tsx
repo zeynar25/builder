@@ -10,13 +10,24 @@ import {
   Platform,
   DeviceEventEmitter,
   Dimensions,
+  PanResponder,
 } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { API_BASE_URL } from "../../src/config";
+import { getImageSource } from "../../src/imageMap";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 // default tile asset
 const defaultTile = require("../../assets/images/road-connectors/default-tile.png");
+
+function resolveTileImage(imageUrl: any) {
+  if (!imageUrl) return defaultTile;
+  const mapped = getImageSource(imageUrl);
+  if (mapped) return mapped;
+  const s = String(imageUrl);
+  if (s && s.startsWith("http")) return { uri: s };
+  return defaultTile;
+}
 
 export default function Index() {
   const router = useRouter();
@@ -227,8 +238,9 @@ export default function Index() {
       mapData.map.heightTiles ?? mapData.map.height ?? mapData.grid?.length ?? 0
     );
     if (w > 0 && h > 0) {
-      setCenterX(Math.floor(w / 2));
-      setCenterY(Math.floor(h / 2));
+      // start in the top-left corner
+      setCenterX(0);
+      setCenterY(0);
     }
   }, [mapData]);
 
@@ -249,6 +261,30 @@ export default function Index() {
       loadPendingBuild();
     }
   }, [mapData]);
+
+  // also refresh pending build item whenever this screen gains focus
+  useFocusEffect(
+    React.useCallback(() => {
+      let active = true;
+      (async () => {
+        try {
+          const raw = await AsyncStorage.getItem("pendingBuildItem");
+          if (!active) return;
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            setBuildItem(parsed);
+          } else {
+            setBuildItem(null);
+          }
+        } catch {
+          // ignore
+        }
+      })();
+      return () => {
+        active = false;
+      };
+    }, [])
+  );
 
   function clamp(v: number, a: number, b: number) {
     return Math.max(a, Math.min(b, v));
@@ -273,6 +309,24 @@ export default function Index() {
       setCenterY((cy) => clamp((cy ?? 0) + dy, 0, Math.max(0, h - 1)));
     },
     [mapData, centerX, centerY]
+  );
+
+  // drag-to-pan support (touch / mouse drag)
+  const dragResponder = React.useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => !!mapData,
+        onMoveShouldSetPanResponder: () => !!mapData,
+        onPanResponderRelease: (_evt, gestureState) => {
+          if (!mapData) return;
+          const dxTiles = Math.round(-gestureState.dx / tileSize);
+          const dyTiles = Math.round(-gestureState.dy / tileSize);
+          if (dxTiles !== 0 || dyTiles !== 0) {
+            pan(dxTiles, dyTiles);
+          }
+        },
+      }),
+    [mapData, tileSize, pan]
   );
 
   // keyboard panning support for web (WASD, QE, ZC for diagonals and arrows)
@@ -693,19 +747,13 @@ export default function Index() {
                   const cols = [] as any[];
                   for (let c = 0; c < w; c++) {
                     const cell = mapData.grid[r][c];
-                    const isBuildTarget =
-                      !!buildItem && r === cy && c === cx;
+                    const isBuildTarget = !!buildItem && r === cy && c === cx;
                     const source = isBuildTarget
-                      ? buildItem.imageUrl &&
-                        String(buildItem.imageUrl).startsWith("http")
-                        ? { uri: buildItem.imageUrl }
-                        : defaultTile
-                      : cell && cell.item && cell.item.imageUrl
-                      ? { uri: cell.item.imageUrl }
-                      : defaultTile;
+                      ? resolveTileImage(buildItem?.imageUrl)
+                      : resolveTileImage(cell?.item?.imageUrl);
                     cols.push(
                       <Image
-                        key={`cell-${c}-${r}`}
+                        key={`cell-${r}-${c}`}
                         source={source}
                         style={{
                           width: tileSize,
@@ -713,7 +761,9 @@ export default function Index() {
                           marginRight: 1,
                           marginBottom: 1,
                           borderWidth: isBuildTarget ? 2 : 0,
-                          borderColor: isBuildTarget ? "#22C55E" : "transparent",
+                          borderColor: isBuildTarget
+                            ? "#22C55E"
+                            : "transparent",
                         }}
                         resizeMode="cover"
                       />
@@ -730,7 +780,7 @@ export default function Index() {
                 }
 
                 return (
-                  <View style={viewportStyle}>
+                  <View style={viewportStyle} {...dragResponder.panHandlers}>
                     <View style={translateStyle}>{rows}</View>
                   </View>
                 );
@@ -763,9 +813,7 @@ export default function Index() {
         {buildItem && (
           <>
             <Text style={{ marginHorizontal: 8 }}>
-              {placing
-                ? "Placing..."
-                : `Placing: ${buildItem.name ?? "Item"}`}
+              {placing ? "Placing..." : `Placing: ${buildItem.name ?? "Item"}`}
             </Text>
             <Pressable
               onPress={cancelBuild}
