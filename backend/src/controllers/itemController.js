@@ -15,8 +15,8 @@ export async function shop(req, res) {
 
 export async function buyItem(req, res) {
   try {
-    const { accountId, accountDetailsId, mapId, x, y, itemId } = req.params;
-    const item = await itemService.buyItemById(
+    const { accountId, accountDetailsId, mapId, x, y, itemId } = req.body;
+    const result = await itemService.buyItemById(
       accountId,
       accountDetailsId,
       mapId,
@@ -24,10 +24,20 @@ export async function buyItem(req, res) {
       y,
       itemId
     );
-    if (!item) return res.status(404).json({ error: "item_not_found" });
-    return res.json({ success: true, item });
+    if (!result) return res.status(404).json({ error: "item_not_found" });
+    return res.json(result);
   } catch (err) {
-    return res.status(500).json({ error: err.message || "cannot_buy_item" });
+    // map known domain errors to 4xx
+    const msg = err?.message || "cannot_buy_item";
+    if (
+      msg === "account_details_not_found" ||
+      msg === "insufficient_chrons" ||
+      msg === "out_of_bounds" ||
+      msg === "occupied"
+    ) {
+      return res.status(400).json({ error: msg });
+    }
+    return res.status(500).json({ error: msg });
   }
 }
 
