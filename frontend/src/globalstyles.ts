@@ -116,7 +116,6 @@ export const globalStyles = StyleSheet.create({
         flexDirection: "row",
         borderRadius: theme.radii.md,
         alignItems: "center",
-        justifyContent: "center",
         width: "100%",
     },
 });

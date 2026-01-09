@@ -152,10 +152,12 @@ export default function Shop() {
               onPress={() => handleBuild(item)}
               style={globalStyles.secondaryButton}
             >
-              <Image source={chronIcon} style={styles.chronIcon} />
-              <Text variant="bodyMedium" style={styles.price}>
-                {formatPrice(item.price)}
-              </Text>
+              <View style={styles.buttonContent}>
+                <Image source={chronIcon} style={styles.chronIcon} />
+                <Text variant="bodyMedium" style={styles.price}>
+                  {formatPrice(item.price)}
+                </Text>
+              </View>
             </Button>
           </Card.Actions>
         </Card>
@@ -206,5 +208,11 @@ const styles = StyleSheet.create({
   chronIcon: {
     width: 16,
     height: 16,
+  },
+
+  buttonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2
   },
 });

@@ -12,6 +12,10 @@ import {
   Dimensions,
   PanResponder,
 } from "react-native";
+
+import { globalStyles } from "@/src/globalstyles";
+import { theme } from "@/src/theme";
+
 import { FontAwesome5 } from "@expo/vector-icons";
 import { API_BASE_URL } from "../../src/config";
 import { getImageSource } from "../../src/imageMap";
@@ -1408,6 +1412,7 @@ export default function Index() {
           <FontAwesome5 name="search-plus" size={16} color="#FFA500" />
         </Pressable>
       </View>
+      <View style={globalStyles.pageFiller} />
     </View>
   );
 }
