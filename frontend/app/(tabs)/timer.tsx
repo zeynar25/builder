@@ -148,7 +148,12 @@ export default function Timer() {
 }
 
 const styles = StyleSheet.create({
-  container: { alignItems: "center", padding: 12 },
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 12,
+  },
   time: { fontSize: 36, fontWeight: "700", marginBottom: 12 },
   controls: { flexDirection: "row" },
   button: {
