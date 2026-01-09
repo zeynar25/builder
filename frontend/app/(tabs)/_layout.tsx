@@ -10,9 +10,9 @@ export default function TabLayout() {
         tabBarActiveTintColor: "#FEAA00",
         tabBarInactiveTintColor: "#9B9B9B",
         tabBarStyle: {
-          height: 112,
-          paddingTop: 8,
-          paddingHorizontal: 8,
+          height: 80,
+          paddingTop: 15,
+          paddingHorizontal: 50,
           flexDirection: "row",
           justifyContent: "space-evenly",
         },
@@ -41,7 +41,7 @@ export default function TabLayout() {
                 backgroundColor: "#FEAA00",
                 justifyContent: "center",
                 alignItems: "center",
-                marginBottom: 40,
+                marginBottom: 25,
               }}
             >
               <Feather name="home" size={36} color="#fff" />
