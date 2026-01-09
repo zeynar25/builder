@@ -14,6 +14,15 @@ export const globalStyles = StyleSheet.create({
         paddingHorizontal: screenWidth * 0.10,
     },
 
+    page : {
+        backgroundColor: theme.colors.mono,
+        flex: 1,
+        paddingHorizontal: theme.spacing.sm,
+    },
+    pageFiller : {
+        height: screenWidth * 0.28,
+        backgroundColor: "transparent",
+    },
     userform: {
         alignItems: 'flex-start',
     },
@@ -73,7 +82,13 @@ export const globalStyles = StyleSheet.create({
     },
 
 
+    variantTitle:{
+        color: theme.colors.text.primary,
+    },
 
+    variantLabel:{
+        color: theme.colors.text.secondary,
+    },
     // ==== buttonStyles ====
 
     primaryButton: {
@@ -94,5 +109,14 @@ export const globalStyles = StyleSheet.create({
         fontSize: theme.typography.fontSize.text,
         fontWeight: theme.typography.fontWeight.bold,
         fontFamily: theme.typography.fontFamily.primary,
+    },
+
+    secondaryButton: {
+        backgroundColor: theme.colors.highlight,
+        flexDirection: "row",
+        borderRadius: theme.radii.md,
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
     },
 });

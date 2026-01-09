@@ -1,19 +1,31 @@
 import React, { useEffect, useState } from "react";
 import {
-  Text,
   View,
   FlatList,
   Image,
   ActivityIndicator,
   StyleSheet,
-  Pressable,
+  Dimensions,
 } from "react-native";
+
+import { Card, Text, Button } from "react-native-paper";
+
 import { API_BASE_URL } from "../../src/config";
 import { getImageSource } from "../../src/imageMap";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import { globalStyles } from "@/src/globalstyles";
+import { theme } from "@/src/theme";
+
 const defaultTile = require("../../assets/images/road-connectors/default-tile.png");
+const chronIcon = require("../../assets/images/chrons.png");
+
+const { width } = Dimensions.get("window");
+const padding = 12;
+const gap = 8;
+// Calculate card width: (total width - left/right padding - gaps between cards) / number of columns
+const cardWidth = (width - padding * 2 - gap * 2) / 3;
 
 export default function Shop() {
   const router = useRouter();
@@ -99,62 +111,100 @@ export default function Shop() {
     );
 
   return (
+    <View style={globalStyles.page}>
     <FlatList
       data={items}
       keyExtractor={(item) => item._id ?? item.id ?? String(item.name)}
-      contentContainerStyle={{ padding: 12 }}
-      renderItem={({ item }) => (
-        <View style={styles.row}>
-          <Image
-            source={
-              getImageSource(item.imageUrl) ||
-              (item.imageUrl && String(item.imageUrl).startsWith("http")
-                ? { uri: item.imageUrl }
-                : defaultTile)
-            }
-            style={styles.image}
-            resizeMode="cover"
-          />
-          <View style={styles.info}>
-            <Text style={styles.name}>{item.name}</Text>
+      numColumns={3}
+      contentContainerStyle={styles.container}
+      columnWrapperStyle={styles.row}
+      ListFooterComponent={<View style={globalStyles.pageFiller} />}
+      renderItem={({ item, index }) => {
+        const isLastInRow = (index + 1) % 3 === 0;
+        return (
+        <Card style={[styles.card, isLastInRow && styles.cardLast]}>
+          <Card.Content style={styles.cardContent}>
+            <Image
+              source={
+                getImageSource(item.imageUrl) ||
+                (item.imageUrl && String(item.imageUrl).startsWith("http")
+                  ? { uri: item.imageUrl }
+                  : defaultTile)
+              }
+              style={styles.image}
+              resizeMode="cover"
+            />
+            
+            <Text variant="titleSmall" style={globalStyles.variantTitle} >
+              {item.name}
+            </Text>
+
             {item.description ? (
-              <Text style={styles.desc}>{item.description}</Text>
+              <Text variant="bodySmall" style={globalStyles.variantLabel}>
+                {item.description}
+              </Text>
             ) : null}
-            <Text style={styles.price}>{`Price: ${formatPrice(
-              item.price
-            )}`}</Text>
-            <Pressable
+
+          </Card.Content>
+          <Card.Actions>
+            <Button
+              mode="contained"
               onPress={() => handleBuild(item)}
-              style={styles.buildButton}
+              style={globalStyles.secondaryButton}
             >
-              <Text style={styles.buildButtonText}>Build</Text>
-            </Pressable>
-          </View>
-        </View>
-      )}
+              <Image source={chronIcon} style={styles.chronIcon} />
+              <Text variant="bodyMedium" style={styles.price}>
+                {formatPrice(item.price)}
+              </Text>
+            </Button>
+          </Card.Actions>
+        </Card>
+        );
+      }}
     />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  row: { flexDirection: "row", marginBottom: 12, alignItems: "center" },
-  image: { width: 64, height: 64, borderRadius: 6, marginRight: 12 },
-  info: { flex: 1 },
-  name: { fontWeight: "700", fontSize: 16 },
-  desc: { color: "#555", marginTop: 4 },
-  price: { marginTop: 6, fontWeight: "600" },
-  imgUrl: { marginTop: 4, color: "#007AFF", fontSize: 12 },
-  buildButton: {
-    marginTop: 8,
-    alignSelf: "flex-start",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    backgroundColor: "#FFA500",
+
+  container: {
+    backgroundColor: "red",
   },
-  buildButtonText: {
-    color: "#fff",
-    fontWeight: "600",
+
+  row: { 
+    justifyContent: "space-between",
+  },
+
+  card: {
+    width: cardWidth,
+    marginBottom: gap,
+    marginRight: gap,
+  },
+
+  cardLast: {
+    marginRight: 0,
+  },
+
+  cardContent: {
+    alignItems: "center",
+    paddingBottom: 8,
+  },
+
+  image: {
+    width: cardWidth - 36,
+    height: cardWidth - 36,
+    borderRadius: 8,
+    marginBottom: 4,
+  },
+
+  price: {
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text.inverse,
+  },
+  chronIcon: {
+    width: 16,
+    height: 16,
   },
 });
