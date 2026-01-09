@@ -793,6 +793,38 @@ export default function Index() {
       ) : (
         <Text>{data}</Text>
       )}
+      {buildItem && (
+        <View
+          style={{
+            marginTop: 12,
+            flexDirection: "row",
+            alignItems: "center",
+            alignSelf: "center",
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            borderRadius: 999,
+            backgroundColor: "#111",
+          }}
+        >
+          <Pressable
+            onPress={cancelBuild}
+            style={{ padding: 6, marginRight: 4 }}
+            disabled={placing}
+          >
+            <FontAwesome5 name="times" size={16} color="#EF4444" />
+          </Pressable>
+          <Text style={{ marginHorizontal: 8, color: "#fff" }}>
+            {placing ? "Placing..." : `Placing: ${buildItem.name ?? "Item"}`}
+          </Text>
+          <Pressable
+            onPress={confirmBuild}
+            style={{ padding: 6, opacity: placing ? 0.5 : 1 }}
+            disabled={placing}
+          >
+            <FontAwesome5 name="check" size={16} color="#22C55E" />
+          </Pressable>
+        </View>
+      )}
       <View
         style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}
       >
@@ -810,31 +842,6 @@ export default function Index() {
         >
           <FontAwesome5 name="search-plus" size={16} color="#FFA500" />
         </Pressable>
-        {buildItem && (
-          <>
-            <Text style={{ marginHorizontal: 8 }}>
-              {placing ? "Placing..." : `Placing: ${buildItem.name ?? "Item"}`}
-            </Text>
-            <Pressable
-              onPress={cancelBuild}
-              style={{ padding: 6, marginRight: 6 }}
-              disabled={placing}
-            >
-              <FontAwesome5 name="times" size={16} color="#EF4444" />
-            </Pressable>
-            <Pressable
-              onPress={confirmBuild}
-              style={{
-                padding: 6,
-                marginRight: 6,
-                opacity: placing ? 0.5 : 1,
-              }}
-              disabled={placing}
-            >
-              <FontAwesome5 name="check" size={16} color="#22C55E" />
-            </Pressable>
-          </>
-        )}
       </View>
     </View>
   );
