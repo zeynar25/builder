@@ -19,16 +19,15 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="timer"
+        name="stopwatch"
         options={{
-          title: "Timer",
+          title: "Stopwatch",
           tabBarIcon: ({ color, size }) => (
             <Feather name="clock" size={size} color={color} />
           ),
         }}
       />
 
-      {/* TIMER TAB */}
       <Tabs.Screen
         name="index"
         options={{
