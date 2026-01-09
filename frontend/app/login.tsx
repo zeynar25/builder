@@ -8,10 +8,17 @@ import {
   StyleSheet,
   Keyboard,
 } from "react-native";
-import { MaterialIcons, Ionicons } from "@expo/vector-icons";
+
+import { Feather, Ionicons } from "@expo/vector-icons";
 import { API_BASE_URL } from "../src/config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+
+
+import { theme } from "@/src/theme";
+import { globalStyles } from "@/src/globalstyles";
+import { useFrameSize } from "@react-navigation/elements";
+
 
 export default function Login() {
   const router = useRouter();
@@ -63,22 +70,11 @@ export default function Login() {
       if (refreshToken)
         await AsyncStorage.setItem("refreshToken", refreshToken);
 
-      // store account id, and account detail id and attempt to select a default map for the user
+      // store account id and attempt to select a default map for the user
       const accountId =
         body?.account?.id ?? body?.account?._id ?? body?.id ?? null;
-      const accountDetailId =
-        body?.account?.detailId ??
-        body?.account?.accountDetailId ??
-        body?.account?.accountDetail ??
-        body?.accountDetailId ??
-        body?.accountDetail ??
-        null;
-
       if (accountId) {
         await AsyncStorage.setItem("accountId", accountId);
-        if (accountDetailId) {
-          await AsyncStorage.setItem("accountDetailId", accountDetailId);
-        }
         // try to pick the first map for this account and save as currentMapId
         try {
           const mapsRes = await fetch(
@@ -98,6 +94,9 @@ export default function Login() {
         }
       }
 
+      console.log("accountId:", accountId);
+      console.log("access token:", accessToken);
+
       // Navigate to root (home)
       router.replace("/");
     } catch (e: any) {
@@ -108,18 +107,22 @@ export default function Login() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Sign in</Text>
-        <View style={styles.titleUnderline} />
+    <View style={globalStyles.main}>
 
-        <Text style={styles.inputLabel}>Email or Username</Text>
-        <View style={styles.inputRow}>
-          <MaterialIcons name="mail-outline" size={24} color="#FFA500" />
+      <View style={globalStyles.userform}>
+        
+        <Text style={globalStyles.textTitle}>Sign in</Text>
+        <View style={globalStyles.titleUnderline} /> 
+
+        <Text style={globalStyles.TextLabel}>Email or Username</Text>
+        <View style={globalStyles.inputContainer}>
+
+          <Feather name="mail" size={theme.icon.form} color={theme.colors.highlight} />
+
           <TextInput
-            style={styles.input}
+            style={globalStyles.textInput}
             placeholder="demo@email.com"
-            placeholderTextColor="#999"
+            placeholderTextColor= {theme.colors.text.secondary}
             keyboardType="email-address"
             autoCapitalize="none"
             value={email}
@@ -127,14 +130,14 @@ export default function Login() {
           />
         </View>
 
-        <Text style={styles.inputLabel}>Password</Text>
-        <View style={styles.inputRow}>
-          <MaterialIcons name="lock-outline" size={24} color="#FFA500" />
+        <Text style={globalStyles.TextLabel}>Password</Text>
+        <View style={globalStyles.inputContainer}>
+          <Feather name="lock" size={theme.icon.form} color={theme.colors.highlight} />
           <TextInput
             ref={passwordRef}
-            style={styles.input}
-            placeholder="enter your password"
-            placeholderTextColor="#999"
+            style={globalStyles.textInput}
+            placeholder="Enter your password"
+            placeholderTextColor={theme.colors.text.secondary}
             secureTextEntry={!showPassword}
             value={password}
             onChangeText={setPassword}
@@ -150,25 +153,20 @@ export default function Login() {
           <Pressable onPress={() => setShowPassword(!showPassword)}>
             <Ionicons
               name={showPassword ? "eye-outline" : "eye-off-outline"}
-              size={24}
-              color="#666"
+              size={theme.icon.form}
+              color={theme.colors.accent_1}
             />
           </Pressable>
         </View>
 
-        {error && <Text style={styles.error}>{error}</Text>}
+        {error && <Text style={globalStyles.textError}>{error}</Text>}
 
-        <View style={styles.optionsRow}>
-          <Pressable
-            onPress={() => setRememberMe(!rememberMe)}
-            style={styles.checkboxRow}
-          >
-            <View
-              style={[styles.checkbox, rememberMe && styles.checkboxChecked]}
-            >
-              {rememberMe && (
-                <MaterialIcons name="check" size={16} color="#fff" />
-              )}
+
+        <View style={styles.optionsRow}> 
+
+          <Pressable onPress={() => setRememberMe(!rememberMe)} style={styles.checkboxRow}>
+            <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+              {rememberMe && <Feather name="check" size={16} color="#fff" />}
             </View>
             <Text style={styles.checkboxLabel}>Remember Me</Text>
           </Pressable>
@@ -176,23 +174,20 @@ export default function Login() {
         </View>
 
         <Pressable
-          style={[styles.button, loading && styles.buttonDisabled]}
+          style={[globalStyles.primaryButton, loading && globalStyles.primaryButtonDisabled]}
           onPress={handleSubmit}
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={theme.colors.mono} />
           ) : (
-            <Text style={styles.buttonText}>Login</Text>
+            <Text style={globalStyles.primaryButtonText}>Login</Text>
           )}
         </Pressable>
 
         <Text style={styles.signupText}>
           Don&apos;t have an Account?{" "}
-          <Text
-            style={styles.signupLink}
-            onPress={() => router.replace("/signup")}
-          >
+          <Text style={styles.signupLink} onPress={() => router.replace("/signup")}>
             Sign up
           </Text>
         </Text>
@@ -202,116 +197,60 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FEFCFB",
-    paddingHorizontal: 24,
-    justifyContent: "center",
-  },
-  content: {
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "700",
-    color: "#333",
-    marginBottom: 8,
-    fontFamily: "Rubik",
-  },
-  titleUnderline: {
-    width: 60,
-    height: 4,
-    backgroundColor: "#FFA500",
-    borderRadius: 2,
-    marginBottom: 40,
-  },
-  inputLabel: {
-    fontSize: 14,
-    color: "#999",
-    marginBottom: 8,
-    alignSelf: "flex-start",
-    fontFamily: "Rubik",
-  },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: "#000",
-    marginBottom: 24,
-    paddingBottom: 8,
-  },
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: "#333",
-    marginLeft: 12,
-    fontFamily: "Rubik",
-  },
+
+
   optionsRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
-    marginBottom: 24,
+    marginBottom: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
   },
+
   checkboxRow: {
     flexDirection: "row",
     alignItems: "center",
   },
+
   checkbox: {
-    width: 20,
-    height: 20,
-    borderWidth: 2,
-    borderColor: "#FFA500",
-    borderRadius: 4,
-    marginRight: 8,
+    width: theme.icon.form,
+    height: theme.icon.form,
+    borderWidth: 1,
+    borderColor: theme.colors.highlight,
+    borderRadius: theme.radii.sm,
+    marginRight: theme.spacing.md,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#fff",
+    backgroundColor: "transparent",
   },
+
   checkboxChecked: {
-    backgroundColor: "#FFA500",
+    backgroundColor: theme.colors.highlight,
   },
+
   checkboxLabel: {
-    fontSize: 14,
-    color: "#333",
+    fontSize: theme.typography.fontSize.detail,
+    color: theme.colors.text.primary,
     fontFamily: "Rubik",
   },
+
   forgotPassword: {
-    fontSize: 14,
-    color: "#FFA500",
-    fontWeight: "500",
+    fontSize: theme.typography.fontSize.detail,
+    color: theme.colors.highlight,
+    fontWeight: theme.typography.fontWeight.medium,
     fontFamily: "Rubik",
   },
-  button: {
-    backgroundColor: "#FFA500",
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    width: "100%",
-    marginBottom: 24,
-  },
-  buttonDisabled: {
-    opacity: 0.7,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "700",
-    fontFamily: "Rubik",
-  },
-  error: {
-    color: "#cc0000",
-    marginBottom: 16,
-    fontSize: 14,
-    fontFamily: "Rubik",
-  },
+
+  
+
   signupText: {
-    fontSize: 14,
-    color: "#333",
+    fontSize: theme.typography.fontSize.text,
+    color: theme.colors.text.secondary,
     fontFamily: "Rubik",
   },
+  
   signupLink: {
-    color: "#FFA500",
-    fontWeight: "500",
+    color: theme.colors.highlight,
+    fontWeight: theme.typography.fontWeight.medium,
   },
 });
