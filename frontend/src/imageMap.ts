@@ -81,9 +81,9 @@ const map: Record<string, any> = {
   "../assets/images/village-house/shop-item-teal.png": require("../assets/images/village-house/shop-item-teal.png"),
   "assets/images/village-house/shop-item-teal.png": require("../assets/images/village-house/shop-item-teal.png"),
 
-  "../../assets/images/village-house/default-yellow.png": require("../assets/images/village-house/default-yellow.png"),
-  "../assets/images/village-house/default-yellow.png": require("../assets/images/village-house/default-yellow.png"),
-  "assets/images/village-house/default-yellow.png": require("../assets/images/village-house/default-yellow.png"),
+  "../../assets/images/village-house/yellow-house.png": require("../assets/images/village-house/yellow-house.png"),
+  "../assets/images/village-house/yellow-house.png": require("../assets/images/village-house/yellow-house.png"),
+  "assets/images/village-house/yellow-house.png": require("../assets/images/village-house/yellow-house.png"),
 
   // shop folder
   "../../assets/images/shop/road-axis-x.png": require("../assets/images/shop/road-axis-x.png"),
@@ -117,6 +117,22 @@ const map: Record<string, any> = {
   "../../assets/images/shop/red-house.png": require("../assets/images/shop/red-house.png"),
   "../assets/images/shop/red-house.png": require("../assets/images/shop/red-house.png"),
   "assets/images/shop/red-house.png": require("../assets/images/shop/red-house.png"),
+
+  "../../assets/images/shop/green-house.png": require("../assets/images/shop/green-house.png"),
+  "../assets/images/shop/green-house.png": require("../assets/images/shop/green-house.png"),
+  "assets/images/shop/green-house.png": require("../assets/images/shop/green-house.png"),
+
+  "../../assets/images/shop/brown-house.png": require("../assets/images/shop/brown-house.png"),
+  "../assets/images/shop/brown-house.png": require("../assets/images/shop/brown-house.png"),
+  "assets/images/shop/brown-house.png": require("../assets/images/shop/brown-house.png"),
+
+  "../../assets/images/shop/teal-house.png": require("../assets/images/shop/teal-house.png"),
+  "../assets/images/shop/teal-house.png": require("../assets/images/shop/teal-house.png"),
+  "assets/images/shop/teal-house.png": require("../assets/images/shop/teal-house.png"),
+
+  "../../assets/images/shop/yellow-house.png": require("../assets/images/shop/yellow-house.png"),
+  "../assets/images/shop/yellow-house.png": require("../assets/images/shop/yellow-house.png"),
+  "assets/images/shop/yellow-house.png": require("../assets/images/shop/yellow-house.png"),
 
   // top-level
   "../../assets/images/builder-logo.png": require("../assets/images/builder-logo.png"),
