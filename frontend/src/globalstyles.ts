@@ -1,22 +1,25 @@
 // globalStyles.js
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 import { theme } from './theme';
+
+const { width: screenWidth } = Dimensions.get('window');
+
 
 export const globalStyles = StyleSheet.create({
     main: {
         backgroundColor: theme.colors.mono,
         flex: 1,
         justifyContent: 'center',
-        paddingHorizontal: theme.spacing.max,
+        paddingHorizontal: screenWidth * 0.10,
     },
 
     userform: {
-        alignItems: 'center',
+        alignItems: 'flex-start',
     },
 
 
     titleUnderline: {
-        width: 150,
+        width: 85,
         height: 3,
         backgroundColor: theme.colors.highlight,
         borderRadius: theme.radii.sm,
@@ -50,21 +53,21 @@ export const globalStyles = StyleSheet.create({
         fontSize: theme.typography.fontSize.text,
         color: theme.colors.text.primary,
         marginLeft: 12,
-        fontFamily: "Rubik",
+        fontFamily: theme.typography.fontFamily.primary,
     },
 
     textTitle: {
         fontSize: theme.typography.fontSize.highlight,
         fontWeight: theme.typography.fontWeight.bold,
         color: theme.colors.text.primary,
-        fontFamily: 'Rubik',
+        fontFamily: theme.typography.fontFamily.primary,
     },
 
     textError: {
         color: "#cc0000",
         marginBottom: theme.spacing.md,
         fontSize: theme.typography.fontSize.text,
-        fontFamily: "Rubik",
+        fontFamily: theme.typography.fontFamily.primary,
     },
 
 
@@ -88,6 +91,6 @@ export const globalStyles = StyleSheet.create({
         color: "#fff",
         fontSize: theme.typography.fontSize.text,
         fontWeight: theme.typography.fontWeight.bold,
-        fontFamily: "Rubik",
+        fontFamily: theme.typography.fontFamily.primary,
     },
 });

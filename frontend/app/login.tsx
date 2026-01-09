@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   Keyboard,
+  Image,
 } from "react-native";
 
 import { Feather, Ionicons } from "@expo/vector-icons";
@@ -108,10 +109,17 @@ export default function Login() {
 
   return (
     <View style={globalStyles.main}>
+      <View style={styles.headerContainer}>
+        <Image
+          source={require("../assets/images/Vector.png")}
+          style={styles.headerImage}
+          resizeMode="stretch"
+        />
+      </View>
 
-      <View style={globalStyles.userform}>
+      <View style={[globalStyles.userform, styles.formWithHeaderOffset]}>
         
-        <Text style={globalStyles.textTitle}>Sign in</Text>
+        <Text style={globalStyles.textTitle}>Sign In</Text>
         <View style={globalStyles.titleUnderline} /> 
 
         <Text style={globalStyles.TextLabel}>Email or Username</Text>
@@ -198,6 +206,25 @@ export default function Login() {
 
 const styles = StyleSheet.create({
 
+  headerContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 250,
+    overflow: "hidden",  
+  },
+
+  headerImage: {
+    width: "100%",
+    height: 500, // taller than container so it can "overflow" upwards
+    position: "absolute",
+    bottom: 0, // keep the wavy edge aligned at the bottom of the visible area
+  },
+
+  formWithHeaderOffset: {
+    marginTop: 80, // push form content slightly below the dripping header
+  },
 
   optionsRow: {
     flexDirection: "row",
@@ -231,14 +258,14 @@ const styles = StyleSheet.create({
   checkboxLabel: {
     fontSize: theme.typography.fontSize.detail,
     color: theme.colors.text.primary,
-    fontFamily: "Rubik",
+    fontFamily: theme.typography.fontFamily.primary,
   },
 
   forgotPassword: {
     fontSize: theme.typography.fontSize.detail,
     color: theme.colors.highlight,
     fontWeight: theme.typography.fontWeight.medium,
-    fontFamily: "Rubik",
+    fontFamily: theme.typography.fontFamily.primary,
   },
 
   
@@ -246,7 +273,7 @@ const styles = StyleSheet.create({
   signupText: {
     fontSize: theme.typography.fontSize.text,
     color: theme.colors.text.secondary,
-    fontFamily: "Rubik",
+    fontFamily: theme.typography.fontFamily.primary,
   },
   
   signupLink: {
