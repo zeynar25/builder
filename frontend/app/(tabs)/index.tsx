@@ -29,6 +29,27 @@ function resolveTileImage(imageUrl: any) {
   return defaultTile;
 }
 
+function confirmDialog(title: string, message: string): Promise<boolean> {
+  if (Platform.OS === "web") {
+    try {
+      const g: any = globalThis as any;
+      if (g && typeof g.confirm === "function") {
+        const ok = g.confirm((title ? title + "\n\n" : "") + message);
+        return Promise.resolve(!!ok);
+      }
+    } catch {
+      // fall through to native-style alert
+    }
+  }
+
+  return new Promise((resolve) => {
+    Alert.alert(title, message, [
+      { text: "Cancel", style: "cancel", onPress: () => resolve(false) },
+      { text: "OK", onPress: () => resolve(true) },
+    ]);
+  });
+}
+
 export default function Index() {
   const router = useRouter();
   const [accountDetail, setAccountDetail] = useState<any | null>(null);
@@ -59,6 +80,12 @@ export default function Index() {
   const [viewportRows, setViewportRows] = useState<number>(5);
   const [buildItem, setBuildItem] = useState<any | null>(null);
   const [placing, setPlacing] = useState(false);
+  const [selectedTile, setSelectedTile] = useState<{
+    x: number;
+    y: number;
+    cell: any;
+  } | null>(null);
+  const [selling, setSelling] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -592,6 +619,77 @@ export default function Index() {
     }
   }, [buildItem, centerX, centerY, mapData]);
 
+  const handleSellSelectedTile = React.useCallback(async () => {
+    if (!selectedTile) return;
+    const { x, y, cell } = selectedTile;
+    if (!cell?.item) return;
+
+    try {
+      setSelling(true);
+
+      const [accountId, accountDetailId, mapId] = await Promise.all([
+        AsyncStorage.getItem("accountId"),
+        AsyncStorage.getItem("accountDetailId"),
+        AsyncStorage.getItem("currentMapId"),
+      ]);
+
+      if (!accountId || !accountDetailId || !mapId) {
+        throw new Error("Missing account or map information");
+      }
+
+      const res = await fetch(`${API_BASE_URL}/api/items/sell`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          accountId,
+          accountDetailsId: accountDetailId,
+          mapId,
+          x,
+          y,
+        }),
+      });
+
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.success) {
+        const msg = json?.error || "Unable to sell item";
+        throw new Error(msg);
+      }
+
+      // refresh map
+      try {
+        const mapRes = await fetch(`${API_BASE_URL}/api/maps/${mapId}`);
+        if (mapRes.ok) {
+          const mapJson = await mapRes.json();
+          setMapData(mapJson);
+        }
+      } catch {
+        // ignore map refresh failures
+      }
+
+      // refresh account detail (for updated chrons)
+      try {
+        if (accountDetailId) {
+          const detailRes = await fetch(
+            `${API_BASE_URL}/api/account-detail/${accountDetailId}`
+          );
+          if (detailRes.ok) {
+            const detailJson = await detailRes.json();
+            setAccountDetail(detailJson);
+          }
+        }
+      } catch {
+        // ignore
+      }
+
+      setSelectedTile(null);
+      Alert.alert("Item sold", "You received a 50% refund.");
+    } catch (e: any) {
+      Alert.alert("Cannot sell", e.message || String(e));
+    } finally {
+      setSelling(false);
+    }
+  }, [selectedTile]);
+
   return (
     <View
       style={{
@@ -897,6 +995,10 @@ export default function Index() {
                     const cell = mapData.grid[r][c];
                     const isBuildTarget = !!buildItem && r === cy && c === cx;
                     const isOccupiedTarget = isBuildTarget && !!cell?.item;
+                    const isSelected =
+                      !!selectedTile &&
+                      selectedTile.x === c &&
+                      selectedTile.y === r;
                     const source = isBuildTarget
                       ? resolveTileImage(buildItem?.imageUrl)
                       : resolveTileImage(cell?.item?.imageUrl);
@@ -904,21 +1006,33 @@ export default function Index() {
                       ? isOccupiedTarget
                         ? "#EF4444" // red when trying to build over an occupied tile
                         : "#22C55E" // green when empty
+                      : isSelected
+                      ? "#3B82F6" // blue highlight for selected occupied tile
                       : "transparent";
                     cols.push(
-                      <Image
+                      <Pressable
                         key={`cell-${r}-${c}`}
-                        source={source}
-                        style={{
-                          width: tileSize,
-                          height: tileSize,
-                          marginRight: 1,
-                          marginBottom: 1,
-                          borderWidth: isBuildTarget ? 2 : 0,
-                          borderColor,
+                        onPress={() => {
+                          if (cell?.item) {
+                            setSelectedTile({ x: c, y: r, cell });
+                          } else {
+                            setSelectedTile(null);
+                          }
                         }}
-                        resizeMode="cover"
-                      />
+                      >
+                        <Image
+                          source={source}
+                          style={{
+                            width: tileSize,
+                            height: tileSize,
+                            marginRight: 1,
+                            marginBottom: 1,
+                            borderWidth: isBuildTarget || isSelected ? 2 : 0,
+                            borderColor,
+                          }}
+                          resizeMode="cover"
+                        />
+                      </Pressable>
                     );
                   }
                   rows.push(
@@ -944,6 +1058,62 @@ export default function Index() {
         </View>
       ) : (
         <Text>{data}</Text>
+      )}
+      {selectedTile && selectedTile.cell?.item && (
+        <View
+          style={{
+            marginTop: 12,
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+            borderRadius: 8,
+            backgroundColor: "#111",
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ color: "#fff", marginBottom: 4 }}>
+            Selected: {selectedTile.cell.item?.name || "Item"} at (
+            {selectedTile.x}, {selectedTile.y})
+          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Pressable
+              onPress={() => {
+                (async () => {
+                  const ok = await confirmDialog(
+                    "Sell item?",
+                    "You will receive 50% of this item's price."
+                  );
+                  if (ok) {
+                    await handleSellSelectedTile();
+                  }
+                })();
+              }}
+              disabled={selling}
+              style={{
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                backgroundColor: "#F97316",
+                borderRadius: 6,
+                opacity: selling ? 0.6 : 1,
+                marginRight: 8,
+              }}
+            >
+              <Text style={{ color: "#111", fontWeight: "600" }}>Sell</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                Alert.alert("Move", "Move is not implemented yet.");
+              }}
+              style={{
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                backgroundColor: "#4B5563",
+                borderRadius: 6,
+              }}
+            >
+              <Text style={{ color: "#fff" }}>Move</Text>
+            </Pressable>
+          </View>
+        </View>
       )}
       {buildItem && (
         <View

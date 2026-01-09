@@ -2,6 +2,7 @@ import express from "express";
 import {
   shop,
   buyItem,
+  sellPlacement,
   createItem,
   getItem,
   updateItem,
@@ -17,5 +18,6 @@ router.put("/:id", updateItem);
 router.delete("/:id", deleteItem);
 
 router.post("/buy", buyItem);
+router.post("/sell", sellPlacement);
 
 export default router;

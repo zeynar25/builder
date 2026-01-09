@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Item from "../models/Item.js";
 import AccountDetail from "../models/AccountDetail.js";
+import ItemPlacement from "../models/ItemPlacement.js";
 
 import { placeSingleTile } from "./placementService.js";
 
@@ -61,6 +62,62 @@ export async function buyItemById(
   return { success: true, item, placement: placeRes.placement };
 }
 
+export async function sellPlacementByCoords(
+  accountId,
+  accountDetailsId,
+  mapId,
+  x,
+  y
+) {
+  const placement = await ItemPlacement.findOne({
+    map: mapId,
+    x: Number(x),
+    y: Number(y),
+  })
+    .populate("item", "_id price")
+    .exec();
+
+  if (!placement) {
+    return null; // placement_not_found
+  }
+
+  // Optional ownership check: only allow the original placer to sell
+  if (placement.placedBy && accountId && placement.placedBy !== accountId) {
+    const err = new Error("not_owner");
+    throw err;
+  }
+
+  const item = placement.item;
+  if (!item) {
+    // no associated item, just delete silently
+    await ItemPlacement.deleteOne({ _id: placement._id });
+    return { success: true, refund: 0 };
+  }
+
+  const priceNumber =
+    item.price != null && typeof item.price !== "number"
+      ? parseFloat(item.price.toString())
+      : Number(item.price ?? 0);
+
+  // 50% refund, rounded down to nearest whole chron
+  const refund = Math.max(0, Math.floor(priceNumber * 0.5));
+
+  const accountDetails = await AccountDetail.findById(accountDetailsId).exec();
+  if (!accountDetails) throw new Error("account_details_not_found");
+
+  accountDetails.chron = (accountDetails.chron ?? 0) + refund;
+  await accountDetails.save();
+
+  await ItemPlacement.deleteOne({ _id: placement._id });
+
+  return {
+    success: true,
+    refund,
+    placementId: placement._id,
+    itemId: item._id,
+  };
+}
+
 export async function createItem(payload) {
   const data = { ...payload };
   if (data.price != null)
@@ -100,6 +157,7 @@ export async function softDeleteItemById(id) {
 export default {
   listItems,
   buyItemById,
+  sellPlacementByCoords,
   createItem,
   getItemById,
   updateItemById,
