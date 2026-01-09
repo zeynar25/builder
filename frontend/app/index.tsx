@@ -220,7 +220,11 @@ export default function Index() {
         )}
 
         <Text style={{ marginTop: 8 }}>
-          {accountDetail ? `Chron: ${accountDetail.accountDetail.chron}` : ""}
+          {accountDetail
+            ? `${
+                accountDetail.accountDetail.chron === 1 ? "Chron" : "Chrons"
+              }: ${accountDetail.accountDetail.chron}`
+            : ""}
         </Text>
         <Pressable
           onPress={() => {
