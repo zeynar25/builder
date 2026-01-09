@@ -205,9 +205,7 @@ export default function Index() {
         ) : (
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Text style={{ fontSize: 16, flex: 1 }}>
-              {accountDetail
-                ? `Welcome ${accountDetail.accountDetail.gameName}`
-                : ""}
+              {accountDetail ? `${accountDetail.accountDetail.gameName}` : ""}
             </Text>
             <Pressable
               onPress={() => {
