@@ -314,13 +314,25 @@ export default function Index() {
           </Text>
         </Pressable>
         {editingGameName ? (
-          <View>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={{ alignSelf: "flex-start" }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                width: "60%",
+                maxWidth: 420,
+              }}
+            >
               <TextInput
                 value={newGameName}
                 onChangeText={setNewGameName}
                 placeholder="Game name"
-                style={{ borderBottomWidth: 1, flex: 1, paddingVertical: 4 }}
+                style={{
+                  borderBottomWidth: 1,
+                  flex: 1,
+                  paddingVertical: 4,
+                  textAlign: "center",
+                }}
                 editable={!savingGameName}
               />
               <Pressable
@@ -386,7 +398,7 @@ export default function Index() {
           </View>
         )}
 
-        <Text style={{ marginTop: 8 }}>
+        <Text style={{ marginTop: 8, alignSelf: "flex-start" }}>
           {accountDetail
             ? `${
                 accountDetail.accountDetail.chron === 1 ? "Chron" : "Chrons"
@@ -400,7 +412,7 @@ export default function Index() {
           }}
           onHoverIn={() => setShowExp(true)}
           onHoverOut={() => setShowExp(false)}
-          style={{ paddingVertical: 6 }}
+          style={{ paddingVertical: 6, alignSelf: "flex-start" }}
         >
           <Text>
             {accountDetail
