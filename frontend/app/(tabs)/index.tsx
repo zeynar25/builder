@@ -38,7 +38,6 @@ export default function Index() {
   const [centerX, setCenterX] = useState<number | null>(null);
   const [centerY, setCenterY] = useState<number | null>(null);
   const [tileSize, setTileSize] = useState<number>(48); // px per tile (zoomable)
-  const MIN_VIEWPORT = 3; // minimum viewport dimension
 
   const [viewportCols, setViewportCols] = useState<number>(5);
   const [viewportRows, setViewportRows] = useState<number>(5);
