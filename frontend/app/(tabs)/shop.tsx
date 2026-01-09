@@ -8,8 +8,9 @@ import {
   StyleSheet,
 } from "react-native";
 import { API_BASE_URL } from "../../src/config";
+import { getImageSource } from "../../src/imageMap";
 
-const defaultTile = require("../../assets/road-connectors/default-tile.png");
+const defaultTile = require("../../assets/images/road-connectors/default-tile.png");
 
 export default function Shop() {
   const [items, setItems] = useState<any[]>([]);
@@ -35,6 +36,27 @@ export default function Shop() {
       cancelled = true;
     };
   }, []);
+
+  function formatPrice(price: any) {
+    if (price == null) return "0";
+    if (typeof price === "number") return String(price);
+    if (typeof price === "string") return price;
+    if (typeof price === "object") {
+      if ((price as any).$numberDecimal != null)
+        return String((price as any).$numberDecimal);
+      try {
+        const s = String(price);
+        if (s && s !== "[object Object]") return s;
+      } catch {}
+      // fallback to JSON
+      try {
+        return JSON.stringify(price);
+      } catch {
+        return String(price);
+      }
+    }
+    return String(price);
+  }
 
   if (loading)
     return (
@@ -65,7 +87,12 @@ export default function Shop() {
       renderItem={({ item }) => (
         <View style={styles.row}>
           <Image
-            source={item.imageUrl ? { uri: item.imageUrl } : defaultTile}
+            source={
+              getImageSource(item.imageUrl) ||
+              (item.imageUrl && String(item.imageUrl).startsWith("http")
+                ? { uri: item.imageUrl }
+                : defaultTile)
+            }
             style={styles.image}
             resizeMode="cover"
           />
@@ -74,7 +101,9 @@ export default function Shop() {
             {item.description ? (
               <Text style={styles.desc}>{item.description}</Text>
             ) : null}
-            <Text style={styles.price}>{`Price: ${item.price ?? 0}`}</Text>
+            <Text style={styles.price}>{`Price: ${formatPrice(
+              item.price
+            )}`}</Text>
           </View>
         </View>
       )}
@@ -90,4 +119,5 @@ const styles = StyleSheet.create({
   name: { fontWeight: "700", fontSize: 16 },
   desc: { color: "#555", marginTop: 4 },
   price: { marginTop: 6, fontWeight: "600" },
+  imgUrl: { marginTop: 4, color: "#007AFF", fontSize: 12 },
 });
