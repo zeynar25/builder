@@ -43,4 +43,15 @@ export async function getMapsByAccount(accountId) {
   return MapModel.find({ account: accountId }).lean().exec();
 }
 
-export default { getMapWithTiles, getMapsByAccount };
+export async function updateMapName(mapId, name) {
+  const updated = await MapModel.findByIdAndUpdate(
+    mapId,
+    { name },
+    { new: true, runValidators: true }
+  )
+    .lean()
+    .exec();
+  return updated;
+}
+
+export default { getMapWithTiles, getMapsByAccount, updateMapName };

@@ -23,6 +23,9 @@ export default function Index() {
   const [newGameName, setNewGameName] = useState("");
   const [savingGameName, setSavingGameName] = useState(false);
   const [showExp, setShowExp] = useState(false);
+  const [editingMapName, setEditingMapName] = useState(false);
+  const [newMapName, setNewMapName] = useState("");
+  const [savingMapName, setSavingMapName] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -253,9 +256,84 @@ export default function Index() {
         <Text>{`Error: ${error}`}</Text>
       ) : mapData ? (
         <View style={{ width: "100%", padding: 8 }}>
-          <Text style={{ fontWeight: "bold", fontSize: 18, marginBottom: 8 }}>
-            {mapData.map?.name || "Map"}
-          </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: 8,
+            }}
+          >
+            {editingMapName ? (
+              <>
+                <TextInput
+                  value={newMapName}
+                  onChangeText={setNewMapName}
+                  placeholder="Map name"
+                  style={{ borderBottomWidth: 1, flex: 1, paddingVertical: 4 }}
+                  editable={!savingMapName}
+                />
+                <Pressable
+                  onPress={async () => {
+                    if (!newMapName)
+                      return Alert.alert("Please enter a map name");
+                    setSavingMapName(true);
+                    try {
+                      const mapId = mapData?.map?._id ?? mapData?.map?.id;
+                      if (!mapId) throw new Error("no_map_id");
+                      const res = await fetch(
+                        `${API_BASE_URL}/api/maps/${mapId}/name`,
+                        {
+                          method: "PUT",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ name: newMapName }),
+                        }
+                      );
+                      if (!res.ok) {
+                        const err = await res.json().catch(() => null);
+                        throw new Error(
+                          err?.error || `Request failed (${res.status})`
+                        );
+                      }
+                      const json = await res.json();
+                      // response: { map: updated }
+                      setMapData((m: any) => ({ ...(m || {}), map: json.map }));
+                      setEditingMapName(false);
+                    } catch (e: any) {
+                      Alert.alert("Unable to save", e.message || String(e));
+                    } finally {
+                      setSavingMapName(false);
+                    }
+                  }}
+                  style={{ padding: 8, marginLeft: 8 }}
+                >
+                  <FontAwesome5 name="check" size={16} color="#22C55E" />
+                </Pressable>
+                <Pressable
+                  onPress={() => setEditingMapName(false)}
+                  style={{ padding: 8, marginLeft: 8 }}
+                >
+                  <FontAwesome5 name="times" size={16} color="#888" />
+                </Pressable>
+              </>
+            ) : (
+              <>
+                <Text style={{ fontWeight: "bold", fontSize: 18, flex: 1 }}>
+                  {mapData.map?.name
+                    ? `${mapData.map.name}'s Domain`
+                    : "Someone's Domain"}
+                </Text>
+                <Pressable
+                  onPress={() => {
+                    setNewMapName(mapData?.map?.name ?? "");
+                    setEditingMapName(true);
+                  }}
+                  style={{ padding: 6 }}
+                >
+                  <FontAwesome5 name="edit" size={16} color="#FFA500" />
+                </Pressable>
+              </>
+            )}
+          </View>
           {Array.isArray(mapData.grid) ? (
             mapData.grid.map((row: any[], y: number) => (
               <Text key={`row-${y}`}>

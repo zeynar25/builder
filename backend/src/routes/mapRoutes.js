@@ -1,5 +1,5 @@
 import express from "express";
-import { getMap } from "../controllers/mapController.js";
+import { getMap, updateMapName } from "../controllers/mapController.js";
 
 const router = express.Router();
 
@@ -11,5 +11,8 @@ router.get("/account/:accountId", getMapsByAccount);
 
 // GET /api/maps/:id - return map metadata and tiles grid
 router.get("/:id", getMap);
+
+// Update map name
+router.put("/:id/name", updateMapName);
 
 export default router;
