@@ -9,10 +9,19 @@ import {
   Alert,
   Keyboard,
   Platform,
+  Image,
+  Dimensions
 } from "react-native";
-import { API_BASE_URL } from "../src/config";
 
+import { Feather, Ionicons } from "@expo/vector-icons";
+import { API_BASE_URL } from "../src/config";
 import { useRouter } from "expo-router";
+
+import { theme } from "@/src/theme";
+import { globalStyles } from "@/src/globalstyles";
+
+const { width: screenWidth } = Dimensions.get('window');
+const { height: screenHeight } = Dimensions.get('window');
 
 export default function Signup() {
   const router = useRouter();
@@ -21,6 +30,7 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit() {
     setError(null);
@@ -62,56 +72,82 @@ export default function Signup() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create account</Text>
+    <View style={globalStyles.main}>
+      <View style={styles.headerContainer}>
+        <Image
+          source={require("../assets/images/Vector.png")}
+          style={styles.headerImage}
+          resizeMode="stretch"
+        />
+      </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        value={email}
-        onChangeText={setEmail}
-      />
+      <View style={[globalStyles.userform, styles.formWithHeaderOffset]}>
+        
+        <Text style={globalStyles.textTitle}>Sign Up</Text>
+        <View style={globalStyles.titleUnderline} /> 
 
-      <TextInput
-        ref={passwordRef}
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-        returnKeyType="done"
-        onSubmitEditing={() => {
-          handleSubmit();
-          passwordRef.current?.blur();
-          Keyboard.dismiss();
-        }}
-        autoCorrect={false}
-        autoCapitalize="none"
-      />
+        <Text style={globalStyles.TextLabel}>Email or Username</Text>
+        <View style={globalStyles.inputContainer}>
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+          <Feather name="mail" size={theme.icon.form} color={theme.colors.highlight} />
 
-      <Pressable
-        style={styles.button}
-        onPress={handleSubmit}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Sign up</Text>
-        )}
-      </Pressable>
+          <TextInput
+            style={globalStyles.textInput}
+            placeholder="demo@email.com"
+            placeholderTextColor={theme.colors.text.secondary}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
+          />
+        </View>
 
-      <View style={styles.link}>
-        <Text>
+        <Text style={globalStyles.TextLabel}>Password</Text>
+        <View style={globalStyles.inputContainer}>
+          <Feather name="lock" size={theme.icon.form} color={theme.colors.highlight} />
+          <TextInput
+            ref={passwordRef}
+            style={globalStyles.textInput}
+            placeholder="Enter your password"
+            placeholderTextColor={theme.colors.text.secondary}
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
+            returnKeyType="done"
+            onSubmitEditing={() => {
+              handleSubmit();
+              passwordRef.current?.blur();
+              Keyboard.dismiss();
+            }}
+            autoCorrect={false}
+            autoCapitalize="none"
+          />
+          <Pressable onPress={() => setShowPassword(!showPassword)}>
+            <Ionicons
+              name={showPassword ? "eye-outline" : "eye-off-outline"}
+              size={theme.icon.form}
+              color={theme.colors.accent_1}
+            />
+          </Pressable>
+        </View>
+
+        {error && <Text style={globalStyles.textError}>{error}</Text>}
+
+        <Pressable
+          style={[globalStyles.primaryButton, styles.customButton,loading && globalStyles.primaryButtonDisabled]}
+          onPress={handleSubmit}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color={theme.colors.mono} />
+          ) : (
+            <Text style={globalStyles.primaryButtonText}>Create Account</Text>
+          )}
+        </Pressable>
+
+        <Text style={styles.signupText}>
           Already have an account?{" "}
-          <Text
-            style={styles.linkText}
-            onPress={() => router.replace("/login")}
-          >
+          <Text style={styles.signupLink} onPress={() => router.replace("/login")}>
             Sign in
           </Text>
         </Text>
@@ -121,45 +157,39 @@ export default function Signup() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    justifyContent: "center",
+
+  headerContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: screenHeight * 0.40,
+    overflow: "hidden",  
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 16,
+
+  headerImage: {
+    width: "100%",
+    height: screenHeight * 0.40, 
+    position: "absolute",
+    bottom: 0, 
+  },
+
+  formWithHeaderOffset: {
+    marginTop: 80,
+  },
+  customButton: {
+    marginTop: theme.spacing.xl,
+  },
+  signupText: {
+    fontSize: theme.typography.fontSize.text,
+    color: theme.colors.text.secondary,
+    fontFamily: theme.typography.fontFamily.primary,
     textAlign: "center",
+    width: "100%",
   },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-  },
-  button: {
-    backgroundColor: "#007AFF",
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 8,
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "600",
-  },
-  error: {
-    color: "#cc0000",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  link: {
-    marginTop: 12,
-    alignItems: "center",
-  },
-  linkText: {
-    color: "#007AFF",
+  
+  signupLink: {
+    color: theme.colors.highlight,
+    fontWeight: theme.typography.fontWeight.medium,
   },
 });
