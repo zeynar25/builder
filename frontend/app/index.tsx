@@ -205,9 +205,7 @@ export default function Index() {
         ) : (
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Text style={{ fontSize: 16, flex: 1 }}>
-              {accountDetail
-                ? `Welcome ${accountDetail.accountDetail.gameName}`
-                : ""}
+              {accountDetail ? `${accountDetail.accountDetail.gameName}` : ""}
             </Text>
             <Pressable
               onPress={() => {
@@ -222,7 +220,11 @@ export default function Index() {
         )}
 
         <Text style={{ marginTop: 8 }}>
-          {accountDetail ? `Chron: ${accountDetail.accountDetail.chron}` : ""}
+          {accountDetail
+            ? `${
+                accountDetail.accountDetail.chron === 1 ? "Chron" : "Chrons"
+              }: ${accountDetail.accountDetail.chron}`
+            : ""}
         </Text>
         <Pressable
           onPress={() => {
