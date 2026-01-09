@@ -9,6 +9,7 @@ import {
   Image,
   Platform,
   DeviceEventEmitter,
+  Dimensions,
 } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { API_BASE_URL } from "../../src/config";
@@ -36,7 +37,11 @@ export default function Index() {
   const [savingMapName, setSavingMapName] = useState(false);
   const [centerX, setCenterX] = useState<number | null>(null);
   const [centerY, setCenterY] = useState<number | null>(null);
-  const VIEWPORT = 5; // odd number to have a center cell
+  const [tileSize, setTileSize] = useState<number>(48); // px per tile (zoomable)
+  const MIN_VIEWPORT = 3; // minimum viewport dimension
+
+  const [viewportCols, setViewportCols] = useState<number>(5);
+  const [viewportRows, setViewportRows] = useState<number>(5);
 
   useEffect(() => {
     let cancelled = false;
@@ -132,6 +137,59 @@ export default function Index() {
       cancelled = true;
     };
   }, [router]);
+
+  useEffect(() => {
+    function computeViewport() {
+      const { width, height } = Dimensions.get("window");
+      const horizontalPadding = 40; // approximate horizontal chrome + paddings
+      const verticalPadding = 300; // approximate header/controls height
+      const availableCols = Math.max(
+        1,
+        Math.floor((width - horizontalPadding) / tileSize)
+      );
+      const availableRows = Math.max(
+        1,
+        Math.floor((height - verticalPadding) / tileSize)
+      );
+
+      const mapW = Number(
+        mapData?.map?.widthTiles ??
+          mapData?.map?.width ??
+          mapData?.grid?.[0]?.length ??
+          0
+      );
+      const mapH = Number(
+        mapData?.map?.heightTiles ??
+          mapData?.map?.height ??
+          mapData?.grid?.length ??
+          0
+      );
+
+      // Cap viewport to available screen tiles, but never exceed actual map size when known.
+      let cols = availableCols;
+      let rows = availableRows;
+
+      if (mapW > 0) cols = Math.min(availableCols, mapW);
+      if (mapH > 0) rows = Math.min(availableRows, mapH);
+
+      // ensure at least 1 tile shown
+      cols = Math.max(1, cols);
+      rows = Math.max(1, rows);
+
+      setViewportCols(cols);
+      setViewportRows(rows);
+    }
+
+    computeViewport();
+    const sub = Dimensions.addEventListener("change", computeViewport);
+    return () => {
+      try {
+        sub?.remove?.();
+      } catch {
+        // ignore
+      }
+    };
+  }, [tileSize, mapData]);
 
   // Listen for chron updates emitted from other components (e.g. the Stopwatch)
   useEffect(() => {
@@ -240,13 +298,20 @@ export default function Index() {
         padding: 16,
       }}
     >
-      <Pressable
-        onPress={handleLogout}
-        style={{ position: "absolute", top: 16, right: 16, padding: 8 }}
+      <View
+        style={{
+          width: "100%",
+          paddingHorizontal: 8,
+          marginBottom: 8,
+          position: "relative",
+        }}
       >
-        <Text style={{ color: "#FFA500", fontWeight: "600" }}>Logout</Text>
-      </Pressable>
-      <View style={{ width: "100%", paddingHorizontal: 8, marginBottom: 8 }}>
+        <Pressable
+          onPress={handleLogout}
+          style={{ position: "absolute", top: 8, right: 8, padding: 8 }}
+        >
+          <Text style={{ color: "#FFA500", fontWeight: "600" }}>Logout</Text>
+        </Pressable>
         {editingGameName ? (
           <View>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -360,73 +425,105 @@ export default function Index() {
             }}
           >
             {editingMapName ? (
-              <>
-                <TextInput
-                  value={newMapName}
-                  onChangeText={setNewMapName}
-                  placeholder="Map name"
-                  style={{ borderBottomWidth: 1, flex: 1, paddingVertical: 4 }}
-                  editable={!savingMapName}
-                />
-                <Pressable
-                  onPress={async () => {
-                    if (!newMapName)
-                      return Alert.alert("Please enter a map name");
-                    setSavingMapName(true);
-                    try {
-                      const mapId = mapData?.map?._id ?? mapData?.map?.id;
-                      if (!mapId) throw new Error("no_map_id");
-                      const res = await fetch(
-                        `${API_BASE_URL}/api/maps/${mapId}/name`,
-                        {
-                          method: "PUT",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ name: newMapName }),
-                        }
-                      );
-                      if (!res.ok) {
-                        const err = await res.json().catch(() => null);
-                        throw new Error(
-                          err?.error || `Request failed (${res.status})`
-                        );
-                      }
-                      const json = await res.json();
-                      // response: { map: updated }
-                      setMapData((m: any) => ({ ...(m || {}), map: json.map }));
-                      setEditingMapName(false);
-                    } catch (e: any) {
-                      Alert.alert("Unable to save", e.message || String(e));
-                    } finally {
-                      setSavingMapName(false);
-                    }
+              <View
+                style={{
+                  width: "100%",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    width: "60%",
+                    maxWidth: 420,
                   }}
-                  style={{ padding: 8, marginLeft: 8 }}
                 >
-                  <FontAwesome5 name="check" size={16} color="#22C55E" />
-                </Pressable>
-                <Pressable
-                  onPress={() => setEditingMapName(false)}
-                  style={{ padding: 8, marginLeft: 8 }}
-                >
-                  <FontAwesome5 name="times" size={16} color="#888" />
-                </Pressable>
-              </>
+                  <TextInput
+                    value={newMapName}
+                    onChangeText={setNewMapName}
+                    placeholder="Map name"
+                    style={{
+                      borderBottomWidth: 1,
+                      flex: 1,
+                      paddingVertical: 4,
+                      textAlign: "center",
+                    }}
+                    editable={!savingMapName}
+                  />
+                  <Pressable
+                    onPress={async () => {
+                      if (!newMapName)
+                        return Alert.alert("Please enter a map name");
+                      setSavingMapName(true);
+                      try {
+                        const mapId = mapData?.map?._id ?? mapData?.map?.id;
+                        if (!mapId) throw new Error("no_map_id");
+                        const res = await fetch(
+                          `${API_BASE_URL}/api/maps/${mapId}/name`,
+                          {
+                            method: "PUT",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ name: newMapName }),
+                          }
+                        );
+                        if (!res.ok) {
+                          const err = await res.json().catch(() => null);
+                          throw new Error(
+                            err?.error || `Request failed (${res.status})`
+                          );
+                        }
+                        const json = await res.json();
+                        setMapData((m: any) => ({
+                          ...(m || {}),
+                          map: json.map,
+                        }));
+                        setEditingMapName(false);
+                      } catch (e: any) {
+                        Alert.alert("Unable to save", e.message || String(e));
+                      } finally {
+                        setSavingMapName(false);
+                      }
+                    }}
+                    style={{ padding: 8, marginLeft: 8 }}
+                  >
+                    <FontAwesome5 name="check" size={16} color="#22C55E" />
+                  </Pressable>
+                  <Pressable
+                    onPress={() => setEditingMapName(false)}
+                    style={{ padding: 8, marginLeft: 8 }}
+                  >
+                    <FontAwesome5 name="times" size={16} color="#888" />
+                  </Pressable>
+                </View>
+              </View>
             ) : (
               <>
-                <Text style={{ fontWeight: "bold", fontSize: 18, flex: 1 }}>
-                  {mapData.map?.name
-                    ? `${mapData.map.name}'s Domain [ ${mapData.map.widthTiles} x ${mapData.map.heightTiles} ]`
-                    : "Someone's Domain"}
-                </Text>
-                <Pressable
-                  onPress={() => {
-                    setNewMapName(mapData?.map?.name ?? "");
-                    setEditingMapName(true);
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
-                  style={{ padding: 6 }}
                 >
-                  <FontAwesome5 name="edit" size={16} color="#FFA500" />
-                </Pressable>
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Text style={{ fontWeight: "bold", fontSize: 18 }}>
+                      {mapData.map?.name
+                        ? `${mapData.map.name}'s Domain`
+                        : "Someone's Domain"}
+                    </Text>
+                    <Pressable
+                      onPress={() => {
+                        setNewMapName(mapData?.map?.name ?? "");
+                        setEditingMapName(true);
+                      }}
+                      style={{ padding: 6, marginLeft: 8 }}
+                    >
+                      <FontAwesome5 name="edit" size={16} color="#FFA500" />
+                    </Pressable>
+                  </View>
+                </View>
               </>
             )}
           </View>
@@ -442,42 +539,77 @@ export default function Index() {
               }}
             >
               {(() => {
-                // render a VIEWPORT x VIEWPORT window centered on (centerX, centerY)
+                // render the full map grid, but show a clipped viewport and translate the inner grid
                 const w = mapData.grid[0]?.length ?? 0;
                 const h = mapData.grid.length;
-                const half = Math.floor(VIEWPORT / 2);
                 const cx = centerX ?? Math.floor(w / 2);
                 const cy = centerY ?? Math.floor(h / 2);
+
+                // visible counts (how many tiles fit on screen)
+                const visibleCols = Math.min(viewportCols, w || viewportCols);
+                const visibleRows = Math.min(viewportRows, h || viewportRows);
+
+                let startRow = cy - Math.floor(visibleRows / 2);
+                let startCol = cx - Math.floor(visibleCols / 2);
+
+                const maxStartRow = Math.max(0, h - visibleRows);
+                const maxStartCol = Math.max(0, w - visibleCols);
+                if (startRow < 0) startRow = 0;
+                if (startCol < 0) startCol = 0;
+                if (startRow > maxStartRow) startRow = maxStartRow;
+                if (startCol > maxStartCol) startCol = maxStartCol;
+
+                const viewportStyle = {
+                  width: visibleCols * tileSize,
+                  height: visibleRows * tileSize,
+                  overflow: "hidden" as const,
+                };
+
+                const translateStyle = {
+                  transform: [
+                    { translateX: -startCol * tileSize },
+                    { translateY: -startRow * tileSize },
+                  ],
+                };
+
                 const rows = [] as any[];
-                for (let r = -half; r <= half; r++) {
-                  const y = cy + r;
+                for (let r = 0; r < h; r++) {
                   const cols = [] as any[];
-                  for (let c = -half; c <= half; c++) {
-                    const x = cx + c;
-                    const cell =
-                      y >= 0 && y < h && x >= 0 && x < w
-                        ? mapData.grid[y][x]
-                        : null;
+                  for (let c = 0; c < w; c++) {
+                    const cell = mapData.grid[r][c];
                     const source =
                       cell && cell.item && cell.item.imageUrl
                         ? { uri: cell.item.imageUrl }
                         : defaultTile;
                     cols.push(
                       <Image
-                        key={`cell-${x}-${y}`}
+                        key={`cell-${c}-${r}`}
                         source={source}
-                        style={{ width: 48, height: 48 }}
+                        style={{
+                          width: tileSize,
+                          height: tileSize,
+                          marginRight: 1,
+                          marginBottom: 1,
+                        }}
                         resizeMode="cover"
                       />
                     );
                   }
                   rows.push(
-                    <View key={`row-${r}`} style={{ flexDirection: "row" }}>
+                    <View
+                      key={`row-full-${r}`}
+                      style={{ flexDirection: "row" }}
+                    >
                       {cols}
                     </View>
                   );
                 }
-                return rows;
+
+                return (
+                  <View style={viewportStyle}>
+                    <View style={translateStyle}>{rows}</View>
+                  </View>
+                );
               })()}
             </View>
           ) : (
@@ -487,6 +619,22 @@ export default function Index() {
       ) : (
         <Text>{data}</Text>
       )}
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <Pressable
+          onPress={() => setTileSize((s) => Math.max(12, Math.round(s / 1.25)))}
+          style={{ padding: 6, marginRight: 6 }}
+        >
+          <FontAwesome5 name="search-minus" size={16} color="#FFA500" />
+        </Pressable>
+        <Pressable
+          onPress={() =>
+            setTileSize((s) => Math.min(128, Math.round(s * 1.25)))
+          }
+          style={{ padding: 6, marginRight: 6 }}
+        >
+          <FontAwesome5 name="search-plus" size={16} color="#FFA500" />
+        </Pressable>
+      </View>
     </View>
   );
 }
