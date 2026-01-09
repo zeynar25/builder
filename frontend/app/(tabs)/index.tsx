@@ -680,7 +680,7 @@ export default function Index() {
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
                     <Text style={{ fontWeight: "bold", fontSize: 18 }}>
                       {mapData.map?.name
-                        ? `${mapData.map.name}'s Domain`
+                        ? `${mapData.map.name}`
                         : "Someone's Domain"}
                     </Text>
                     <Pressable
