@@ -11,7 +11,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "../../src/config";
 
-export default function StopWatch() {
+export default function Timer() {
   const [running, setRunning] = useState(false);
   const [elapsed, setElapsed] = useState(0); // seconds
   const intervalRef = useRef<any>(null);
@@ -104,7 +104,7 @@ export default function StopWatch() {
     if (minutes <= 0) {
       const ok = await confirmPrompt(
         "Stop",
-        "Less than one minute recorded. Stop the stopwatch? No chron will be awarded."
+        "Less than one minute recorded. Stop the timer? No chron will be awarded."
       );
       if (!ok) return;
       setRunning(false);
@@ -115,7 +115,7 @@ export default function StopWatch() {
 
     const ok = await confirmPrompt(
       "Stop & Earn",
-      `Stop the stop watch and award ${minutes} chron?`
+      `Stop the timer and award ${minutes} chron?`
     );
     if (!ok) return;
     setRunning(false);
