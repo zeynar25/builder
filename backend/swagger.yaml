@@ -58,6 +58,14 @@ components:
           type: integer
         imageUrl:
           type: string
+          description: >-
+            URL or local asset path for the item's image. Two common forms are
+            1) a fully-qualified remote URL (e.g. https://cdn.example.com/..)
+            2) a bundled/local path that your frontend may resolve, for example
+               '../../assets/images/shop/road-axis-x.png' or '/assets/images/shop/road-axis-x.png'.
+            Frontend clients should attempt to use the value as a remote `uri` if it
+            begins with 'http'; otherwise they may map known local paths to bundled
+            assets or request the asset via the `/assets` route documented below.
         isActive:
           type: boolean
         createdAt:
@@ -533,3 +541,28 @@ tags:
   - name: items
   - name: categories
   - name: maps
+
+# Static assets served by the backend for convenience. Example uses:
+# - /assets/images/shop/road-axis-x.png
+# Clients can request the file directly as an image.
+  /assets/images/{fileName}:
+    get:
+      summary: Serve a static image asset from the server's bundled frontend assets folder
+      parameters:
+        - in: path
+          name: fileName
+          required: true
+          schema:
+            type: string
+          description: File name (including subpath under `images/`), for example `shop/road-axis-x.png` or `road-connectors/default-tile.png`.
+      responses:
+        "200":
+          description: Image file returned (content-type will vary by file extension)
+          content:
+            image/png: {}
+            image/jpeg: {}
+            image/svg+xml: {}
+        "404":
+          description: Not found
+        "500":
+          description: Server error
