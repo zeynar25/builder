@@ -41,6 +41,34 @@ export async function buyItem(req, res) {
   }
 }
 
+export async function sellPlacement(req, res) {
+  try {
+    const { accountId, accountDetailsId, mapId, x, y } = req.body;
+    const result = await itemService.sellPlacementByCoords(
+      accountId,
+      accountDetailsId,
+      mapId,
+      x,
+      y
+    );
+
+    if (!result) {
+      return res.status(404).json({ error: "placement_not_found" });
+    }
+
+    return res.json(result);
+  } catch (err) {
+    const msg = err?.message || "cannot_sell_item";
+    if (msg === "account_details_not_found") {
+      return res.status(400).json({ error: msg });
+    }
+    if (msg === "not_owner") {
+      return res.status(403).json({ error: msg });
+    }
+    return res.status(500).json({ error: msg });
+  }
+}
+
 export async function createItem(req, res) {
   try {
     const payload = { ...req.body };
