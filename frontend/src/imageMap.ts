@@ -110,6 +110,14 @@ const map: Record<string, any> = {
   "../assets/images/shop/road-axis-sw.png": require("../assets/images/shop/road-sw.png"),
   "assets/images/shop/road-axis-sw.png": require("../assets/images/shop/road-sw.png"),
 
+  "../../assets/images/shop/blue-house.png": require("../assets/images/shop/blue-house.png"),
+  "../assets/images/shop/blue-house.png": require("../assets/images/shop/blue-house.png"),
+  "assets/images/shop/blue-house.png": require("../assets/images/shop/blue-house.png"),
+
+  "../../assets/images/shop/red-house.png": require("../assets/images/shop/red-house.png"),
+  "../assets/images/shop/red-house.png": require("../assets/images/shop/red-house.png"),
+  "assets/images/shop/red-house.png": require("../assets/images/shop/red-house.png"),
+
   // top-level
   "../../assets/images/builder-logo.png": require("../assets/images/builder-logo.png"),
   "../assets/images/builder-logo.png": require("../assets/images/builder-logo.png"),
