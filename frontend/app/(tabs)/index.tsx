@@ -428,8 +428,8 @@ export default function Index() {
           panLastDxRef.current += stepsX * threshold;
           panLastDyRef.current += stepsY * threshold;
 
-          // On web, keep existing panning behavior.
-          if (Platform.OS === "web" || !buildItem) {
+          // When not in build mode, drag continues to pan the map.
+          if (!buildItem) {
             if (stepsX !== 0) {
               pan(-stepsX, 0);
             }
@@ -439,9 +439,9 @@ export default function Index() {
             return;
           }
 
-          // On mobile while in build mode: move the build item, and only
-          // pan the map when pushing the build item against the viewport edges.
-          if (!mapData?.map || centerX == null || centerY == null) return;
+          // In build mode, drag moves the build target across the map. The
+          // viewport will follow it based on buildX/buildY when rendering.
+          if (!mapData?.map) return;
 
           const mapW = Number(
             mapData.map.widthTiles ??
@@ -457,64 +457,14 @@ export default function Index() {
           );
           if (!mapW || !mapH) return;
 
-          let targetX = buildX ?? centerX;
-          let targetY = buildY ?? centerY;
+          let targetX = buildX ?? centerX ?? 0;
+          let targetY = buildY ?? centerY ?? 0;
 
-          // apply tile steps to the build target in world space
           if (stepsX !== 0) {
             targetX = clamp(targetX + stepsX, 0, mapW - 1);
           }
           if (stepsY !== 0) {
             targetY = clamp(targetY + stepsY, 0, mapH - 1);
-          }
-
-          // ensure build target stays within the visible viewport by
-          // adjusting the camera center only when needed (i.e. when
-          // the target would go past the viewport edges)
-          const visibleCols = Math.min(viewportCols, mapW || viewportCols);
-          const visibleRows = Math.min(viewportRows, mapH || viewportRows);
-
-          let cx = centerX;
-          let cy = centerY;
-          const maxIterations = mapW + mapH + 10;
-          for (let i = 0; i < maxIterations; i++) {
-            let changed = false;
-
-            let startRow = cy - Math.floor(visibleRows / 2);
-            let startCol = cx - Math.floor(visibleCols / 2);
-            const maxStartRow = Math.max(0, mapH - visibleRows);
-            const maxStartCol = Math.max(0, mapW - visibleCols);
-            if (startRow < 0) startRow = 0;
-            if (startCol < 0) startCol = 0;
-            if (startRow > maxStartRow) startRow = maxStartRow;
-            if (startCol > maxStartCol) startCol = maxStartCol;
-
-            const endRow = startRow + visibleRows - 1;
-            const endCol = startCol + visibleCols - 1;
-
-            if (targetX < startCol && cx > 0) {
-              cx -= 1;
-              changed = true;
-            } else if (targetX > endCol && cx < mapW - 1) {
-              cx += 1;
-              changed = true;
-            }
-
-            if (targetY < startRow && cy > 0) {
-              cy -= 1;
-              changed = true;
-            } else if (targetY > endRow && cy < mapH - 1) {
-              cy += 1;
-              changed = true;
-            }
-
-            if (!changed) break;
-          }
-
-          const dCenterX = cx - centerX;
-          const dCenterY = cy - centerY;
-          if (dCenterX !== 0 || dCenterY !== 0) {
-            pan(dCenterX, dCenterY);
           }
 
           setBuildX(targetX);
@@ -526,18 +476,7 @@ export default function Index() {
           panLastDyRef.current = 0;
         },
       }),
-    [
-      mapData,
-      tileSize,
-      pan,
-      buildItem,
-      buildX,
-      buildY,
-      viewportCols,
-      viewportRows,
-      centerX,
-      centerY,
-    ]
+    [mapData, tileSize, pan, buildItem, buildX, buildY, centerX, centerY]
   );
 
   // keyboard panning support for web (WASD, QE, ZC for diagonals and arrows)
@@ -1079,15 +1018,29 @@ export default function Index() {
                 // render the full map grid, but show a clipped viewport and translate the inner grid
                 const w = mapData.grid[0]?.length ?? 0;
                 const h = mapData.grid.length;
-                const cx = centerX ?? Math.floor(w / 2);
-                const cy = centerY ?? Math.floor(h / 2);
+                const centerCol = centerX ?? Math.floor(w / 2);
+                const centerRow = centerY ?? Math.floor(h / 2);
 
                 // visible counts (how many tiles fit on screen)
                 const visibleCols = Math.min(viewportCols, w || viewportCols);
                 const visibleRows = Math.min(viewportRows, h || viewportRows);
 
-                let startRow = cy - Math.floor(visibleRows / 2);
-                let startCol = cx - Math.floor(visibleCols / 2);
+                // Decide the viewport start based on build target if present,
+                // otherwise use the camera center.
+                let startRow: number;
+                let startCol: number;
+
+                if (buildItem && buildY != null) {
+                  startRow = buildY - 1;
+                } else {
+                  startRow = centerRow - Math.floor(visibleRows / 2);
+                }
+
+                if (buildItem && buildX != null) {
+                  startCol = buildX - 1;
+                } else {
+                  startCol = centerCol - Math.floor(visibleCols / 2);
+                }
 
                 const maxStartRow = Math.max(0, h - visibleRows);
                 const maxStartCol = Math.max(0, w - visibleCols);
@@ -1114,8 +1067,8 @@ export default function Index() {
                   const cols = [] as any[];
                   for (let c = 0; c < w; c++) {
                     const cell = mapData.grid[r][c];
-                    const targetCol = buildX ?? cx;
-                    const targetRow = buildY ?? cy;
+                    const targetCol = buildX ?? centerCol;
+                    const targetRow = buildY ?? centerRow;
                     const isBuildTarget =
                       !!buildItem && r === targetRow && c === targetCol;
                     const isOccupiedTarget = isBuildTarget && !!cell?.item;
