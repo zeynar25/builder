@@ -126,6 +126,7 @@ export default function StopWatch() {
 
   return (
     <View style={styles.container}>
+      <BuildingAnimation running={running} />
       <Text style={styles.time}>{formatTime(elapsed)}</Text>
       <View style={styles.controls}>
         {!running ? (
@@ -144,7 +145,7 @@ export default function StopWatch() {
           </Pressable>
         )}
       </View>
-      <BuildingAnimation running={running} />
+
     </View>
   );
 }
