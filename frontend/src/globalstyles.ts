@@ -39,6 +39,15 @@ export const globalStyles = StyleSheet.create({
         marginBottom: theme.spacing.max,
     },
 
+    pageContainer: {
+        alignSelf: 'flex-start',
+        paddingTop: theme.spacing.md,
+        paddingBottom: theme.spacing.xs,
+        borderBottomColor: theme.colors.highlight,
+        borderBottomWidth: 2,
+        marginBottom: theme.spacing.lg,
+    },
+
     inputContainer: {
         flexDirection: "row",
         width: "100%",
@@ -78,6 +87,7 @@ export const globalStyles = StyleSheet.create({
         alignItems: "center",
         height: "100%",
     },
+
     accountInfoContainer: {
         flexDirection: "column",
     },

@@ -12,8 +12,6 @@ import Animated, {
 } from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
-const BUILDING_COLOR = '#4A90E2';
-const CRANE_COLOR = '#F5A623';
 
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
 const AnimatedLine = Animated.createAnimatedComponent(Line);
@@ -54,7 +52,7 @@ const THEME = {
         detail: {
             door: "#bd8871",
             knob: "#fcc565",
-            window: "#8D6E63", // Opacity handled in component
+            window: "#8D6E63",
             frame: "#FFFFFF",
         }
     },
@@ -78,6 +76,7 @@ export default function BuildingAnimation({ running }: Props) {
     const cloudX2 = useSharedValue(0); // Medium clouds
     const cloudX3 = useSharedValue(0); // Slow clouds
     const sunY = useSharedValue(0); // Sun bobbing
+    const birdX = useSharedValue(-50); // Flying birds
 
     useEffect(() => {
         if (running) {
@@ -128,6 +127,13 @@ export default function BuildingAnimation({ running }: Props) {
                 true
             );
 
+            // Flying birds
+            birdX.value = withRepeat(
+                withTiming(width + 100, { duration: 6000, easing: Easing.linear }),
+                -1,
+                false
+            );
+
         } else {
             craneRotation.value = withTiming(0);
             cableLength.value = withTiming(0);
@@ -161,6 +167,19 @@ export default function BuildingAnimation({ running }: Props) {
     const sunProps = useAnimatedProps(() => ({
         transform: [{ translateY: sunY.value }]
     }));
+
+    // Flying birds
+    const birdProps = useAnimatedProps(() => ({
+        transform: [{ translateX: birdX.value }]
+    }));
+
+
+    // Bird shape component
+    const BirdShape = ({ x, y, scale = 1 }: { x: number; y: number; scale?: number }) => (
+        <G transform={`translate(${x}, ${y}) scale(${scale})`}>
+            <Path d="M0,0 Q5,-8 10,0 Q15,-8 20,0" stroke="#333" strokeWidth="2" fill="none" />
+        </G>
+    );
 
     // Cloud layers with different speeds
     const cloudStyleFast = useAnimatedProps(() => ({
@@ -208,14 +227,20 @@ export default function BuildingAnimation({ running }: Props) {
                     <Circle cx="300" cy="45" r="22" fill={THEME.sky.sun.center} />
                 </AnimatedG>
 
+                {/* Flying birds */}
+                <AnimatedG animatedProps={birdProps}>
+                    <BirdShape x={30} y={60} scale={0.8} />
+                    <BirdShape x={50} y={45} scale={1} />
+                    <BirdShape x={80} y={55} scale={0.7} />
+                </AnimatedG>
+
                 {/* 3D Ground Platform - covers ~80% of 350 viewBox width = 280 */}
                 <G transform="translate(175, 230) skewX(-25)">
                     {/* Top Surface */}
                     <Rect x="-140" y="0" width="280" height="40" rx="12" fill={THEME.ground.top} />
                 </G>
 
-                {/* Bushes (Horizon) - Sitting on ground top edge (y=230) */}
-                {/* Bush bottoms need to reach y=230. With scale 0.6-0.7, the rect goes 9-10px below y position */}
+                {/* Bushes (Horizon) - Static on ground */}
                 <G y="222">
                     <G transform="translate(60, 0) scale(0.6)"><BushShape color={THEME.ground.bushes.light} /></G>
                     <G transform="translate(100, 0) scale(0.7)"><BushShape color={THEME.ground.bushes.medium} /></G>
@@ -271,6 +296,8 @@ export default function BuildingAnimation({ running }: Props) {
                 <G>
                     {/* Tower: starts at y=120, height=110 so ends at y=230 (touches ground) */}
                     <Rect x="171" y="120" width="8" height="110" fill={THEME.crane.structure} />
+
+
                     <AnimatedG animatedProps={craneProps}>
                         {/* Back arm with counterweight */}
                         <Line x1="175" y1="120" x2="140" y2="120" stroke={THEME.crane.structure} strokeWidth="4" />

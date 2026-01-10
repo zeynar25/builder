@@ -1,13 +1,21 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Text,
+  
   View,
   Pressable,
   Alert,
   StyleSheet,
   Platform,
   DeviceEventEmitter,
+  Image,
 } from "react-native";
+
+import { Card, Text, Button } from "react-native-paper";
+import { globalStyles } from "@/src/globalstyles";
+import { theme } from "@/src/theme";
+
+const chronIcon = require("../../assets/images/chrons.png");
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "../../src/config";
 import BuildingAnimation from "../../src/components/BuildingAnimation";
@@ -16,6 +24,28 @@ export default function StopWatch() {
   const [running, setRunning] = useState(false);
   const [elapsed, setElapsed] = useState(0); // seconds
   const intervalRef = useRef<any>(null);
+  
+  const [accountDetail, setAccountDetail] = useState<any | null>(null);
+  useEffect(() => {
+    async function fetchAccountDetail() {
+      try {
+        const accountDetailId = await AsyncStorage.getItem("accountDetailId");
+        if (accountDetailId) {
+          const detailRes = await fetch(
+            `${API_BASE_URL}/api/account-detail/${accountDetailId}`
+          );
+          if (detailRes.ok) {
+            const detailJson = await detailRes.json();
+            setAccountDetail(detailJson);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch account details:", error);
+      }
+    }
+    
+    fetchAccountDetail();
+  }, []);
 
   useEffect(() => {
     if (running) {
@@ -125,7 +155,41 @@ export default function StopWatch() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={globalStyles.page}>
+
+       <View style={globalStyles.pageHeader}>
+
+        <View style={globalStyles.headerContent}>
+            <View style={globalStyles.accountInfoContainer}>
+              <Text variant="titleMedium" style={globalStyles.variantAccountName}>
+                {accountDetail?.accountDetail?.gameName || "Player"}
+              </Text>
+              <Text variant="bodyMedium" style={globalStyles.variantLabel}>
+                {accountDetail?.account?.email || ""}Hinde nalabas email sads
+              </Text>
+            </View>
+
+            <View style={globalStyles.chronContainer}>
+              <Image
+                source={chronIcon} 
+                style={{ width: 16, height: 16, marginRight: 6 }}
+                resizeMode="contain"
+              />
+              <Text variant="titleSmall" style={globalStyles.variantBalance}>
+                {accountDetail?.accountDetail?.chron ?? 0}
+              </Text>
+
+            </View>
+        </View>
+      </View>
+
+      <View style={globalStyles.pageFiller}></View>
+      <View style={globalStyles.pageContainer}>
+        <Text variant="titleLarge" style={globalStyles.variantTitle}>
+          Builders Timer
+        </Text>
+      </View>
+
       <BuildingAnimation running={running} />
       <Text style={styles.time}>{formatTime(elapsed)}</Text>
       <View style={styles.controls}>
@@ -156,6 +220,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 12,
+    backgroundColor: "red",
   },
   time: { fontSize: 36, fontWeight: "700", marginBottom: 12 },
   controls: { flexDirection: "row" },

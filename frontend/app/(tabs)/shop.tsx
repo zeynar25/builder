@@ -173,9 +173,11 @@ export default function Shop() {
           <View>
             <View style={globalStyles.pageFiller} />
 
-            <Text variant="titleLarge" style={{...globalStyles.variantTitle, marginVertical: theme.spacing.lg,}}>
-              Builders Shop
-            </Text>
+            <View style={globalStyles.pageContainer}>
+              <Text variant="titleLarge" style={globalStyles.variantTitle}>
+                Builders Shop
+              </Text>
+            </View>
           </View>
         }
         ListFooterComponent={<View style={globalStyles.pageFiller} />}
