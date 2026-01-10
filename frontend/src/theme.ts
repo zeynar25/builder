@@ -4,6 +4,8 @@ export const theme = {
         support: '#FEF8E8',
         accent_1: '#3F3D56',
         accent_2: '#1E1E1E',
+        accent_3: '#89A0BC',
+        accent_4: '#efa5b4',
         mono: '#FDFDFB',
 
     text: {
