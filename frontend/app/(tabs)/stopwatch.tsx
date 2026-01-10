@@ -157,7 +157,7 @@ export default function StopWatch() {
   return (
     <View style={globalStyles.page}>
 
-       <View style={globalStyles.pageHeader}>
+      <View style={globalStyles.pageHeader}>
 
         <View style={globalStyles.headerContent}>
             <View style={globalStyles.accountInfoContainer}>
