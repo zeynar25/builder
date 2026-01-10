@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "../../src/config";
+import BuildingAnimation from "../../src/components/BuildingAnimation";
 
 export default function StopWatch() {
   const [running, setRunning] = useState(false);
@@ -69,7 +70,7 @@ export default function StopWatch() {
       );
       try {
         DeviceEventEmitter.emit("chronUpdated", { newChron });
-      } catch {}
+      } catch { }
     } catch (e: any) {
       showAlert("Unable to award chron", e.message || String(e));
     }
@@ -143,6 +144,7 @@ export default function StopWatch() {
           </Pressable>
         )}
       </View>
+      <BuildingAnimation running={running} />
     </View>
   );
 }

@@ -18,7 +18,7 @@ export const globalStyles = StyleSheet.create({
         backgroundColor: theme.colors.mono,
         flex: 1,
         paddingHorizontal: theme.spacing.md,
-        paddingTop: 100,
+        
     },
 
     pageFiller : {
