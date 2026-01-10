@@ -63,6 +63,17 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      <Tabs.Screen
+        name="account"
+        options={{
+          tabBarIcon: ({ color, size, focused }) => (
+            <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
+              <Feather name="user" size={size} color={color} />
+            </View>
+          ),
+        }}
+      />
     </Tabs>
   );
 }

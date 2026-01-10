@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-  Text,
   View,
   ActivityIndicator,
   Alert,
@@ -13,8 +12,10 @@ import {
   PanResponder,
 } from "react-native";
 
+import { Card, Text, Button } from "react-native-paper";
 import { globalStyles } from "@/src/globalstyles";
 import { theme } from "@/src/theme";
+const chronIcon = require("../../assets/images/chrons.png");
 
 import { FontAwesome5 } from "@expo/vector-icons";
 import { API_BASE_URL } from "../../src/config";
@@ -872,13 +873,35 @@ export default function Index() {
 
   return (
     <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 16,
-      }}
+      style={globalStyles.page}
     >
+      {/* Sticky Header */}
+      <View style={globalStyles.pageHeader}>
+
+        <View style={globalStyles.headerContent}>
+            <View style={globalStyles.accountInfoContainer}>
+              <Text variant="titleMedium" style={globalStyles.variantAccountName}>
+                {accountDetail?.accountDetail?.gameName || "Player"}
+              </Text>
+              <Text variant="bodyMedium" style={globalStyles.variantLabel}>
+                {accountDetail?.account?.email || ""}Hinde nalabas email sads
+              </Text>
+            </View>
+
+            <View style={globalStyles.chronContainer}>
+              <Image
+                source={chronIcon} 
+                style={{ width: 16, height: 16, marginRight: 6 }}
+                resizeMode="contain"
+              />
+              <Text variant="titleSmall" style={globalStyles.variantBalance}>
+                {accountDetail?.accountDetail?.chron ?? 0}
+              </Text>
+
+            </View>
+        </View>
+      </View>
+      
       <View
         style={{
           width: "100%",

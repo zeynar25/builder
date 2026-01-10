@@ -18,11 +18,14 @@ export const globalStyles = StyleSheet.create({
         backgroundColor: theme.colors.mono,
         flex: 1,
         paddingHorizontal: theme.spacing.md,
+        paddingTop: 100,
     },
+
     pageFiller : {
         height: 96,
         backgroundColor: "transparent",
     },
+
     userform: {
         alignItems: 'flex-start',
     },
@@ -45,9 +48,50 @@ export const globalStyles = StyleSheet.create({
         marginBottom: theme.spacing.xl,
     },
 
+    pageHeader: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
+        height: 68,
 
+        marginTop: theme.spacing.md,
+        paddingHorizontal: theme.spacing.xl,
+        backgroundColor: theme.colors.mono,
+        borderRadius: theme.radii.pill,
+        marginHorizontal: screenWidth * 0.08,
 
+        // 🔹 iOS shadow
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 14 },
+        shadowOpacity: 0.18,
+        shadowRadius: 12,
 
+        // 🔹 Android shadow
+        elevation: 8,
+    },
+
+    headerContent: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        height: "100%",
+    },
+    accountInfoContainer: {
+        flexDirection: "column",
+    },
+
+    chronContainer: {
+        flexDirection: "row", 
+        alignItems: "center", 
+        paddingVertical: theme.spacing.sm,
+        paddingHorizontal: theme.spacing.md,
+        backgroundColor: theme.colors.highlight,
+        borderRadius: theme.radii.md,
+    },
+
+    
     // ==== textStyles ====
 
     TextLabel: {
@@ -84,10 +128,24 @@ export const globalStyles = StyleSheet.create({
 
     variantTitle:{
         color: theme.colors.text.primary,
+        fontFamily: theme.typography.fontFamily.primary,
     },
 
     variantLabel:{
         color: theme.colors.text.secondary,
+        fontFamily: theme.typography.fontFamily.primary,
+    },
+
+    variantAccountName: {
+        color: theme.colors.text.primary,
+        fontFamily: theme.typography.fontFamily.primary,
+        fontWeight: theme.typography.fontWeight.bold,
+    },
+
+    variantBalance: {
+        color: theme.colors.text.inverse,
+        fontFamily: theme.typography.fontFamily.primary,
+        fontWeight: theme.typography.fontWeight.bold,
     },
     // ==== buttonStyles ====
 
