@@ -152,6 +152,12 @@ export const globalStyles = StyleSheet.create({
         fontWeight: theme.typography.fontWeight.bold,
     },
 
+    variantProfile: {
+        color: theme.colors.highlight,
+        fontFamily: theme.typography.fontFamily.primary,
+        fontWeight: theme.typography.fontWeight.bold,
+    },
+
     variantBalance: {
         color: theme.colors.text.inverse,
         fontFamily: theme.typography.fontFamily.primary,

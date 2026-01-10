@@ -77,7 +77,7 @@ export default function Account() {
             const errBody = await detailRes.json().catch(() => null);
             throw new Error(
               errBody?.error ||
-                `Failed to fetch account details (${detailRes.status})`
+              `Failed to fetch account details (${detailRes.status})`
             );
           }
           const detailJson = await detailRes.json();
@@ -185,18 +185,34 @@ export default function Account() {
       </View>
 
       <View style={globalStyles.pageFiller} />
-      <View style={globalStyles.pageContainer}>
-        <Text variant="titleLarge" style={globalStyles.variantTitle}>
-          Builder Account
-        </Text>
-      </View>
 
       <View>
-
         <View style={styles.account}>
-          <Text variant="labelLarge" style={globalStyles.variantLabel}>
-            Player Name:
-          </Text>
+          <View style={{ alignItems: "center", marginBottom: theme.spacing.md }}>
+            <View
+              style={{
+                width: 124,
+                height: 124,
+                borderRadius: theme.radii.pill,
+                backgroundColor: theme.colors.support,
+                alignItems: "center",
+                justifyContent: "center",
+                borderWidth: 4,
+                borderColor: theme.colors.mono,
+                shadowColor: theme.colors.accent_2,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 3,
+              }}
+            >
+              <Image
+                source={require("../../assets/images/default-profile.png")}
+                style={{ width: "100%", height: "100%", borderRadius: 50 }}
+                resizeMode="cover"
+              />
+            </View>
+          </View>
 
           {editingGameName ? (
             <View style={styles.editNameActive}>
@@ -233,7 +249,7 @@ export default function Account() {
             </View>
           ) : (
             <View style={styles.editNameInactive}>
-              <Text variant="titleMedium" style={globalStyles.variantAccountName}>
+              <Text variant="titleLarge" style={globalStyles.variantProfile}>
                 {accountDetail?.accountDetail?.gameName || "Not set"}
               </Text>
               <Pressable
@@ -247,29 +263,17 @@ export default function Account() {
               </Pressable>
             </View>
           )}
+          <Text variant="labelLarge" style={globalStyles.variantLabel}>
+            {accountDetail?.account?.email || "@Email not available"}
+          </Text>
 
-          <Text variant="labelLarge" style={{...globalStyles.variantLabel, marginTop: 16}}>
-            Player Email:
-          </Text>
-          <Text variant="titleMedium" style={globalStyles.variantAccountName}>
-            {accountDetail?.account?.email || "Not available"}
-          </Text>
+          
         </View>
 
         {/* Account Info */}
-         <View style={{ marginTop: 24 }}>
-          <View style={globalStyles.pageContainer}>
-            <Text variant="titleLarge" style={globalStyles.variantTitle}>
-              Builder Stats:
-            </Text>
-          </View>
+        <View style={{ marginTop: theme.spacing.xl }}>
           
-          <Text style={{ marginBottom: 4 }}>
-            Email: {accountDetail?.account?.email || "Not available"}
-          </Text>
-          <Text style={{ marginBottom: 4 }}>
-            Chrons: {accountDetail?.accountDetail?.chron ?? 0}
-          </Text>
+
           <Text>
             Level: {Math.floor((accountDetail?.accountDetail?.exp ?? 0) / 100)}
           </Text>
@@ -298,16 +302,22 @@ const styles = StyleSheet.create({
 
   account: {
     flexDirection: "column",
+    marginTop: theme.spacing.xl,
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   editNameActive: {
-    flexDirection: "row", 
-    alignItems: "center"
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: theme.spacing.xs,
   },
 
   editNameInactive: {
-    flexDirection: "row", 
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between"
+    justifyContent: "center",
+    gap: theme.spacing.xs,
+    marginBottom: theme.spacing.xs,
   }
 });
