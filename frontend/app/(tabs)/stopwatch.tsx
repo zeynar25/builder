@@ -190,26 +190,31 @@ export default function StopWatch() {
         </Text>
       </View>
 
-      <BuildingAnimation running={running} />
-      <Text style={styles.time}>{formatTime(elapsed)}</Text>
-      <View style={styles.controls}>
-        {!running ? (
-          <Pressable
-            onPress={() => setRunning(true)}
-            style={({ pressed }) => [styles.button, pressed && styles.pressed]}
-          >
-            <Text style={styles.buttonText}>Start</Text>
-          </Pressable>
-        ) : (
-          <Pressable
-            onPress={confirmStopAndEarn}
-            style={({ pressed }) => [styles.button, pressed && styles.pressed]}
-          >
-            <Text style={styles.buttonText}>Stop & Earn</Text>
-          </Pressable>
-        )}
-      </View>
+      <View style={styles.container}>
+        <BuildingAnimation running={running} />
+        <View style={styles.controls}>
+          <Text variant="displayMedium" style={globalStyles.variantTitle}>{formatTime(elapsed)}</Text>
 
+          <View style={styles.buttonContainer}>
+            {!running ? (
+              <Pressable
+                onPress={() => setRunning(true)}
+                style={({ pressed }) => [styles.button, pressed && styles.pressed]}
+              >
+                <Text style={styles.buttonText}>Start</Text>
+              </Pressable>
+            ) : (
+              <Pressable
+                onPress={confirmStopAndEarn}
+                style={({ pressed }) => [styles.button, pressed && styles.pressed]}
+              >
+                <Text variant="titleMedium" style={styles.buttonText}>Stop & Earn</Text>
+              </Pressable>
+            )}
+          </View>
+        </View>
+      </View>
+      <View style={globalStyles.pageFiller}></View>
     </View>
   );
 }
@@ -219,18 +224,32 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 12,
-    backgroundColor: "red",
   },
-  time: { fontSize: 36, fontWeight: "700", marginBottom: 12 },
-  controls: { flexDirection: "row" },
+  controls: {
+    marginTop: theme.spacing.lg,
+    alignItems: "center",
+    flexDirection: "column",
+    gap: theme.spacing.sm,
+  },
+
+  buttonContainer: { 
+    flexDirection: "row",
+  },
+
   button: {
-    backgroundColor: "#333",
+    backgroundColor: theme.colors.highlight,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    width: 88,
     paddingVertical: 8,
-    paddingHorizontal: 12,
     borderRadius: 6,
     marginHorizontal: 6,
+    
   },
   pressed: { opacity: 0.7 },
-  buttonText: { color: "#fff", fontWeight: "600" },
+
+  buttonText: { 
+    color: theme.colors.mono, 
+    fontWeight: theme.typography.fontWeight.bold },
 });

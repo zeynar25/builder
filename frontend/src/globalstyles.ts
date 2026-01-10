@@ -173,7 +173,7 @@ export const globalStyles = StyleSheet.create({
     },
   
     primaryButtonText: {
-        color: "#fff",
+        color: theme.colors.mono,
         fontSize: theme.typography.fontSize.text,
         fontWeight: theme.typography.fontWeight.bold,
         fontFamily: theme.typography.fontFamily.primary,
