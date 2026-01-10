@@ -34,6 +34,30 @@ export default function Shop() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [accountDetail, setAccountDetail] = useState<any | null>(null);
+  useEffect(() => {
+    async function fetchAccountDetail() {
+      try {
+        const accountDetailId = await AsyncStorage.getItem("accountDetailId");
+        if (accountDetailId) {
+          const detailRes = await fetch(
+            `${API_BASE_URL}/api/account-detail/${accountDetailId}`
+          );
+          if (detailRes.ok) {
+            const detailJson = await detailRes.json();
+            setAccountDetail(detailJson);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch account details:", error);
+      }
+    }
+    
+    fetchAccountDetail();
+  }, []);
+
+  
+
   useEffect(() => {
     let cancelled = false;
     async function load() {
@@ -113,58 +137,96 @@ export default function Shop() {
 
   return (
     <View style={globalStyles.page}>
-    <FlatList
-      data={items}
-      keyExtractor={(item) => item._id ?? item.id ?? String(item.name)}
-      numColumns={3}
-      contentContainerStyle={styles.container}
-      columnWrapperStyle={styles.row}
-      ListFooterComponent={<View style={globalStyles.pageFiller} />}
-      renderItem={({ item, index }) => {
-        const isLastInRow = (index + 1) % 3 === 0;
-        return (
-        <Card style={[styles.card, isLastInRow && styles.cardLast]}>
-          <Card.Content style={styles.cardContent}>
-            <Image
-              source={
-                getImageSource(item.imageUrl) ||
-                (item.imageUrl && String(item.imageUrl).startsWith("http")
-                  ? { uri: item.imageUrl }
-                  : defaultTile)
-              }
-              style={styles.image}
-              resizeMode="cover"
-            />
-            
-            <Text variant="titleSmall" style={globalStyles.variantTitle} >
-              {item.name}
-            </Text>
+    {/* Sticky Header */}
+      <View style={globalStyles.pageHeader}>
 
-            {item.description ? (
-              <Text variant="bodySmall" style={globalStyles.variantLabel}>
-                {item.description}
+        <View style={globalStyles.headerContent}>
+            <View style={globalStyles.accountInfoContainer}>
+              <Text variant="titleMedium" style={globalStyles.variantAccountName}>
+                {accountDetail?.accountDetail?.gameName || "Player"}
               </Text>
-            ) : null}
+              <Text variant="bodyMedium" style={globalStyles.variantLabel}>
+                {accountDetail?.account?.email || ""}Hinde nalabas email sads
+              </Text>
+            </View>
 
-          </Card.Content>
-          <Card.Actions>
-            <Button
-              mode="contained"
-              onPress={() => handleBuild(item)}
-              style={globalStyles.secondaryButton}
-            >
-              <View style={styles.buttonContent}>
-                <Image source={chronIcon} style={styles.chronIcon} />
-                <Text variant="bodyMedium" style={styles.price}>
-                  {formatPrice(item.price)}
+            <View style={globalStyles.chronContainer}>
+              <Image
+                source={chronIcon} 
+                style={{ width: 16, height: 16, marginRight: 6 }}
+                resizeMode="contain"
+              />
+              <Text variant="titleSmall" style={globalStyles.variantBalance}>
+                {accountDetail?.accountDetail?.chron ?? 0}
+              </Text>
+
+            </View>
+        </View>
+      </View>
+      <FlatList
+        data={items}
+        keyExtractor={(item) => item._id ?? item.id ?? String(item.name)}
+        numColumns={3}
+        contentContainerStyle={styles.container}
+        columnWrapperStyle={styles.row}
+        ListHeaderComponent={
+          <View>
+            <View style={globalStyles.pageFiller} />
+
+            <Text variant="titleLarge" style={{...globalStyles.variantTitle, marginVertical: theme.spacing.lg,}}>
+              Builders Shop
+            </Text>
+          </View>
+        }
+        ListFooterComponent={<View style={globalStyles.pageFiller} />}
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
+
+        renderItem={({ item, index }) => {
+          const isLastInRow = (index + 1) % 3 === 0;
+          return (
+          <Card style={[styles.card, isLastInRow && styles.cardLast]}>
+            <Card.Content style={styles.cardContent}>
+              <Image
+                source={
+                  getImageSource(item.imageUrl) ||
+                  (item.imageUrl && String(item.imageUrl).startsWith("http")
+                    ? { uri: item.imageUrl }
+                    : defaultTile)
+                }
+                style={styles.image}
+                resizeMode="cover"
+              />
+              
+              <Text variant="titleSmall" style={globalStyles.variantTitle} >
+                {item.name}
+              </Text>
+
+              {item.description ? (
+                <Text variant="bodySmall" style={globalStyles.variantLabel}>
+                  {item.description}
                 </Text>
-              </View>
-            </Button>
-          </Card.Actions>
-        </Card>
-        );
-      }}
-    />
+              ) : null}
+
+            </Card.Content>
+            <Card.Actions>
+              <Button
+                mode="contained"
+                onPress={() => handleBuild(item)}
+                style={globalStyles.secondaryButton}
+              >
+                <View style={styles.buttonContent}>
+                  <Image source={chronIcon} style={styles.chronIcon} />
+                  <Text variant="bodyMedium" style={styles.price}>
+                    {formatPrice(item.price)}
+                  </Text>
+                </View>
+              </Button>
+            </Card.Actions>
+          </Card>
+          );
+        }}
+      />
     </View>
   );
 }
