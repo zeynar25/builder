@@ -13,6 +13,8 @@ import {
 import { Card, Text, Button } from "react-native-paper";
 import { globalStyles } from "@/src/globalstyles";
 import { theme } from "@/src/theme";
+import PageHeader from "@/src/components/PageHeader";
+import PageFiller from "@/src/components/PageFiller";
 
 const chronIcon = require("../../assets/images/chrons.png");
 
@@ -157,33 +159,10 @@ export default function StopWatch() {
   return (
     <View style={globalStyles.page}>
 
-      <View style={globalStyles.pageHeader}>
+      <PageHeader accountDetail={accountDetail} />
 
-        <View style={globalStyles.headerContent}>
-            <View style={globalStyles.accountInfoContainer}>
-              <Text variant="titleMedium" style={globalStyles.variantAccountName}>
-                {accountDetail?.accountDetail?.gameName || "Player"}
-              </Text>
-              <Text variant="bodyMedium" style={globalStyles.variantLabel}>
-                {accountDetail?.account?.email || ""}Hinde nalabas email sads
-              </Text>
-            </View>
-
-            <View style={globalStyles.chronContainer}>
-              <Image
-                source={chronIcon} 
-                style={{ width: 16, height: 16, marginRight: 6 }}
-                resizeMode="contain"
-              />
-              <Text variant="titleSmall" style={globalStyles.variantBalance}>
-                {accountDetail?.accountDetail?.chron ?? 0}
-              </Text>
-
-            </View>
-        </View>
-      </View>
-
-      <View style={globalStyles.pageFiller}></View>
+      <PageFiller />
+      
       <View style={globalStyles.pageContainer}>
         <Text variant="titleLarge" style={globalStyles.variantTitle}>
           Builders Timer
@@ -214,7 +193,7 @@ export default function StopWatch() {
           </View>
         </View>
       </View>
-      <View style={globalStyles.pageFiller}></View>
+      <PageFiller />
     </View>
   );
 }

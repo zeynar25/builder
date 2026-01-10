@@ -95,9 +95,9 @@ export const globalStyles = StyleSheet.create({
     chronContainer: {
         flexDirection: "row", 
         alignItems: "center", 
-        paddingVertical: theme.spacing.sm,
-        paddingHorizontal: theme.spacing.md,
-        backgroundColor: theme.colors.highlight,
+        paddingVertical: theme.spacing.xs,
+        paddingHorizontal: theme.spacing.sm,
+        backgroundColor: theme.colors.accent_3,
         borderRadius: theme.radii.md,
     },
 

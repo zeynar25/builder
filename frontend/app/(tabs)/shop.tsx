@@ -17,6 +17,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { globalStyles } from "@/src/globalstyles";
 import { theme } from "@/src/theme";
+import PageHeader from "@/src/components/PageHeader";
+import PageFiller from "@/src/components/PageFiller";
 
 const defaultTile = require("../../assets/images/road-connectors/default-tile.png");
 const chronIcon = require("../../assets/images/chrons.png");
@@ -137,32 +139,10 @@ export default function Shop() {
 
   return (
     <View style={globalStyles.page}>
-    {/* Sticky Header */}
-      <View style={globalStyles.pageHeader}>
 
-        <View style={globalStyles.headerContent}>
-            <View style={globalStyles.accountInfoContainer}>
-              <Text variant="titleMedium" style={globalStyles.variantAccountName}>
-                {accountDetail?.accountDetail?.gameName || "Player"}
-              </Text>
-              <Text variant="bodyMedium" style={globalStyles.variantLabel}>
-                {accountDetail?.account?.email || ""}Hinde nalabas email sads
-              </Text>
-            </View>
+      {/* Sticky Header */}
+      <PageHeader accountDetail={accountDetail} />
 
-            <View style={globalStyles.chronContainer}>
-              <Image
-                source={chronIcon} 
-                style={{ width: 16, height: 16, marginRight: 6 }}
-                resizeMode="contain"
-              />
-              <Text variant="titleSmall" style={globalStyles.variantBalance}>
-                {accountDetail?.accountDetail?.chron ?? 0}
-              </Text>
-
-            </View>
-        </View>
-      </View>
       <FlatList
         data={items}
         keyExtractor={(item) => item._id ?? item.id ?? String(item.name)}
@@ -171,7 +151,7 @@ export default function Shop() {
         columnWrapperStyle={styles.row}
         ListHeaderComponent={
           <View>
-            <View style={globalStyles.pageFiller} />
+            <PageFiller />
 
             <View style={globalStyles.pageContainer}>
               <Text variant="titleLarge" style={globalStyles.variantTitle}>
@@ -180,7 +160,7 @@ export default function Shop() {
             </View>
           </View>
         }
-        ListFooterComponent={<View style={globalStyles.pageFiller} />}
+        ListFooterComponent={<PageFiller />}
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
 

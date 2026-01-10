@@ -16,6 +16,8 @@ import { Card, Text, Button } from "react-native-paper";
 import { globalStyles } from "@/src/globalstyles";
 import { theme } from "@/src/theme";
 const chronIcon = require("../../assets/images/chrons.png");
+import PageHeader from "@/src/components/PageHeader";
+import PageFiller from "@/src/components/PageFiller";
 
 import { FontAwesome5 } from "@expo/vector-icons";
 import { API_BASE_URL } from "../../src/config";
@@ -155,7 +157,7 @@ export default function Index() {
             const errBody = await detailRes.json().catch(() => null);
             throw new Error(
               errBody?.error ||
-                `Failed to fetch account details (${detailRes.status})`
+              `Failed to fetch account details (${detailRes.status})`
             );
           }
           const detailJson = await detailRes.json();
@@ -208,15 +210,15 @@ export default function Index() {
 
       const mapW = Number(
         mapData?.map?.widthTiles ??
-          mapData?.map?.width ??
-          mapData?.grid?.[0]?.length ??
-          0
+        mapData?.map?.width ??
+        mapData?.grid?.[0]?.length ??
+        0
       );
       const mapH = Number(
         mapData?.map?.heightTiles ??
-          mapData?.map?.height ??
-          mapData?.grid?.length ??
-          0
+        mapData?.map?.height ??
+        mapData?.grid?.length ??
+        0
       );
 
       // Cap viewport to available screen tiles, but never exceed actual map size when known.
@@ -272,9 +274,9 @@ export default function Index() {
     if (!mapData?.map) return;
     const w = Number(
       mapData.map.widthTiles ??
-        mapData.map.width ??
-        mapData.grid?.[0]?.length ??
-        0
+      mapData.map.width ??
+      mapData.grid?.[0]?.length ??
+      0
     );
     const h = Number(
       mapData.map.heightTiles ?? mapData.map.height ?? mapData.grid?.length ?? 0
@@ -351,15 +353,15 @@ export default function Index() {
       if (centerX === null || centerY === null || !mapData?.map) return;
       const w = Number(
         mapData.map.widthTiles ??
-          mapData.map.width ??
-          mapData.grid?.[0]?.length ??
-          0
+        mapData.map.width ??
+        mapData.grid?.[0]?.length ??
+        0
       );
       const h = Number(
         mapData.map.heightTiles ??
-          mapData.map.height ??
-          mapData.grid?.length ??
-          0
+        mapData.map.height ??
+        mapData.grid?.length ??
+        0
       );
       setCenterX((cx) => clamp((cx ?? 0) + dx, 0, Math.max(0, w - 1)));
       setCenterY((cy) => clamp((cy ?? 0) + dy, 0, Math.max(0, h - 1)));
@@ -460,15 +462,15 @@ export default function Index() {
 
           const mapW = Number(
             mapData.map.widthTiles ??
-              mapData.map.width ??
-              mapData.grid?.[0]?.length ??
-              0
+            mapData.map.width ??
+            mapData.grid?.[0]?.length ??
+            0
           );
           const mapH = Number(
             mapData.map.heightTiles ??
-              mapData.map.height ??
-              mapData.grid?.length ??
-              0
+            mapData.map.height ??
+            mapData.grid?.length ??
+            0
           );
           if (!mapW || !mapH) return;
 
@@ -875,33 +877,9 @@ export default function Index() {
     <View
       style={globalStyles.page}
     >
-      {/* Sticky Header */}
-      <View style={globalStyles.pageHeader}>
+      <PageHeader accountDetail={accountDetail} />
+      <PageFiller />
 
-        <View style={globalStyles.headerContent}>
-            <View style={globalStyles.accountInfoContainer}>
-              <Text variant="titleMedium" style={globalStyles.variantAccountName}>
-                {accountDetail?.accountDetail?.gameName || "Player"}
-              </Text>
-              <Text variant="bodyMedium" style={globalStyles.variantLabel}>
-                {accountDetail?.account?.email || ""}Hinde nalabas email sads
-              </Text>
-            </View>
-
-            <View style={globalStyles.chronContainer}>
-              <Image
-                source={chronIcon} 
-                style={{ width: 16, height: 16, marginRight: 6 }}
-                resizeMode="contain"
-              />
-              <Text variant="titleSmall" style={globalStyles.variantBalance}>
-                {accountDetail?.accountDetail?.chron ?? 0}
-              </Text>
-
-            </View>
-        </View>
-      </View>
-      
       <View
         style={{
           width: "100%",
@@ -1004,9 +982,8 @@ export default function Index() {
 
         <Text style={{ marginTop: 8, alignSelf: "flex-start" }}>
           {accountDetail
-            ? `${
-                accountDetail.accountDetail.chron === 1 ? "Chron" : "Chrons"
-              }: ${accountDetail.accountDetail.chron}`
+            ? `${accountDetail.accountDetail.chron === 1 ? "Chron" : "Chrons"
+            }: ${accountDetail.accountDetail.chron}`
             : ""}
         </Text>
         <Pressable
@@ -1021,8 +998,8 @@ export default function Index() {
           <Text>
             {accountDetail
               ? `Level: ${Math.floor(
-                  (accountDetail.accountDetail.exp ?? 0) / 100
-                )}`
+                (accountDetail.accountDetail.exp ?? 0) / 100
+              )}`
               : ""}
             {showExp && accountDetail
               ? ` (${accountDetail.accountDetail.exp} XP)`
@@ -1229,8 +1206,8 @@ export default function Index() {
                         ? "#EF4444" // red when trying to build over an occupied tile
                         : "#22C55E" // green when empty
                       : isSelected
-                      ? "#3B82F6" // blue highlight for selected occupied tile
-                      : "transparent";
+                        ? "#3B82F6" // blue highlight for selected occupied tile
+                        : "transparent";
                     cols.push(
                       <Pressable
                         key={`cell-${r}-${c}`}
@@ -1389,8 +1366,8 @@ export default function Index() {
                 ? "Moving..."
                 : "Placing..."
               : moveSource
-              ? `Moving: ${moveSource.item?.name ?? "Item"}`
-              : `Placing: ${buildItem?.name ?? "Item"}`}
+                ? `Moving: ${moveSource.item?.name ?? "Item"}`
+                : `Placing: ${buildItem?.name ?? "Item"}`}
           </Text>
           <Pressable
             onPress={moveSource ? confirmMove : confirmBuild}
@@ -1435,7 +1412,7 @@ export default function Index() {
           <FontAwesome5 name="search-plus" size={16} color="#FFA500" />
         </Pressable>
       </View>
-      <View style={globalStyles.pageFiller} />
+      <PageFiller />
     </View>
   );
 }

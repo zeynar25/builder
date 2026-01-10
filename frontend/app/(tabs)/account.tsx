@@ -4,7 +4,8 @@ import { Text, Button, Card, ProgressBar } from "react-native-paper";
 
 import { globalStyles } from "@/src/globalstyles";
 import { theme } from "@/src/theme";
-
+import PageHeader from "@/src/components/PageHeader";
+import PageFiller from "@/src/components/PageFiller";
 import { StyleSheet } from "react-native";
 
 import { Feather, Ionicons } from "@expo/vector-icons";
@@ -162,151 +163,130 @@ export default function Account() {
   return (
     <View style={globalStyles.page}>
       {/* Sticky Header */}
-      <View style={globalStyles.pageHeader}>
-        <View style={globalStyles.headerContent}>
-          <View style={globalStyles.accountInfoContainer}>
-            <Text variant="titleMedium" style={globalStyles.variantAccountName}>
-              {accountDetail?.accountDetail?.gameName || "Player"}
-            </Text>
-            <Text variant="bodyMedium" style={globalStyles.variantLabel}>
-              {accountDetail?.account?.email || ""}Hinde nalabas email sads
-            </Text>
-          </View>
+      <PageHeader accountDetail={accountDetail} />
 
-          <View style={globalStyles.chronContainer}>
-            <Image
-              source={chronIcon}
-              style={{ width: 16, height: 16, marginRight: 6 }}
-              resizeMode="contain"
-            />
-            <Text variant="titleSmall" style={globalStyles.variantBalance}>
-              {accountDetail?.accountDetail?.chron ?? 0}
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={globalStyles.pageFiller} />
+      <PageFiller />
 
       <View style={styles.pageContainer}>
 
-        
-          <View style={styles.accountDetails}>
-            <View style={styles.imageContainer}>
-              <Image
-                source={require("../../assets/images/default-profile.png")}
-                style={{ 
-                  width: "100%", 
-                  height: "100%", 
-                  borderRadius: theme.radii.pill, }}
-                resizeMode="cover"
-              />
-            </View>
 
-            {editingGameName ? (
-              <View style={styles.editNameActive}>
-
-                <TextInput
-                  value={newGameName}
-                  onChangeText={setNewGameName}
-                  placeholder="Enter your Name"
-                  style={{
-                    borderWidth: 0,
-                    borderBottomWidth: 1,
-                    borderColor: theme.colors.highlight,
-                    flex: 1,
-                    paddingHorizontal: theme.spacing.sm,
-                    paddingVertical: theme.spacing.xs,
-                    color: theme.colors.text.secondary,
-                  }}
-                  editable={!savingGameName}
-                />
-                <Pressable
-                  onPress={handleSaveGameName}
-                  style={{ padding: 8, marginLeft: 8 }}
-                  disabled={savingGameName}
-                >
-                  <Feather name="check" size={20} color="#11aa49" />
-                </Pressable>
-                <Pressable
-                  onPress={() => setEditingGameName(false)}
-                  style={{ padding: 8, marginLeft: 8 }}
-                  disabled={savingGameName}
-                >
-                  <Feather name="x" size={20} color={theme.colors.text.secondary} />
-                </Pressable>
-              </View>
-            ) : (
-              <View style={styles.editNameInactive}>
-                <Text variant="titleLarge" style={globalStyles.variantProfile}>
-                  {accountDetail?.accountDetail?.gameName || "Not set"}
-                </Text>
-                <Pressable
-                  onPress={() => {
-                    setNewGameName(accountDetail?.accountDetail?.gameName ?? "");
-                    setEditingGameName(true);
-                  }}
-                  style={{ padding: 6 }}
-                >
-                  <Feather name="edit-3" size={theme.icon.form} color={theme.colors.highlight} />
-                </Pressable>
-              </View>
-            )}
-
-            <Text variant="labelLarge" style={globalStyles.variantLabel}>
-              {accountDetail?.account?.email || "@Email not available"}
-            </Text>
+        <View style={styles.accountDetails}>
+          <View style={styles.imageContainer}>
+            <Image
+              source={require("../../assets/images/default-profile.png")}
+              style={{
+                width: "100%",
+                height: "100%",
+                borderRadius: theme.radii.pill,
+              }}
+              resizeMode="cover"
+            />
           </View>
-  
-          <Card style={styles.cardMain}>
-            <Card.Content style={{ alignItems: "center" }}>
-              <Text variant="titleMedium" style={globalStyles.variantBalance}>
-                Builder Apples
+
+          {editingGameName ? (
+            <View style={styles.editNameActive}>
+
+              <TextInput
+                value={newGameName}
+                onChangeText={setNewGameName}
+                placeholder="Enter your Name"
+                style={{
+                  borderWidth: 0,
+                  borderBottomWidth: 1,
+                  borderColor: theme.colors.highlight,
+                  flex: 1,
+                  paddingHorizontal: theme.spacing.sm,
+                  paddingVertical: theme.spacing.xs,
+                  color: theme.colors.text.secondary,
+                }}
+                editable={!savingGameName}
+              />
+              <Pressable
+                onPress={handleSaveGameName}
+                style={{ padding: 8, marginLeft: 8 }}
+                disabled={savingGameName}
+              >
+                <Feather name="check" size={20} color="#11aa49" />
+              </Pressable>
+              <Pressable
+                onPress={() => setEditingGameName(false)}
+                style={{ padding: 8, marginLeft: 8 }}
+                disabled={savingGameName}
+              >
+                <Feather name="x" size={20} color={theme.colors.text.secondary} />
+              </Pressable>
+            </View>
+          ) : (
+            <View style={styles.editNameInactive}>
+              <Text variant="titleLarge" style={globalStyles.variantProfile}>
+                {accountDetail?.accountDetail?.gameName || "Not set"}
               </Text>
+              <Pressable
+                onPress={() => {
+                  setNewGameName(accountDetail?.accountDetail?.gameName ?? "");
+                  setEditingGameName(true);
+                }}
+                style={{ padding: 6 }}
+              >
+                <Feather name="edit-3" size={theme.icon.form} color={theme.colors.highlight} />
+              </Pressable>
+            </View>
+          )}
 
-              {(() => {
-                const exp = accountDetail?.accountDetail?.exp ?? 0;
-                const level = Math.floor(exp / 100);
-                const progress = (exp % 100) / 100;
+          <Text variant="labelLarge" style={globalStyles.variantLabel}>
+            {accountDetail?.account?.email || "@Email not available"}
+          </Text>
+        </View>
 
-                let appleSource;
-                if (level >= 4) appleSource = require("../../assets/images/levels/level4-apple.png");
-                else if (level === 3) appleSource = require("../../assets/images/levels/level3-apple.png");
-                else if (level === 2) appleSource = require("../../assets/images/levels/level2-apple.png");
-                else appleSource = require("../../assets/images/levels/default-apple.png");
+        <Card style={styles.cardMain}>
+          <Card.Content style={{ alignItems: "center" }}>
+            <Text variant="titleMedium" style={globalStyles.variantBalance}>
+              Builder Apples
+            </Text>
 
-                return (
+            {(() => {
+              const exp = accountDetail?.accountDetail?.exp ?? 0;
+              const level = Math.floor(exp / 100);
+              const progress = (exp % 100) / 100;
 
-                  <View style={{ alignItems: "center", width: "100%" }}>
-                    <View style={styles.appleContainer}>
-                      <Image
-                        source={appleSource}
-                        style={{ width: "100%", height: "100%" }}
-                        resizeMode="contain"
-                      />
-                    </View>
-                    <View
-                      style={{
-                        backgroundColor: theme.colors.accent_2,
-                        paddingHorizontal: theme.spacing.lg,
-                        paddingVertical: theme.spacing.sm,
-                        borderRadius: theme.radii.pill,
-                        marginBottom: theme.spacing.md,
-                      }}
-                    >
+              let appleSource;
+              if (level >= 4) appleSource = require("../../assets/images/levels/level4-apple.png");
+              else if (level === 3) appleSource = require("../../assets/images/levels/level3-apple.png");
+              else if (level === 2) appleSource = require("../../assets/images/levels/level2-apple.png");
+              else appleSource = require("../../assets/images/levels/default-apple.png");
+
+              return (
+
+                <View style={{ alignItems: "center", width: "100%" }}>
+                  <View style={styles.appleContainer}>
+                    <Image
+                      source={appleSource}
+                      style={{ width: "100%", height: "100%" }}
+                      resizeMode="contain"
+                    />
+                  </View>
+                  <View
+                    style={{
+                      backgroundColor: theme.colors.accent_2,
+                      paddingHorizontal: theme.spacing.lg,
+                      paddingVertical: theme.spacing.sm,
+                      borderRadius: theme.radii.pill,
+                      marginBottom: theme.spacing.md,
+                    }}
+                  >
                     <Text variant="titleMedium" style={globalStyles.variantBalance}>
                       Level {level}
                     </Text>
-                    </View>
-                    <Text variant="bodyMedium" style={globalStyles.variantBalance}>
-                      {exp} XP (Next Level: {(level + 1) * 100} XP)
-                    </Text>
                   </View>
-                );
-              })()}
-            </Card.Content>
-          </Card>
-        
+                  <Text variant="bodyMedium" style={globalStyles.variantBalance}>
+                    {exp} XP (Next Level: {(level + 1) * 100} XP)
+                  </Text>
+                </View>
+              );
+            })()}
+          </Card.Content>
+        </Card>
+
 
         {/* Logout Button */}
         <Button
@@ -319,7 +299,7 @@ export default function Account() {
         </Button>
 
       </View>
-      <View style={globalStyles.pageFiller} />
+      <PageFiller />
     </View>
   );
 }
@@ -348,6 +328,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.support,
     alignItems: "center",
     justifyContent: "center",
+    marginBottom: screenHeight * 0.01,
     borderWidth: theme.spacing.sm,
     borderColor: theme.colors.mono,
     shadowColor: theme.colors.accent_3,
@@ -374,8 +355,8 @@ const styles = StyleSheet.create({
   cardMain: {
     flexDirection: "column",
     justifyContent: "center",
-    width: "80%", 
-    height: "auto", 
+    width: "80%",
+    height: "auto",
     paddingVertical: theme.spacing.xs,
     backgroundColor: theme.colors.highlight,
     borderColor: theme.colors.mono,
@@ -387,7 +368,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.radii.pill,
     padding: theme.spacing.xs,
     marginVertical: theme.spacing.md,
-    width: screenWidth * 0.32, 
+    width: screenWidth * 0.32,
     height: screenWidth * 0.32
   }
 });
