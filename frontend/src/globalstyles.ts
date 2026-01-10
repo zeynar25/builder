@@ -17,10 +17,10 @@ export const globalStyles = StyleSheet.create({
     page : {
         backgroundColor: theme.colors.mono,
         flex: 1,
-        paddingHorizontal: theme.spacing.sm,
+        paddingHorizontal: theme.spacing.md,
     },
     pageFiller : {
-        height: screenWidth * 0.28,
+        height: 96,
         backgroundColor: "transparent",
     },
     userform: {

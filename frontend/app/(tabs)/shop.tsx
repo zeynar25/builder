@@ -22,8 +22,9 @@ const defaultTile = require("../../assets/images/road-connectors/default-tile.pn
 const chronIcon = require("../../assets/images/chrons.png");
 
 const { width } = Dimensions.get("window");
-const padding = 12;
-const gap = 8;
+const padding = 16;
+const gap = 16;
+
 // Calculate card width: (total width - left/right padding - gaps between cards) / number of columns
 const cardWidth = (width - padding * 2 - gap * 2) / 3;
 
