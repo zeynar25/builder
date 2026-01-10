@@ -105,7 +105,7 @@ export default function Index() {
       try {
         const token = await AsyncStorage.getItem("accessToken");
         if (!token) {
-          router.replace("/login");
+          router.replace("/welcome");
           return;
         }
 
@@ -142,7 +142,7 @@ export default function Index() {
           Alert.alert(
             "Session expired",
             "Your session has expired and you have been logged out. Please sign in again.",
-            [{ text: "OK", onPress: () => router.replace("/login") }]
+            [{ text: "OK", onPress: () => router.replace("/welcome") }]
           );
           return;
         }
@@ -884,7 +884,7 @@ export default function Index() {
           Builders Village
         </Text>
       </View>
-      
+
       {loading ? (
         <ActivityIndicator size="large" />
       ) : error ? (

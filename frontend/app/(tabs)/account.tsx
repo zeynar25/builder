@@ -32,7 +32,7 @@ export default function Account() {
       try {
         const token = await AsyncStorage.getItem("accessToken");
         if (!token) {
-          router.replace("/login");
+          router.replace("/welcome");
           return;
         }
 
@@ -65,7 +65,7 @@ export default function Account() {
           Alert.alert(
             "Session expired",
             "Your session has expired and you have been logged out. Please sign in again.",
-            [{ text: "OK", onPress: () => router.replace("/login") }]
+            [{ text: "OK", onPress: () => router.replace("/welcome") }]
           );
           return;
         }
@@ -112,7 +112,7 @@ export default function Account() {
     await AsyncStorage.removeItem("accountId");
     await AsyncStorage.removeItem("accountDetailId");
     await AsyncStorage.removeItem("currentMapId");
-    router.replace("/login");
+    router.replace("/welcome");
   }
 
   async function handleSaveGameName() {
