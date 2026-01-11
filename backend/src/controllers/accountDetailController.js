@@ -67,9 +67,32 @@ export async function addChronById(req, res) {
   }
 }
 
+export async function uploadProfileImageById(req, res) {
+  try {
+    const { id } = req.params;
+    if (!req.file) {
+      return res.status(400).json({ error: "image_required" });
+    }
+
+    const filename = req.file.filename;
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    const imageUrl = `${baseUrl}/uploads/profiles/${filename}`;
+
+    const updated = await accountDetailService.updateImageById(id, imageUrl);
+    if (!updated) return res.status(404).json({ error: "not_found" });
+
+    return res.json({ success: true, accountDetail: updated });
+  } catch (err) {
+    return res
+      .status(400)
+      .json({ error: err.message || "cannot_upload_profile_image" });
+  }
+}
+
 export default {
   getAccountDetailById,
   updateGameNameByAccount,
   updateGameNameById,
   addChronById,
+  uploadProfileImageById,
 };

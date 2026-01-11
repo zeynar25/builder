@@ -3,6 +3,7 @@
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import path from "path";
+import fs from "fs";
 import { connectDb } from "./config/db.js";
 import accountRoutes from "./routes/accountRoutes.js";
 import itemRoutes from "./routes/itemRoutes.js";
@@ -31,6 +32,15 @@ const PORT = process.env.PORT || 5001;
 
 connectDb();
 
+// Ensure upload directories exist (for profile images, etc.)
+const uploadsRoot = path.join(process.cwd(), "uploads");
+const profilesDir = path.join(uploadsRoot, "profiles");
+try {
+  fs.mkdirSync(profilesDir, { recursive: true });
+} catch {
+  // ignore directory creation errors; multer will surface issues on upload
+}
+
 app.get("/", (req, res) => {
   res.status(200).send("Welcome to Builder!");
 });
@@ -40,6 +50,9 @@ app.use("/api/items", itemRoutes);
 app.use("/api/item-categories", itemCategoryRoutes);
 app.use("/api/account-detail", accountDetailRoutes);
 app.use("/api/maps", mapRoutes);
+
+// Serve uploaded files (e.g., profile images) statically
+app.use("/uploads", express.static(uploadsRoot));
 
 // Swagger UI at /docs (serve backend/swagger.yaml)
 try {
