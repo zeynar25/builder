@@ -322,8 +322,7 @@ paths:
           application/json:
             schema:
               type: object
-              required:
-                [accountId, accountDetailsId, mapId, x, y, itemId]
+              required: [accountId, accountDetailsId, mapId, x, y, itemId]
               properties:
                 accountId:
                   type: string
@@ -364,8 +363,7 @@ paths:
           application/json:
             schema:
               type: object
-              required:
-                [accountId, accountDetailsId, mapId, x, y]
+              required: [accountId, accountDetailsId, mapId, x, y]
               properties:
                 accountId:
                   type: string
@@ -880,15 +878,9 @@ paths:
         "500":
           description: Server error
 
-tags:
-  - name: account
-  - name: items
-  - name: categories
-  - name: maps
-
-# Static assets served by the backend for convenience. Example uses:
-# - /assets/images/shop/road-axis-x.png
-# Clients can request the file directly as an image.
+  # Static assets served by the backend for convenience. Example uses:
+  # - /assets/images/shop/road-axis-x.png
+  # Clients can request the file directly as an image.
   /assets/images/{fileName}:
     get:
       summary: Serve a static image asset from the server's bundled frontend assets folder
@@ -910,3 +902,9 @@ tags:
           description: Not found
         "500":
           description: Server error
+
+tags:
+  - name: account
+  - name: items
+  - name: categories
+  - name: maps
