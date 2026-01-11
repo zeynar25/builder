@@ -43,14 +43,15 @@ export default function Signup() {
   const passwordRef = useRef<TextInput | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit() {
     setError(null);
-    if (!email || !password) {
-      setError("Email and password are required");
+    if (!email || !password || !confirmPassword) {
+      setError("Email and both password fields are required");
       return;
     }
 
@@ -65,6 +66,11 @@ export default function Signup() {
       setError(
         "Password must be at least 8 characters and include upper and lower case letters and a number."
       );
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
       return;
     }
 
@@ -169,6 +175,37 @@ export default function Signup() {
               </Pressable>
             </View>
 
+            <Text style={globalStyles.TextLabel}>Re-enter Password</Text>
+            <View style={globalStyles.inputContainer}>
+              <Feather
+                name="lock"
+                size={theme.icon.form}
+                color={theme.colors.highlight}
+              />
+              <TextInput
+                style={globalStyles.textInput}
+                placeholder="Re-enter your password"
+                placeholderTextColor={theme.colors.text.secondary}
+                secureTextEntry={!showPassword}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                returnKeyType="done"
+                onSubmitEditing={() => {
+                  handleSubmit();
+                  Keyboard.dismiss();
+                }}
+                autoCorrect={false}
+                autoCapitalize="none"
+              />
+              <Pressable onPress={() => setShowPassword(!showPassword)}>
+                <Ionicons
+                  name={showPassword ? "eye-outline" : "eye-off-outline"}
+                  size={theme.icon.form}
+                  color={theme.colors.accent_1}
+                />
+              </Pressable>
+            </View>
+
             {error && <Text style={globalStyles.textError}>{error}</Text>}
 
             <Pressable
@@ -183,7 +220,9 @@ export default function Signup() {
               {loading ? (
                 <ActivityIndicator color={theme.colors.mono} />
               ) : (
-                <Text style={globalStyles.primaryButtonText}>Create Account</Text>
+                <Text style={globalStyles.primaryButtonText}>
+                  Create Account
+                </Text>
               )}
             </Pressable>
 
