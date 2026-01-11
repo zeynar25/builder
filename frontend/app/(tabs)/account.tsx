@@ -9,21 +9,21 @@ import {
   Dimensions,
   StyleSheet,
 } from "react-native";
-import { Text, Button, Card, ProgressBar } from "react-native-paper";
+import { Text, Button, Card } from "react-native-paper";
 
 import { globalStyles } from "@/src/globalstyles";
 import { theme } from "@/src/theme";
 import PageHeader from "@/src/components/PageHeader";
 import PageFiller from "@/src/components/PageFiller";
 
-import { Feather, Ionicons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import { API_BASE_URL } from "../../src/config";
+import isTokenValid from "../../src/useAuthGuard";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 
 const { width: screenWidth } = Dimensions.get("window");
 const { height: screenHeight } = Dimensions.get("window");
-const chronIcon = require("../../assets/images/chrons.png");
 
 export default function Account() {
   const router = useRouter();
@@ -42,30 +42,6 @@ export default function Account() {
         if (!token) {
           router.replace("/welcome");
           return;
-        }
-
-        // Validate token expiry
-        function isTokenValid(tok: string | null) {
-          if (!tok) return false;
-          try {
-            const parts = tok.split(".");
-            if (parts.length !== 3) return false;
-            const payload = parts[1];
-            const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
-            const json = decodeURIComponent(
-              atob(base64)
-                .split("")
-                .map(function (c) {
-                  return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-                })
-                .join("")
-            );
-            const obj = JSON.parse(json);
-            if (!obj.exp) return false;
-            return obj.exp * 1000 > Date.now();
-          } catch {
-            return false;
-          }
         }
 
         if (!isTokenValid(token)) {
@@ -210,6 +186,7 @@ export default function Account() {
                   paddingHorizontal: theme.spacing.sm,
                   paddingVertical: theme.spacing.xs,
                   color: theme.colors.text.secondary,
+                  textAlign: "center",
                 }}
                 editable={!savingGameName}
               />
@@ -267,7 +244,7 @@ export default function Account() {
             {(() => {
               const exp = accountDetail?.accountDetail?.exp ?? 0;
               const level = Math.floor(exp / 100);
-              const progress = (exp % 100) / 100;
+              // const progress = (exp % 100) / 100;
 
               let appleSource;
               if (level >= 4)

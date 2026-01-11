@@ -6,11 +6,13 @@ import {
   ActivityIndicator,
   StyleSheet,
   Dimensions,
+  Alert,
 } from "react-native";
 
 import { Card, Text, Button } from "react-native-paper";
 
 import { API_BASE_URL } from "../../src/config";
+import isTokenValid from "../../src/useAuthGuard";
 import { getImageSource } from "../../src/imageMap";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -37,6 +39,38 @@ export default function Shop() {
   const [error, setError] = useState<string | null>(null);
 
   const [accountDetail, setAccountDetail] = useState<any | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function checkAuth() {
+      try {
+        const token = await AsyncStorage.getItem("accessToken");
+        if (!token) {
+          if (!cancelled) router.replace("/welcome");
+          return;
+        }
+
+        if (!isTokenValid(token)) {
+          await AsyncStorage.removeItem("accessToken");
+          if (!cancelled) {
+            Alert.alert(
+              "Session expired",
+              "Your session has expired and you have been logged out. Please sign in again.",
+              [{ text: "OK", onPress: () => router.replace("/welcome") }]
+            );
+          }
+        }
+      } catch {
+        // ignore auth errors here; they can be handled on next interaction
+      }
+    }
+
+    checkAuth();
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
   useEffect(() => {
     async function fetchAccountDetail() {
       try {
@@ -54,11 +88,9 @@ export default function Shop() {
         console.error("Failed to fetch account details:", error);
       }
     }
-    
+
     fetchAccountDetail();
   }, []);
-
-  
 
   useEffect(() => {
     let cancelled = false;
@@ -139,7 +171,6 @@ export default function Shop() {
 
   return (
     <View style={globalStyles.page}>
-
       {/* Sticky Header */}
       <PageHeader accountDetail={accountDetail} />
 
@@ -163,49 +194,47 @@ export default function Shop() {
         ListFooterComponent={<PageFiller />}
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
-
         renderItem={({ item, index }) => {
           const isLastInRow = (index + 1) % 3 === 0;
           return (
-          <Card style={[styles.card, isLastInRow && styles.cardLast]}>
-            <Card.Content style={styles.cardContent}>
-              <Image
-                source={
-                  getImageSource(item.imageUrl) ||
-                  (item.imageUrl && String(item.imageUrl).startsWith("http")
-                    ? { uri: item.imageUrl }
-                    : defaultTile)
-                }
-                style={styles.image}
-                resizeMode="cover"
-              />
-              
-              <Text variant="titleSmall" style={globalStyles.variantTitle} >
-                {item.name}
-              </Text>
+            <Card style={[styles.card, isLastInRow && styles.cardLast]}>
+              <Card.Content style={styles.cardContent}>
+                <Image
+                  source={
+                    getImageSource(item.imageUrl) ||
+                    (item.imageUrl && String(item.imageUrl).startsWith("http")
+                      ? { uri: item.imageUrl }
+                      : defaultTile)
+                  }
+                  style={styles.image}
+                  resizeMode="cover"
+                />
 
-              {item.description ? (
-                <Text variant="bodySmall" style={globalStyles.variantLabel}>
-                  {item.description}
+                <Text variant="titleSmall" style={globalStyles.variantTitle}>
+                  {item.name}
                 </Text>
-              ) : null}
 
-            </Card.Content>
-            <Card.Actions>
-              <Button
-                mode="contained"
-                onPress={() => handleBuild(item)}
-                style={globalStyles.secondaryButton}
-              >
-                <View style={styles.buttonContent}>
-                  <Image source={chronIcon} style={styles.chronIcon} />
-                  <Text variant="bodyMedium" style={styles.price}>
-                    {formatPrice(item.price)}
+                {item.description ? (
+                  <Text variant="bodySmall" style={globalStyles.variantLabel}>
+                    {item.description}
                   </Text>
-                </View>
-              </Button>
-            </Card.Actions>
-          </Card>
+                ) : null}
+              </Card.Content>
+              <Card.Actions>
+                <Button
+                  mode="contained"
+                  onPress={() => handleBuild(item)}
+                  style={globalStyles.secondaryButton}
+                >
+                  <View style={styles.buttonContent}>
+                    <Image source={chronIcon} style={styles.chronIcon} />
+                    <Text variant="bodyMedium" style={styles.price}>
+                      {formatPrice(item.price)}
+                    </Text>
+                  </View>
+                </Button>
+              </Card.Actions>
+            </Card>
           );
         }}
       />
@@ -216,10 +245,9 @@ export default function Shop() {
 const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
 
-  container: {
-  },
+  container: {},
 
-  row: { 
+  row: {
     justifyContent: "space-between",
   },
 

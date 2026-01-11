@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-  
   View,
   Pressable,
   Alert,
@@ -16,18 +15,52 @@ import { theme } from "@/src/theme";
 import PageHeader from "@/src/components/PageHeader";
 import PageFiller from "@/src/components/PageFiller";
 
-const chronIcon = require("../../assets/images/chrons.png");
-
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "../../src/config";
+import isTokenValid from "../../src/useAuthGuard";
 import BuildingAnimation from "../../src/components/BuildingAnimation";
+import { useRouter } from "expo-router";
+
+const chronIcon = require("../../assets/images/chrons.png");
 
 export default function StopWatch() {
+  const router = useRouter();
   const [running, setRunning] = useState(false);
   const [elapsed, setElapsed] = useState(0); // seconds
   const intervalRef = useRef<any>(null);
-  
+
   const [accountDetail, setAccountDetail] = useState<any | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function checkAuth() {
+      try {
+        const token = await AsyncStorage.getItem("accessToken");
+        if (!token) {
+          if (!cancelled) router.replace("/welcome");
+          return;
+        }
+
+        if (!isTokenValid(token)) {
+          await AsyncStorage.removeItem("accessToken");
+          if (!cancelled) {
+            Alert.alert(
+              "Session expired",
+              "Your session has expired and you have been logged out. Please sign in again.",
+              [{ text: "OK", onPress: () => router.replace("/welcome") }]
+            );
+          }
+        }
+      } catch {
+        // ignore auth errors here; they can be handled on next interaction
+      }
+    }
+
+    checkAuth();
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
   useEffect(() => {
     async function fetchAccountDetail() {
       try {
@@ -45,7 +78,7 @@ export default function StopWatch() {
         console.error("Failed to fetch account details:", error);
       }
     }
-    
+
     fetchAccountDetail();
   }, []);
 
@@ -102,7 +135,7 @@ export default function StopWatch() {
       );
       try {
         DeviceEventEmitter.emit("chronUpdated", { newChron });
-      } catch { }
+      } catch {}
     } catch (e: any) {
       showAlert("Unable to award chron", e.message || String(e));
     }
@@ -158,11 +191,10 @@ export default function StopWatch() {
 
   return (
     <View style={globalStyles.page}>
-
       <PageHeader accountDetail={accountDetail} />
 
       <PageFiller />
-      
+
       <View style={globalStyles.pageContainer}>
         <Text variant="titleLarge" style={globalStyles.variantTitle}>
           Builders Timer
@@ -172,22 +204,32 @@ export default function StopWatch() {
       <View style={styles.container}>
         <BuildingAnimation running={running} />
         <View style={styles.controls}>
-          <Text variant="displayMedium" style={globalStyles.variantTitle}>{formatTime(elapsed)}</Text>
+          <Text variant="displayMedium" style={globalStyles.variantTitle}>
+            {formatTime(elapsed)}
+          </Text>
 
           <View style={styles.buttonContainer}>
             {!running ? (
               <Pressable
                 onPress={() => setRunning(true)}
-                style={({ pressed }) => [styles.button, pressed && styles.pressed]}
+                style={({ pressed }) => [
+                  styles.button,
+                  pressed && styles.pressed,
+                ]}
               >
                 <Text style={styles.buttonText}>Start</Text>
               </Pressable>
             ) : (
               <Pressable
                 onPress={confirmStopAndEarn}
-                style={({ pressed }) => [styles.button, pressed && styles.pressed]}
+                style={({ pressed }) => [
+                  styles.button,
+                  pressed && styles.pressed,
+                ]}
               >
-                <Text variant="titleMedium" style={styles.buttonText}>Stop & Earn</Text>
+                <Text variant="titleMedium" style={styles.buttonText}>
+                  Stop & Earn
+                </Text>
               </Pressable>
             )}
           </View>
@@ -211,7 +253,7 @@ const styles = StyleSheet.create({
     gap: theme.spacing.sm,
   },
 
-  buttonContainer: { 
+  buttonContainer: {
     flexDirection: "row",
   },
 
@@ -224,11 +266,11 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 6,
     marginHorizontal: 6,
-    
   },
   pressed: { opacity: 0.7 },
 
-  buttonText: { 
-    color: theme.colors.mono, 
-    fontWeight: theme.typography.fontWeight.bold },
+  buttonText: {
+    color: theme.colors.mono,
+    fontWeight: theme.typography.fontWeight.bold,
+  },
 });
