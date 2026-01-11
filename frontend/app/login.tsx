@@ -12,10 +12,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
-  ScrollView,
 } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { API_BASE_URL } from "../src/config";
+import apiFetch from "../src/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import Animated, {
@@ -35,7 +35,7 @@ export default function Login() {
 
   React.useEffect(() => {
     opacity.value = withTiming(1, { duration: 500 });
-  }, []);
+  }, [opacity]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
@@ -47,7 +47,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
 
   async function handleSubmit() {
     setError(null);
@@ -119,7 +118,7 @@ export default function Login() {
         }
 
         try {
-          const mapsRes = await fetch(
+          const mapsRes = await apiFetch(
             `${API_BASE_URL}/api/maps/account/${accountId}`
           );
           if (mapsRes.ok) {
@@ -131,8 +130,7 @@ export default function Login() {
               console.log("firstMapId:", firstMapId);
             }
           }
-        } catch {
-        }
+        } catch {}
       }
 
       router.replace("/");
