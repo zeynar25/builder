@@ -41,8 +41,8 @@ export default function PageHeader({ accountDetail }: PageHeaderProps) {
               variant="bodySmall"
               style={{ color: theme.colors.text.secondary }}
             >
-              Lvl {Math.floor((accountDetail?.accountDetail?.exp ?? 0) / 100)} •{" "}
-              {accountDetail?.accountDetail?.exp ?? 0} XP
+              Lvl {Math.floor((accountDetail?.accountDetail?.exp ?? 0) / 1000)}{" "}
+              • {accountDetail?.accountDetail?.exp ?? 0} XP
             </Text>
           </View>
         </View>
