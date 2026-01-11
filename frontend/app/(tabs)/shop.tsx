@@ -292,11 +292,11 @@ export default function Shop() {
 
             <View style={globalStyles.pageContainer}>
               <Text variant="headlineMedium" style={{ ...globalStyles.variantLabel, fontWeight: theme.typography.fontWeight.bold }}>
-                        Bu
-                        <Text style={{ color: theme.colors.highlight, fontWeight: theme.typography.fontWeight.bold }}>i</Text>
-                        lder 
-                        <Text style={{ color: theme.colors.accent_3, fontWeight: theme.typography.fontWeight.bold }}> Shop</Text>
-                      </Text>
+                Bu
+                <Text style={{ color: theme.colors.highlight, fontWeight: theme.typography.fontWeight.bold }}>i</Text>
+                lder 
+                <Text style={{ color: theme.colors.accent_3, fontWeight: theme.typography.fontWeight.bold }}> Shop</Text>
+              </Text>
             </View>
           </View>
         }
