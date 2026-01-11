@@ -8,6 +8,7 @@ import {
   Image,
   Dimensions,
   StyleSheet,
+  Modal,
 } from "react-native";
 import { Text, Button, Card } from "react-native-paper";
 
@@ -36,6 +37,8 @@ export default function Account() {
   const [editingGameName, setEditingGameName] = useState(false);
   const [newGameName, setNewGameName] = useState("");
   const [savingGameName, setSavingGameName] = useState(false);
+  const [avatarModalVisible, setAvatarModalVisible] = useState(false);
+  const [savingAvatar, setSavingAvatar] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -131,6 +134,46 @@ export default function Account() {
     }
   }
 
+  async function handleSelectAvatar(filename: string) {
+    if (savingAvatar) return;
+    setSavingAvatar(true);
+    try {
+      const accountDetailId = await AsyncStorage.getItem("accountDetailId");
+      if (!accountDetailId) throw new Error("no_accountDetailId");
+
+      const res = await fetch(
+        `${API_BASE_URL}/api/account-detail/${accountDetailId}/avatar`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imageUrl: filename }),
+        }
+      );
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        throw new Error(err?.error || `Request failed (${res.status})`);
+      }
+
+      const json = await res.json();
+      setAccountDetail(json);
+      setAvatarModalVisible(false);
+      Alert.alert("Success", "Profile picture updated!");
+    } catch (e: any) {
+      Alert.alert("Unable to update avatar", e.message || String(e));
+    } finally {
+      setSavingAvatar(false);
+    }
+  }
+
+  function handleAvatarPress(filename: string) {
+    if (savingAvatar) return;
+    Alert.alert("Change avatar", "Do you want to use this avatar?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Yes", onPress: () => handleSelectAvatar(filename) },
+    ]);
+  }
+
   if (loading) {
     return (
       <View
@@ -156,6 +199,8 @@ export default function Account() {
 
   const profileImg = `../../assets/images/profiles/${accountDetail?.accountDetail?.imageUrl}`;
 
+  const avatarFiles = ["1.png", "2.png", "3.png", "4.png", "5.png"];
+
   return (
     <View style={globalStyles.page}>
       {/* Sticky Header */}
@@ -165,17 +210,22 @@ export default function Account() {
 
       <View style={styles.pageContainer}>
         <View style={styles.accountDetails}>
-          <View style={styles.imageContainer}>
-            <Image
-              source={getImageSource(profileImg) || defaultTile}
-              style={{
-                width: "100%",
-                height: "100%",
-                borderRadius: theme.radii.pill,
-              }}
-              resizeMode="cover"
-            />
-          </View>
+          <Pressable
+            onPress={() => setAvatarModalVisible(true)}
+            disabled={savingAvatar}
+          >
+            <View style={styles.imageContainer}>
+              <Image
+                source={getImageSource(profileImg) || defaultTile}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  borderRadius: theme.radii.pill,
+                }}
+                resizeMode="cover"
+              />
+            </View>
+          </Pressable>
 
           {editingGameName ? (
             <View style={styles.editNameActive}>
@@ -308,6 +358,55 @@ export default function Account() {
         </Button>
       </View>
       <PageFiller />
+
+      <Modal
+        visible={avatarModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => !savingAvatar && setAvatarModalVisible(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => !savingAvatar && setAvatarModalVisible(false)}
+        >
+          <View style={styles.modalContent}>
+            <Text variant="titleMedium" style={globalStyles.variantProfile}>
+              Choose your avatar
+            </Text>
+            <View style={styles.avatarGrid}>
+              {avatarFiles.map((file) => {
+                const src = getImageSource(
+                  `../../assets/images/profiles/${file}`
+                );
+                return (
+                  <Pressable
+                    key={file}
+                    style={[
+                      styles.avatarOption,
+                      accountDetail?.accountDetail?.imageUrl === file &&
+                        styles.avatarOptionSelected,
+                    ]}
+                    onPress={() => handleAvatarPress(file)}
+                    disabled={savingAvatar}
+                  >
+                    <Image
+                      source={src || defaultTile}
+                      style={styles.avatarImage}
+                      resizeMode="cover"
+                    />
+                  </Pressable>
+                );
+              })}
+            </View>
+            {savingAvatar && (
+              <ActivityIndicator
+                size="small"
+                style={{ marginTop: theme.spacing.sm }}
+              />
+            )}
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -378,5 +477,43 @@ const styles = StyleSheet.create({
     marginVertical: theme.spacing.md,
     width: screenWidth * 0.32,
     height: screenWidth * 0.32,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    width: "80%",
+    backgroundColor: theme.colors.support,
+    borderRadius: theme.radii.pill,
+    padding: theme.spacing.lg,
+    borderWidth: 2,
+    borderColor: theme.colors.accent_2,
+    alignItems: "center",
+  },
+  avatarGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-around",
+    marginTop: theme.spacing.md,
+  },
+  avatarOption: {
+    width: "30%",
+    aspectRatio: 1,
+    marginBottom: theme.spacing.md,
+    borderRadius: theme.radii.pill,
+    overflow: "hidden",
+    borderWidth: 2,
+    borderColor: theme.colors.mono,
+  },
+  avatarOptionSelected: {
+    borderColor: theme.colors.highlight,
+    borderWidth: 3,
+  },
+  avatarImage: {
+    width: "100%",
+    height: "100%",
   },
 });

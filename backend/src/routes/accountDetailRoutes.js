@@ -7,6 +7,7 @@ import {
   updateGameNameById,
   addChronById,
   uploadProfileImageById,
+  updateProfileAvatarById,
 } from "../controllers/accountDetailController.js";
 
 const router = express.Router();
@@ -42,5 +43,8 @@ router.post(
   upload.single("image"),
   uploadProfileImageById
 );
+
+// Set a bundled profile avatar (1-5.png) by AccountDetail id
+router.put("/:id/avatar", updateProfileAvatarById);
 
 export default router;

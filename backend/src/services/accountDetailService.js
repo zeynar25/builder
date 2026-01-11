@@ -77,10 +77,25 @@ export async function updateImageById(detailId, imageUrl) {
   return updated;
 }
 
+/**
+ * Update profile avatar (bundled filename like "1.png") by AccountDetail id.
+ * This is a semantic alias of updateImageById to keep intent clear.
+ */
+export async function updateProfileAvatarById(detailId, imageUrl) {
+  const updated = await AccountDetail.findByIdAndUpdate(
+    detailId,
+    { imageUrl },
+    { new: true, runValidators: true }
+  ).exec();
+
+  return updated;
+}
+
 export default {
   getAccountDetailById,
   updateGameNameByAccount,
   updateGameNameById,
   addChronById,
   updateImageById,
+  updateProfileAvatarById,
 };

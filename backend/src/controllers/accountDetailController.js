@@ -89,10 +89,33 @@ export async function uploadProfileImageById(req, res) {
   }
 }
 
+export async function updateProfileAvatarById(req, res) {
+  try {
+    const { id } = req.params;
+    const { imageUrl } = req.body;
+
+    // Restrict to known bundled profile filenames for safety
+    const allowed = ["1.png", "2.png", "3.png", "4.png", "5.png"];
+    if (!imageUrl || !allowed.includes(imageUrl)) {
+      return res.status(400).json({ error: "invalid_profile_avatar" });
+    }
+
+    const updated = await accountDetailService.updateImageById(id, imageUrl);
+    if (!updated) return res.status(404).json({ error: "not_found" });
+
+    return res.json({ success: true, accountDetail: updated });
+  } catch (err) {
+    return res
+      .status(400)
+      .json({ error: err.message || "cannot_update_profile_avatar" });
+  }
+}
+
 export default {
   getAccountDetailById,
   updateGameNameByAccount,
   updateGameNameById,
   addChronById,
   uploadProfileImageById,
+  updateProfileAvatarById,
 };
