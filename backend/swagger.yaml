@@ -234,6 +234,23 @@ paths:
                       refresh:
                         type: string
 
+  /api/account/signout:
+    post:
+      tags: [account]
+      summary: Sign out the current session
+      responses:
+        "200":
+          description: Signed out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "400":
+          description: Cannot sign out
+
   /api/items:
     get:
       tags: [items]
@@ -294,6 +311,122 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Item"
+
+  /api/items/buy:
+    post:
+      tags: [items]
+      summary: Buy an item from the shop and place it on the map
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                [accountId, accountDetailsId, mapId, x, y, itemId]
+              properties:
+                accountId:
+                  type: string
+                accountDetailsId:
+                  type: string
+                mapId:
+                  type: string
+                x:
+                  type: integer
+                y:
+                  type: integer
+                itemId:
+                  type: string
+      responses:
+        "200":
+          description: Item purchased and placed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  item:
+                    $ref: "#/components/schemas/Item"
+        "400":
+          description: Validation error or insufficient chrons
+        "404":
+          description: Item not found
+
+  /api/items/sell:
+    post:
+      tags: [items]
+      summary: Sell a placed item back to the shop
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                [accountId, accountDetailsId, mapId, x, y]
+              properties:
+                accountId:
+                  type: string
+                accountDetailsId:
+                  type: string
+                mapId:
+                  type: string
+                x:
+                  type: integer
+                y:
+                  type: integer
+      responses:
+        "200":
+          description: Item sold and refund issued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  refund:
+                    type: integer
+        "400":
+          description: Account detail not found
+        "404":
+          description: Placement not found
+
+  /api/items/move:
+    post:
+      tags: [items]
+      summary: Move an existing placement to a new tile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [accountId, mapId, fromX, fromY, toX, toY]
+              properties:
+                accountId:
+                  type: string
+                mapId:
+                  type: string
+                fromX:
+                  type: integer
+                fromY:
+                  type: integer
+                toX:
+                  type: integer
+                toY:
+                  type: integer
+      responses:
+        "200":
+          description: Placement moved
+        "400":
+          description: Destination occupied
+        "403":
+          description: Not owner of placement
+        "404":
+          description: Placement not found
 
   /api/items/{id}:
     get:
@@ -489,6 +622,143 @@ paths:
         "404":
           description: Not found
 
+  /api/account-detail/{id}:
+    get:
+      tags: [account]
+      summary: Get account detail by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Account detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  accountDetail:
+                    $ref: "#/components/schemas/AccountDetail"
+        "404":
+          description: Not found
+
+  /api/account-detail/{id}/chron:
+    post:
+      tags: [account]
+      summary: Add chron (minutes) to an account detail
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [minutes]
+              properties:
+                minutes:
+                  type: integer
+      responses:
+        "200":
+          description: Updated account detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  accountDetail:
+                    $ref: "#/components/schemas/AccountDetail"
+        "400":
+          description: Invalid minutes value
+        "404":
+          description: Account detail not found
+
+  /api/account-detail/{id}/profile-image:
+    post:
+      tags: [account]
+      summary: Upload or replace account profile image
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Updated account detail with image URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  accountDetail:
+                    $ref: "#/components/schemas/AccountDetail"
+        "400":
+          description: Validation or upload error
+        "404":
+          description: Account detail not found
+
+  /api/account-detail/{id}/avatar:
+    put:
+      tags: [account]
+      summary: Set a bundled avatar image for the account
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [imageUrl]
+              properties:
+                imageUrl:
+                  type: string
+                  description: "Bundled filename, e.g. '1.png'..'5.png'"
+      responses:
+        "200":
+          description: Updated account detail with avatar
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  accountDetail:
+                    $ref: "#/components/schemas/AccountDetail"
+        "400":
+          description: Invalid avatar
+        "404":
+          description: Account detail not found
+
   /api/maps/{id}:
     get:
       tags: [maps]
@@ -545,6 +815,41 @@ paths:
                     $ref: "#/components/schemas/AccountDetail"
         "400":
           description: Invalid request or insufficient chrons
+        "404":
+          description: Map not found
+
+  /api/maps/{id}/name:
+    put:
+      tags: [maps]
+      summary: Update a map's name
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+      responses:
+        "200":
+          description: Updated map
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  map:
+                    $ref: "#/components/schemas/Map"
+        "400":
+          description: Validation error
         "404":
           description: Map not found
 
