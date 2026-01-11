@@ -126,7 +126,7 @@ export default function Account() {
     await AsyncStorage.removeItem("accountId");
     await AsyncStorage.removeItem("accountDetailId");
     await AsyncStorage.removeItem("currentMapId");
-    router.replace("/welcome");
+    router.replace("/login");
   }
 
   async function handleSaveGameName() {
