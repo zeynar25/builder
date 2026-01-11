@@ -80,6 +80,25 @@ export default function StopWatch() {
     fetchAccountDetail();
   }, []);
 
+  // Keep header chrons in sync when other screens emit chronUpdated
+  useEffect(() => {
+    const sub = DeviceEventEmitter.addListener("chronUpdated", async () => {
+      try {
+        const accountDetailId = await AsyncStorage.getItem("accountDetailId");
+        if (!accountDetailId) return;
+        const detailRes = await apiFetch(
+          `${API_BASE_URL}/api/account-detail/${accountDetailId}`
+        );
+        if (!detailRes.ok) return;
+        const detailJson = await detailRes.json();
+        setAccountDetail(detailJson);
+      } catch {
+        // ignore refresh errors
+      }
+    });
+    return () => sub.remove();
+  }, []);
+
   useEffect(() => {
     if (running) {
       intervalRef.current = setInterval(() => {
@@ -125,6 +144,10 @@ export default function StopWatch() {
       }
       const json = await res.json();
       const newChron = json?.accountDetail?.chron;
+      // Update local header immediately
+      if (json) {
+        setAccountDetail(json);
+      }
       showAlert(
         "Chron awarded",
         `Awarded ${flooredMinutes} chron. New total: ${newChron}`

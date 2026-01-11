@@ -95,6 +95,25 @@ export default function Shop() {
     fetchAccountDetail();
   }, []);
 
+  // Keep header chrons in sync when other screens (e.g. Stopwatch) emit chronUpdated
+  useEffect(() => {
+    const sub = DeviceEventEmitter.addListener("chronUpdated", async () => {
+      try {
+        const accountDetailId = await AsyncStorage.getItem("accountDetailId");
+        if (!accountDetailId) return;
+        const detailRes = await apiFetch(
+          `${API_BASE_URL}/api/account-detail/${accountDetailId}`
+        );
+        if (!detailRes.ok) return;
+        const detailJson = await detailRes.json();
+        setAccountDetail(detailJson);
+      } catch {
+        // ignore refresh errors
+      }
+    });
+    return () => sub.remove();
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     async function load() {
