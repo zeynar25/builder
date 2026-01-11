@@ -116,12 +116,12 @@ export default function Onboarding() {
         if (currentIndex < SLIDES.length - 1) {
             flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
         } else {
-            router.replace('/');
+            router.replace('/login');
         }
     };
 
     const skip = () => {
-        router.replace('/');
+        router.replace('/login');
     };
 
     return (
@@ -171,7 +171,7 @@ export default function Onboarding() {
                     onPress={handleNext}
                 >
                     <Text style={styles.buttonText}>
-                        {currentIndex === SLIDES.length - 1 ? 'Start Building' : 'Next'}
+                        {currentIndex === SLIDES.length - 1 ? 'Proceed to Sign In' : 'Next'}
                     </Text>
                 </Pressable>
             </View>
