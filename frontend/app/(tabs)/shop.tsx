@@ -291,8 +291,11 @@ export default function Shop() {
             <PageFiller />
 
             <View style={globalStyles.pageContainer}>
-              <Text variant="titleLarge" style={globalStyles.variantTitle}>
-                Builders Shop
+              <Text variant="headlineMedium" style={{ ...globalStyles.variantLabel, fontWeight: theme.typography.fontWeight.bold }}>
+                Bu
+                <Text style={{ color: theme.colors.highlight, fontWeight: theme.typography.fontWeight.bold }}>i</Text>
+                lder 
+                <Text style={{ color: theme.colors.accent_3, fontWeight: theme.typography.fontWeight.bold }}> Shop</Text>
               </Text>
             </View>
           </View>

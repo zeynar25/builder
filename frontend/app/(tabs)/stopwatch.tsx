@@ -154,7 +154,7 @@ export default function StopWatch() {
       );
       try {
         DeviceEventEmitter.emit("chronUpdated", { newChron });
-      } catch {}
+      } catch { }
     } catch (e: any) {
       showAlert("Unable to award chron", e.message || String(e));
     }
@@ -215,8 +215,11 @@ export default function StopWatch() {
       <PageFiller />
 
       <View style={globalStyles.pageContainer}>
-        <Text variant="titleLarge" style={globalStyles.variantTitle}>
-          Builders Timer
+        <Text variant="headlineMedium" style={{ ...globalStyles.variantLabel, fontWeight: theme.typography.fontWeight.bold }}>
+          Bu
+          <Text style={{ color: theme.colors.highlight, fontWeight: theme.typography.fontWeight.bold }}>i</Text>
+          lder 
+          <Text style={{ color: theme.colors.accent_4, fontWeight: theme.typography.fontWeight.bold }}> Timer</Text>
         </Text>
       </View>
 

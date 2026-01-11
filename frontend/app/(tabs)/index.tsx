@@ -24,6 +24,7 @@ import { getImageSource } from "../../src/imageMap";
 import apiFetch from "../../src/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter, useFocusEffect } from "expo-router";
+import { theme } from "@/src/theme";
 
 const defaultTile = require("../../assets/images/road-connectors/default-tile.png");
 
@@ -825,8 +826,11 @@ export default function Index() {
       <PageHeader accountDetail={accountDetail} />
       <PageFiller />
       <View style={globalStyles.pageContainer}>
-        <Text variant="titleLarge" style={globalStyles.variantTitle}>
-          Builders Village
+        <Text variant="headlineMedium" style={{ ...globalStyles.variantLabel, fontWeight: theme.typography.fontWeight.bold }}>
+          Bu
+          <Text style={{ color: theme.colors.highlight, fontWeight: theme.typography.fontWeight.bold }}>i</Text>
+          lder 
+          <Text style={{ color: theme.colors.highlight, fontWeight: theme.typography.fontWeight.bold }}> Village</Text>
         </Text>
       </View>
 
