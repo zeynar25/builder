@@ -262,49 +262,10 @@ const styles = StyleSheet.create({
   formWithHeaderOffset: {
     marginTop: 80,
   },
-
-  optionsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    marginBottom: theme.spacing.lg,
-    paddingVertical: theme.spacing.sm,
+  customButton: {
+    marginTop: theme.spacing.xl,
   },
-
-  checkboxRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  checkbox: {
-    width: theme.icon.form,
-    height: theme.icon.form,
-    borderWidth: 1,
-    borderColor: theme.colors.highlight,
-    borderRadius: theme.radii.sm,
-    marginRight: theme.spacing.md,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "transparent",
-  },
-
-  checkboxChecked: {
-    backgroundColor: theme.colors.highlight,
-  },
-
-  checkboxLabel: {
-    fontSize: theme.typography.fontSize.detail,
-    color: theme.colors.text.primary,
-    fontFamily: theme.typography.fontFamily.primary,
-  },
-
-  forgotPassword: {
-    fontSize: theme.typography.fontSize.detail,
-    color: theme.colors.highlight,
-    fontWeight: theme.typography.fontWeight.medium,
-    fontFamily: theme.typography.fontFamily.primary,
-  },
-
+  
   signupText: {
     fontSize: theme.typography.fontSize.text,
     color: theme.colors.text.secondary,
