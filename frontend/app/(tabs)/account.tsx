@@ -73,7 +73,7 @@ export default function Account() {
             const errBody = await detailRes.json().catch(() => null);
             throw new Error(
               errBody?.error ||
-                `Failed to fetch account details (${detailRes.status})`
+              `Failed to fetch account details (${detailRes.status})`
             );
           }
           const detailJson = await detailRes.json();
@@ -347,14 +347,21 @@ export default function Account() {
               const level = Math.floor(exp / 1000);
 
               let appleSource;
-              if (level >= 4)
+              let tierName = "Bronze Apple";
+
+              if (level >= 4) {
                 appleSource = require("../../assets/images/levels/level4-apple.png");
-              else if (level === 3)
+                tierName = "Diamond Apple";
+              } else if (level === 3) {
                 appleSource = require("../../assets/images/levels/level3-apple.png");
-              else if (level === 2)
+                tierName = "Golden Apple";
+              } else if (level === 2) {
                 appleSource = require("../../assets/images/levels/level2-apple.png");
-              else
+                tierName = "Silver Apple";
+              } else {
                 appleSource = require("../../assets/images/levels/default-apple.png");
+                tierName = "Bronze Apple";
+              }
 
               return (
                 <View style={{ alignItems: "center", width: "100%" }}>
@@ -378,7 +385,7 @@ export default function Account() {
                       variant="titleMedium"
                       style={globalStyles.variantBalance}
                     >
-                      Level {level}
+                      Level {level} | {tierName}
                     </Text>
                   </View>
                   <Text
@@ -430,7 +437,7 @@ export default function Account() {
                     style={[
                       styles.avatarOption,
                       accountDetail?.accountDetail?.imageUrl === file &&
-                        styles.avatarOptionSelected,
+                      styles.avatarOptionSelected,
                     ]}
                     onPress={() => handleAvatarPress(file)}
                     disabled={savingAvatar}
