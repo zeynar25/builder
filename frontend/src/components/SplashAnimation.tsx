@@ -26,17 +26,17 @@ const COLORS = {
     background: theme.colors.mono,
 
     // House Building Blocks
-    block1: theme.colors.accent_4, 
+    block1: theme.colors.accent_4,
     block2: theme.colors.support,
     block3: theme.colors.accent_1,
-    block4:  theme.colors.highlight,
+    block4: theme.colors.highlight,
     block5: theme.colors.accent_4,
-    block6: theme.colors.accent_3, 
-    block7: theme.colors.highlight, 
+    block6: theme.colors.accent_3,
+    block7: theme.colors.highlight,
     block8: theme.colors.support,
 
-    waveGradientStart: theme.colors.highlight, 
-    waveGradientEnd: theme.colors.highlight, 
+    waveGradientStart: theme.colors.highlight,
+    waveGradientEnd: theme.colors.highlight,
 };
 
 // --- TIMING CONFIGURATION ---
@@ -142,6 +142,8 @@ export const SplashAnimation = ({ onFinish }: { onFinish: () => void }) => {
     const expansionProgress = useSharedValue(0);
     const logoOpacity = useSharedValue(0);
     const logoScale = useSharedValue(0.5);
+    const textOpacity = useSharedValue(0);
+    const textTranslateY = useSharedValue(20);
     const waveProgress = useSharedValue(0);
     const [phase, setPhase] = useState<'house' | 'expand' | 'logo' | 'wave'>('house');
 
@@ -177,10 +179,15 @@ export const SplashAnimation = ({ onFinish }: { onFinish: () => void }) => {
                 stiffness: 90,
             });
 
+            // "Builder" text appears 1 second after logo starts
+            textOpacity.value = withDelay(1000, withTiming(1, { duration: 800 }));
+            textTranslateY.value = withDelay(1000, withSpring(0, { damping: 15 }));
+
             // Phase 3 to Phase 4: Wait for logo to settle then trigger Wave
+            // We extend settle time slightly to accommodate text appearing
             const waveTimeout = setTimeout(() => {
                 runOnJS(setPhase)('wave');
-            }, TIMING.LOGO_FADE_IN + TIMING.SETTLE_LOGO);
+            }, TIMING.LOGO_FADE_IN + TIMING.SETTLE_LOGO + 1000);
 
             return () => clearTimeout(waveTimeout);
         }
@@ -199,8 +206,14 @@ export const SplashAnimation = ({ onFinish }: { onFinish: () => void }) => {
 
     const logoStyle = useAnimatedStyle(() => ({
         opacity: logoOpacity.value,
-        transform: [{ scale: logoScale.value }],
+        transform: [{ scale: logoScale.value }, { translateY: -40 }],
         zIndex: 25,
+    }));
+
+    const textStyle = useAnimatedStyle(() => ({
+        opacity: textOpacity.value,
+        transform: [{ translateY: textTranslateY.value }],
+        zIndex: 26,
     }));
 
     const waveAnimatedProps = useAnimatedProps(() => {
@@ -243,15 +256,20 @@ export const SplashAnimation = ({ onFinish }: { onFinish: () => void }) => {
                 ))}
             </View>
 
-            {/* Phase 3: Logo Reveal */}
+            {/* Phase 3: Logo and Text Reveal */}
             {(phase === 'logo' || phase === 'wave') && (
-                <Animated.View style={[styles.logoContainer, logoStyle]}>
-                    <Image
-                        source={require('../../assets/images/builder-logo.png')}
-                        style={styles.logo}
-                        resizeMode="contain"
-                    />
-                </Animated.View>
+                <>
+                    <Animated.View style={[styles.logoContainer, logoStyle]}>
+                        <Image
+                            source={require('../../assets/images/builder-logo.png')}
+                            style={styles.logo}
+                            resizeMode="contain"
+                        />
+                    </Animated.View>
+                    <Animated.View style={[styles.textContainer, textStyle]}>
+                        <Animated.Text style={styles.builderText}>Builder</Animated.Text>
+                    </Animated.View>
+                </>
             )}
 
             {/* Phase 4: Liquid Wave Transition */}
@@ -295,5 +313,17 @@ const styles = StyleSheet.create({
     logo: {
         width: 220,
         height: 220,
+    },
+    textContainer: {
+        position: 'absolute',
+        top: height / 2 + 80,
+        width: width,
+        alignItems: 'center',
+    },
+    builderText: {
+        fontSize: 48,
+        fontWeight: '900',
+        color: '#333',
+        letterSpacing: 2,
     },
 });
