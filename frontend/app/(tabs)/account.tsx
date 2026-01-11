@@ -9,6 +9,7 @@ import {
   Dimensions,
   StyleSheet,
   Modal,
+  DeviceEventEmitter,
 } from "react-native";
 import { Text, Button, Card } from "react-native-paper";
 
@@ -113,6 +114,25 @@ export default function Account() {
     };
   }, []);
 
+  // Keep header chrons in sync when other screens emit chronUpdated
+  useEffect(() => {
+    const sub = DeviceEventEmitter.addListener("chronUpdated", async () => {
+      try {
+        const accountDetailId = await AsyncStorage.getItem("accountDetailId");
+        if (!accountDetailId) return;
+        const detailRes = await apiFetch(
+          `${API_BASE_URL}/api/account-detail/${accountDetailId}`
+        );
+        if (!detailRes.ok) return;
+        const detailJson = await detailRes.json();
+        setAccountDetail(detailJson);
+      } catch {
+        // ignore refresh errors
+      }
+    });
+    return () => sub.remove();
+  }, []);
+
   async function handleLogout() {
     try {
       await apiFetch(`${API_BASE_URL}/api/account/signout`, {
@@ -126,7 +146,7 @@ export default function Account() {
     await AsyncStorage.removeItem("accountId");
     await AsyncStorage.removeItem("accountDetailId");
     await AsyncStorage.removeItem("currentMapId");
-    router.replace("/welcome");
+    router.replace("/login");
   }
 
   async function handleSaveGameName() {
