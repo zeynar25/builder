@@ -128,6 +128,13 @@ export const globalStyles = StyleSheet.create({
         fontFamily: theme.typography.fontFamily.primary,
     },
 
+    textBuilder: {
+        fontSize: 64,
+        fontWeight: theme.typography.fontWeight.bold,
+        color: theme.colors.text.primary,
+        fontFamily: theme.typography.fontFamily.primary,
+    },
+
     textError: {
         color: "#cc0000",
         marginBottom: theme.spacing.md,
@@ -165,7 +172,7 @@ export const globalStyles = StyleSheet.create({
     },
 
     variantAccent:{
-        color: theme.colors.accent_2,
+        color: theme.colors.accent_1,
         fontFamily: theme.typography.fontFamily.primary,
     },
 
