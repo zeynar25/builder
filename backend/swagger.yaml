@@ -509,6 +509,45 @@ paths:
         "404":
           description: Map not found
 
+    post:
+      tags: [maps]
+      summary: Expand a map's tile dimensions by 1x1, spending chrons
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [accountDetailsId]
+              properties:
+                accountDetailsId:
+                  type: string
+                  description: ID of the AccountDetail that will pay the expansion cost
+      responses:
+        "200":
+          description: Map expanded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  map:
+                    $ref: "#/components/schemas/Map"
+                  accountDetail:
+                    $ref: "#/components/schemas/AccountDetail"
+        "400":
+          description: Invalid request or insufficient chrons
+        "404":
+          description: Map not found
+
   /api/maps/account/{accountId}:
     get:
       tags: [maps]

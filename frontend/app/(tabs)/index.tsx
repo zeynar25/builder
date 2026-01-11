@@ -238,6 +238,24 @@ export default function Index() {
     return () => sub.remove();
   }, []);
 
+  // Refresh map data whenever a map expansion is purchased from the shop
+  useEffect(() => {
+    const sub = DeviceEventEmitter.addListener("mapExpanded", async () => {
+      try {
+        const mapId = await AsyncStorage.getItem("currentMapId");
+        if (!mapId) return;
+
+        const res = await fetch(`${API_BASE_URL}/api/maps/${mapId}`);
+        if (!res.ok) return;
+        const json = await res.json();
+        setMapData(json);
+      } catch {
+        // ignore refresh errors
+      }
+    });
+    return () => sub.remove();
+  }, []);
+
   // initialize center when mapData is loaded
   useEffect(() => {
     if (!mapData?.map) return;

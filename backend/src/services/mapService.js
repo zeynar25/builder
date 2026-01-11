@@ -1,5 +1,6 @@
 import MapModel from "../models/Map.js";
 import ItemPlacement from "../models/ItemPlacement.js";
+import AccountDetail from "../models/AccountDetail.js";
 
 /**
  * Return map metadata and a 2D grid (rows = heightTiles, cols = widthTiles).
@@ -54,4 +55,32 @@ export async function updateMapName(mapId, name) {
   return updated;
 }
 
-export default { getMapWithTiles, getMapsByAccount, updateMapName };
+export async function expandMap(mapId, accountDetailsId, cost = 300) {
+  const [mapDoc, accountDetails] = await Promise.all([
+    MapModel.findById(mapId).exec(),
+    AccountDetail.findById(accountDetailsId).exec(),
+  ]);
+
+  if (!mapDoc) return null;
+  if (!accountDetails) throw new Error("account_details_not_found");
+
+  const currentChron = accountDetails.chron ?? 0;
+  if (currentChron < cost) {
+    throw new Error("insufficient_chrons");
+  }
+
+  mapDoc.heightTiles = (mapDoc.heightTiles || 0) + 1;
+  mapDoc.widthTiles = (mapDoc.widthTiles || 0) + 1;
+  await mapDoc.save();
+
+  accountDetails.chron = currentChron - cost;
+  accountDetails.exp = (accountDetails.exp ?? 0) + cost;
+  await accountDetails.save();
+
+  const map = mapDoc.toObject();
+  const updatedAccountDetail = accountDetails.toObject();
+
+  return { map, accountDetail: updatedAccountDetail };
+}
+
+export default { getMapWithTiles, getMapsByAccount, updateMapName, expandMap };

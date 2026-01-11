@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Dimensions,
   Alert,
+  DeviceEventEmitter,
 } from "react-native";
 
 import { Card, Text, Button } from "react-native-paper";
@@ -39,6 +40,7 @@ export default function Shop() {
   const [error, setError] = useState<string | null>(null);
 
   const [accountDetail, setAccountDetail] = useState<any | null>(null);
+  const [expandingMap, setExpandingMap] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -99,7 +101,18 @@ export default function Shop() {
         const res = await fetch(`${API_BASE_URL}/api/items`);
         if (!res.ok) throw new Error(`Request failed (${res.status})`);
         const json = await res.json();
-        if (!cancelled) setItems(json.items ?? []);
+        if (!cancelled) {
+          const baseItems = json.items ?? [];
+          const mapExpansionItem = {
+            id: "map-expansion",
+            name: "Map Expansion",
+            description: "+1 tile to width and height",
+            price: 300,
+            imageUrl: null,
+            isMapExpansion: true,
+          };
+          setItems([...baseItems, mapExpansionItem]);
+        }
       } catch (e: any) {
         if (!cancelled) setError(e.message || String(e));
       } finally {
@@ -124,6 +137,72 @@ export default function Shop() {
     } catch (e) {
       // silently ignore for now; could surface an alert if desired
       console.error(e);
+    }
+  }
+
+  async function handleExpandMap() {
+    if (expandingMap) return;
+
+    try {
+      setExpandingMap(true);
+      const [accountDetailId, mapId] = await Promise.all([
+        AsyncStorage.getItem("accountDetailId"),
+        AsyncStorage.getItem("currentMapId"),
+      ]);
+
+      if (!accountDetailId || !mapId) {
+        Alert.alert(
+          "Cannot expand map",
+          "Missing account or map information. Please re-open your map and try again."
+        );
+        return;
+      }
+
+      const res = await fetch(`${API_BASE_URL}/api/maps/${mapId}/expand`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accountDetailsId: accountDetailId }),
+      });
+
+      const json = await res.json().catch(() => null);
+
+      if (!res.ok || json?.success !== true) {
+        const msg = json?.error || "Unable to expand map";
+        if (msg === "insufficient_chrons") {
+          Alert.alert(
+            "Not enough chrons",
+            "You need 300 chrons to expand your map."
+          );
+        } else {
+          Alert.alert("Cannot expand map", msg);
+        }
+        return;
+      }
+
+      // Refresh account detail so header shows updated chrons
+      try {
+        const detailRes = await fetch(
+          `${API_BASE_URL}/api/account-detail/${accountDetailId}`
+        );
+        if (detailRes.ok) {
+          const detailJson = await detailRes.json();
+          setAccountDetail(detailJson);
+        }
+      } catch {
+        // ignore refresh errors
+      }
+
+      // Notify map screen to refresh its map data
+      DeviceEventEmitter.emit("mapExpanded", { mapId, accountDetailId });
+
+      Alert.alert(
+        "Map expanded",
+        "Your map has been expanded by 1 tile in each direction."
+      );
+    } catch (e: any) {
+      Alert.alert("Cannot expand map", e.message || String(e));
+    } finally {
+      setExpandingMap(false);
     }
   }
 
@@ -223,8 +302,11 @@ export default function Shop() {
               <Card.Actions>
                 <Button
                   mode="contained"
-                  onPress={() => handleBuild(item)}
+                  onPress={() =>
+                    item.isMapExpansion ? handleExpandMap() : handleBuild(item)
+                  }
                   style={globalStyles.secondaryButton}
+                  disabled={item.isMapExpansion && expandingMap}
                 >
                   <View style={styles.buttonContent}>
                     <Image source={chronIcon} style={styles.chronIcon} />
