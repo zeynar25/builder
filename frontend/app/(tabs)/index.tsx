@@ -126,7 +126,7 @@ export default function Index() {
             const errBody = await detailRes.json().catch(() => null);
             throw new Error(
               errBody?.error ||
-                `Failed to fetch account details (${detailRes.status})`
+              `Failed to fetch account details (${detailRes.status})`
             );
           }
           const detailJson = await detailRes.json();
@@ -163,31 +163,26 @@ export default function Index() {
     };
   }, [router]);
 
+  const { width: screenWidth } = Dimensions.get("window");
+  const containerSize = screenWidth * 0.9;
+
   useEffect(() => {
     function computeViewport() {
-      const { width, height } = Dimensions.get("window");
-      const horizontalPadding = 40; // approximate horizontal chrome + paddings
-      const verticalPadding = 300; // approximate header/controls height
-      const availableCols = Math.max(
-        1,
-        Math.floor((width - horizontalPadding) / tileSize)
-      );
-      const availableRows = Math.max(
-        1,
-        Math.floor((height - verticalPadding) / tileSize)
-      );
+      // Use the fixed container size for both available columns and rows (square)
+      const availableCols = Math.max(1, Math.floor(containerSize / tileSize));
+      const availableRows = Math.max(1, Math.floor(containerSize / tileSize));
 
       const mapW = Number(
         mapData?.map?.widthTiles ??
-          mapData?.map?.width ??
-          mapData?.grid?.[0]?.length ??
-          0
+        mapData?.map?.width ??
+        mapData?.grid?.[0]?.length ??
+        0
       );
       const mapH = Number(
         mapData?.map?.heightTiles ??
-          mapData?.map?.height ??
-          mapData?.grid?.length ??
-          0
+        mapData?.map?.height ??
+        mapData?.grid?.length ??
+        0
       );
 
       // Cap viewport to available screen tiles, but never exceed actual map size when known.
@@ -243,9 +238,9 @@ export default function Index() {
     if (!mapData?.map) return;
     const w = Number(
       mapData.map.widthTiles ??
-        mapData.map.width ??
-        mapData.grid?.[0]?.length ??
-        0
+      mapData.map.width ??
+      mapData.grid?.[0]?.length ??
+      0
     );
     const h = Number(
       mapData.map.heightTiles ?? mapData.map.height ?? mapData.grid?.length ?? 0
@@ -322,15 +317,15 @@ export default function Index() {
       if (centerX === null || centerY === null || !mapData?.map) return;
       const w = Number(
         mapData.map.widthTiles ??
-          mapData.map.width ??
-          mapData.grid?.[0]?.length ??
-          0
+        mapData.map.width ??
+        mapData.grid?.[0]?.length ??
+        0
       );
       const h = Number(
         mapData.map.heightTiles ??
-          mapData.map.height ??
-          mapData.grid?.length ??
-          0
+        mapData.map.height ??
+        mapData.grid?.length ??
+        0
       );
       setCenterX((cx) => clamp((cx ?? 0) + dx, 0, Math.max(0, w - 1)));
       setCenterY((cy) => clamp((cy ?? 0) + dy, 0, Math.max(0, h - 1)));
@@ -431,15 +426,15 @@ export default function Index() {
 
           const mapW = Number(
             mapData.map.widthTiles ??
-              mapData.map.width ??
-              mapData.grid?.[0]?.length ??
-              0
+            mapData.map.width ??
+            mapData.grid?.[0]?.length ??
+            0
           );
           const mapH = Number(
             mapData.map.heightTiles ??
-              mapData.map.height ??
-              mapData.grid?.length ??
-              0
+            mapData.map.height ??
+            mapData.grid?.length ??
+            0
           );
           if (!mapW || !mapH) return;
 
@@ -957,12 +952,15 @@ export default function Index() {
           {Array.isArray(mapData.grid) ? (
             <View
               style={{
+                width: containerSize,
+                height: containerSize,
                 borderWidth: 2,
                 borderColor: "#333",
                 borderRadius: 8,
                 padding: 4,
                 alignSelf: "center",
                 backgroundColor: "#fff",
+                overflow: "hidden", // Crucial: hide tiles that overflow the square
               }}
             >
               {(() => {
@@ -1037,8 +1035,8 @@ export default function Index() {
                         ? "#EF4444" // red when trying to build over an occupied tile
                         : "#22C55E" // green when empty
                       : isSelected
-                      ? "#3B82F6" // blue highlight for selected occupied tile
-                      : "transparent";
+                        ? "#3B82F6" // blue highlight for selected occupied tile
+                        : "transparent";
                     cols.push(
                       <Pressable
                         key={`cell-${r}-${c}`}
@@ -1094,7 +1092,10 @@ export default function Index() {
                 }
 
                 return (
-                  <View style={viewportStyle} {...dragResponder.panHandlers}>
+                  <View
+                    style={viewportStyle}
+                    {...dragResponder.panHandlers}
+                  >
                     <View style={translateStyle}>{rows}</View>
                   </View>
                 );
@@ -1197,8 +1198,8 @@ export default function Index() {
                 ? "Moving..."
                 : "Placing..."
               : moveSource
-              ? `Moving: ${moveSource.item?.name ?? "Item"}`
-              : `Placing: ${buildItem?.name ?? "Item"}`}
+                ? `Moving: ${moveSource.item?.name ?? "Item"}`
+                : `Placing: ${buildItem?.name ?? "Item"}`}
           </Text>
           <Pressable
             onPress={moveSource ? confirmMove : confirmBuild}
