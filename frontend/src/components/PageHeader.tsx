@@ -16,7 +16,7 @@ export default function PageHeader({ accountDetail }: PageHeaderProps) {
       <View style={globalStyles.headerContent}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Image
-            source={require("../../assets/images/default-profile.png")}
+            source={require("../../assets/images/profiles/default-profile.png")}
             style={{
               width: theme.icon.navbar,
               height: theme.icon.navbar,
@@ -31,8 +31,12 @@ export default function PageHeader({ accountDetail }: PageHeaderProps) {
             <Text variant="titleMedium" style={globalStyles.variantAccountName}>
               {accountDetail?.accountDetail?.gameName || "Player"}
             </Text>
-            <Text variant="bodySmall" style={{ color: theme.colors.text.secondary }}>
-              Lvl {Math.floor((accountDetail?.accountDetail?.exp ?? 0) / 100)} • {accountDetail?.accountDetail?.exp ?? 0} XP
+            <Text
+              variant="bodySmall"
+              style={{ color: theme.colors.text.secondary }}
+            >
+              Lvl {Math.floor((accountDetail?.accountDetail?.exp ?? 0) / 100)} •{" "}
+              {accountDetail?.accountDetail?.exp ?? 0} XP
             </Text>
           </View>
         </View>
