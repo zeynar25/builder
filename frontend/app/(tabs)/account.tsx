@@ -73,7 +73,7 @@ export default function Account() {
             const errBody = await detailRes.json().catch(() => null);
             throw new Error(
               errBody?.error ||
-                `Failed to fetch account details (${detailRes.status})`
+              `Failed to fetch account details (${detailRes.status})`
             );
           }
           const detailJson = await detailRes.json();
@@ -416,8 +416,8 @@ export default function Account() {
           onPress={() => !savingAvatar && setAvatarModalVisible(false)}
         >
           <View style={styles.modalContent}>
-            <Text variant="titleMedium" style={globalStyles.variantProfile}>
-              Choose your avatar
+            <Text variant="titleMedium" style={globalStyles.variantLabel}>
+              Choose your Avatar:
             </Text>
             <View style={styles.avatarGrid}>
               {avatarFiles.map((file) => {
@@ -430,7 +430,7 @@ export default function Account() {
                     style={[
                       styles.avatarOption,
                       accountDetail?.accountDetail?.imageUrl === file &&
-                        styles.avatarOptionSelected,
+                      styles.avatarOptionSelected,
                     ]}
                     onPress={() => handleAvatarPress(file)}
                     disabled={savingAvatar}
@@ -530,13 +530,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+
   modalContent: {
     width: "80%",
-    backgroundColor: theme.colors.support,
-    borderRadius: theme.radii.pill,
+    backgroundColor: theme.colors.mono,
+    borderRadius: 20,
     padding: theme.spacing.lg,
-    borderWidth: 2,
-    borderColor: theme.colors.accent_2,
     alignItems: "center",
   },
   avatarGrid: {
@@ -555,7 +554,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.mono,
   },
   avatarOptionSelected: {
-    borderColor: theme.colors.highlight,
+    borderColor: theme.colors.accent_4,
     borderWidth: 3,
   },
   avatarImage: {
