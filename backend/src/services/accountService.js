@@ -32,7 +32,7 @@ export async function createAccount({ email, password }) {
 
   const passwordHash = await bcrypt.hash(password, HASH_ROUNDS);
 
-  const detail = await AccountDetail.create({ chron: 0, exp: 0 });
+  const detail = await AccountDetail.create({ chron: 500, exp: 0 });
 
   const account = await Account.create({
     email,
