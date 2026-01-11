@@ -151,6 +151,8 @@ export default function Account() {
 
   const email = AsyncStorage.getItem("accountEmail");
 
+  const profileImg = `../../assets/images/profiles/${accountDetail.imageUrl}`;
+
   return (
     <View style={globalStyles.page}>
       {/* Sticky Header */}
@@ -162,7 +164,7 @@ export default function Account() {
         <View style={styles.accountDetails}>
           <View style={styles.imageContainer}>
             <Image
-              source={require("../../assets/images/profiles/default-profile.png")}
+              source={{ uri: profileImg }}
               style={{
                 width: "100%",
                 height: "100%",
@@ -243,8 +245,7 @@ export default function Account() {
 
             {(() => {
               const exp = accountDetail?.accountDetail?.exp ?? 0;
-              const level = Math.floor(exp / 100);
-              // const progress = (exp % 100) / 100;
+              const level = Math.floor(exp / 1000);
 
               let appleSource;
               if (level >= 4)

@@ -11,12 +11,14 @@ interface PageHeaderProps {
 }
 
 export default function PageHeader({ accountDetail }: PageHeaderProps) {
+  const profileImg = `../../assets/images/profiles/${accountDetail.imageUrl}`;
+
   return (
     <View style={globalStyles.pageHeader}>
       <View style={globalStyles.headerContent}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Image
-            source={require("../../assets/images/profiles/default-profile.png")}
+            source={{ uri: profileImg }}
             style={{
               width: theme.icon.navbar,
               height: theme.icon.navbar,
