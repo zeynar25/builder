@@ -6,10 +6,9 @@ import {
   StyleSheet,
   Platform,
   DeviceEventEmitter,
-  Image,
 } from "react-native";
 
-import { Card, Text, Button } from "react-native-paper";
+import { Text } from "react-native-paper";
 import { globalStyles } from "@/src/globalstyles";
 import { theme } from "@/src/theme";
 import PageHeader from "@/src/components/PageHeader";
@@ -20,8 +19,6 @@ import { API_BASE_URL } from "../../src/config";
 import isTokenValid from "../../src/useAuthGuard";
 import BuildingAnimation from "../../src/components/BuildingAnimation";
 import { useRouter } from "expo-router";
-
-const chronIcon = require("../../assets/images/chrons.png");
 
 export default function StopWatch() {
   const router = useRouter();
