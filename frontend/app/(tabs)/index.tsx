@@ -78,8 +78,6 @@ export default function Index() {
   const pinchInitialDistanceRef = React.useRef<number | null>(null);
   const pinchInitialTileSizeRef = React.useRef<number>(tileSize);
 
-  const [viewportCols] = useState<number>(5);
-  const [viewportRows] = useState<number>(5);
   const [buildItem, setBuildItem] = useState<any | null>(null);
   const [placing, setPlacing] = useState(false);
   const [buildX, setBuildX] = useState<number | null>(null);
@@ -126,7 +124,7 @@ export default function Index() {
             const errBody = await detailRes.json().catch(() => null);
             throw new Error(
               errBody?.error ||
-              `Failed to fetch account details (${detailRes.status})`
+                `Failed to fetch account details (${detailRes.status})`
             );
           }
           const detailJson = await detailRes.json();
@@ -169,21 +167,22 @@ export default function Index() {
   // Derive map metadata for zoom limits
   const mapWidth = Number(
     mapData?.map?.widthTiles ??
-    mapData?.map?.width ??
-    mapData?.grid?.[0]?.length ??
-    0
+      mapData?.map?.width ??
+      mapData?.grid?.[0]?.length ??
+      0
   );
   const mapHeight = Number(
     mapData?.map?.heightTiles ??
-    mapData?.map?.height ??
-    mapData?.grid?.length ??
-    0
+      mapData?.map?.height ??
+      mapData?.grid?.length ??
+      0
   );
 
-  // minTileSize: The 5x5 grid must exactly fill the container when fully zoomed out.
-  const minTileSize = containerSize / 5;
+  // When fully zoomed out, show the entire map (max of width/height) inside the square.
+  const maxTiles = Math.max(mapWidth || 1, mapHeight || 1);
+  const minTileSize = containerSize / maxTiles;
 
-  // maxTileSize: Exactly one tile fills the entire container.
+  // maxTileSize: Exactly one tile fills the entire container when fully zoomed in.
   const maxTileSize = containerSize;
 
   useEffect(() => {
@@ -953,9 +952,15 @@ export default function Index() {
                 const centerCol = centerX ?? Math.floor(w / 2);
                 const centerRow = centerY ?? Math.floor(h / 2);
 
-                // visible counts (how many tiles fit on screen)
-                const visibleCols = viewportCols;
-                const visibleRows = viewportRows;
+                // visible counts (how many tiles fit inside the fixed square container)
+                const visibleCols = Math.max(
+                  1,
+                  Math.min(w, Math.floor(containerSize / tileSize))
+                );
+                const visibleRows = Math.max(
+                  1,
+                  Math.min(h, Math.floor(containerSize / tileSize))
+                );
 
                 // Decide the viewport start based on ghost target (build/move)
                 // if present, otherwise use the camera center.
@@ -982,8 +987,8 @@ export default function Index() {
                 if (startCol > maxStartCol) startCol = maxStartCol;
 
                 const viewportStyle = {
-                  width: visibleCols * tileSize,
-                  height: visibleRows * tileSize,
+                  width: containerSize,
+                  height: containerSize,
                   overflow: "hidden" as const,
                 };
 
@@ -1018,8 +1023,8 @@ export default function Index() {
                         ? "#EF4444" // red when trying to build over an occupied tile
                         : "#22C55E" // green when empty
                       : isSelected
-                        ? "#3B82F6" // blue highlight for selected occupied tile
-                        : "transparent";
+                      ? "#3B82F6" // blue highlight for selected occupied tile
+                      : "transparent";
                     cols.push(
                       <Pressable
                         key={`cell-${r}-${c}`}
@@ -1075,10 +1080,7 @@ export default function Index() {
                 }
 
                 return (
-                  <View
-                    style={viewportStyle}
-                    {...dragResponder.panHandlers}
-                  >
+                  <View style={viewportStyle} {...dragResponder.panHandlers}>
                     <View style={translateStyle}>{rows}</View>
                   </View>
                 );
@@ -1181,8 +1183,8 @@ export default function Index() {
                 ? "Moving..."
                 : "Placing..."
               : moveSource
-                ? `Moving: ${moveSource.item?.name ?? "Item"}`
-                : `Placing: ${buildItem?.name ?? "Item"}`}
+              ? `Moving: ${moveSource.item?.name ?? "Item"}`
+              : `Placing: ${buildItem?.name ?? "Item"}`}
           </Text>
           <Pressable
             onPress={moveSource ? confirmMove : confirmBuild}
@@ -1222,7 +1224,9 @@ export default function Index() {
       >
         <Pressable
           onPress={() =>
-            setTileSize((s) => clamp(Math.round(s / 1.25), minTileSize, maxTileSize))
+            setTileSize((s) =>
+              clamp(Math.round(s / 1.25), minTileSize, maxTileSize)
+            )
           }
           style={{ padding: 10, marginRight: 6 }}
         >
@@ -1230,7 +1234,9 @@ export default function Index() {
         </Pressable>
         <Pressable
           onPress={() =>
-            setTileSize((s) => clamp(Math.round(s * 1.25), minTileSize, maxTileSize))
+            setTileSize((s) =>
+              clamp(Math.round(s * 1.25), minTileSize, maxTileSize)
+            )
           }
           style={{ padding: 10 }}
         >
