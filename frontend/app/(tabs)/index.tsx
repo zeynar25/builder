@@ -78,8 +78,8 @@ export default function Index() {
   const pinchInitialDistanceRef = React.useRef<number | null>(null);
   const pinchInitialTileSizeRef = React.useRef<number>(tileSize);
 
-  const [viewportCols, setViewportCols] = useState<number>(5);
-  const [viewportRows, setViewportRows] = useState<number>(5);
+  const [viewportCols] = useState<number>(5);
+  const [viewportRows] = useState<number>(5);
   const [buildItem, setBuildItem] = useState<any | null>(null);
   const [placing, setPlacing] = useState(false);
   const [buildX, setBuildX] = useState<number | null>(null);
@@ -180,12 +180,8 @@ export default function Index() {
     0
   );
 
-  // minTileSize: The map must always fill the square container.
-  // The smallest scale where the smaller dimension of the map covers containerSize.
-  const minTileSize =
-    mapWidth > 0 && mapHeight > 0
-      ? containerSize / Math.min(mapWidth, mapHeight)
-      : 12;
+  // minTileSize: The 5x5 grid must exactly fill the container when fully zoomed out.
+  const minTileSize = containerSize / 5;
 
   // maxTileSize: Exactly one tile fills the entire container.
   const maxTileSize = containerSize;
@@ -193,26 +189,11 @@ export default function Index() {
   useEffect(() => {
     function computeViewport() {
       if (!mapWidth || !mapHeight) return;
-
       // Ensure current tileSize adheres to the dynamic limits
       let effectiveTileSize = clamp(tileSize, minTileSize, maxTileSize);
       if (effectiveTileSize !== tileSize) {
         setTileSize(effectiveTileSize);
       }
-
-      // We need enough columns/rows to cover the containerSize.
-      // Use ceil because partial tiles might be visible.
-      const availableCols = Math.max(1, Math.ceil(containerSize / effectiveTileSize));
-      const availableRows = Math.max(1, Math.ceil(containerSize / effectiveTileSize));
-
-      let cols = Math.min(availableCols, mapWidth);
-      let rows = Math.min(availableRows, mapHeight);
-
-      cols = Math.max(1, cols);
-      rows = Math.max(1, rows);
-
-      setViewportCols(cols);
-      setViewportRows(rows);
     }
 
     computeViewport();
@@ -955,8 +936,8 @@ export default function Index() {
                 const centerRow = centerY ?? Math.floor(h / 2);
 
                 // visible counts (how many tiles fit on screen)
-                const visibleCols = Math.min(viewportCols, w || viewportCols);
-                const visibleRows = Math.min(viewportRows, h || viewportRows);
+                const visibleCols = viewportCols;
+                const visibleRows = viewportRows;
 
                 // Decide the viewport start based on ghost target (build/move)
                 // if present, otherwise use the camera center.
