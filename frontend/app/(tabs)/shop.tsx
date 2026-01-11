@@ -59,7 +59,7 @@ export default function Shop() {
             Alert.alert(
               "Session expired",
               "Your session has expired and you have been logged out. Please sign in again.",
-              [{ text: "OK", onPress: () => router.replace("/welcome") }]
+              [{ text: "OK", onPress: () => router.replace("/login") }]
             );
           }
         }

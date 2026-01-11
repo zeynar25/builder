@@ -58,7 +58,7 @@ export default function Account() {
           Alert.alert(
             "Session expired",
             "Your session has expired and you have been logged out. Please sign in again.",
-            [{ text: "OK", onPress: () => router.replace("/welcome") }]
+            [{ text: "OK", onPress: () => router.replace("/login") }]
           );
           return;
         }
@@ -73,7 +73,7 @@ export default function Account() {
             const errBody = await detailRes.json().catch(() => null);
             throw new Error(
               errBody?.error ||
-              `Failed to fetch account details (${detailRes.status})`
+                `Failed to fetch account details (${detailRes.status})`
             );
           }
           const detailJson = await detailRes.json();
@@ -430,7 +430,7 @@ export default function Account() {
                     style={[
                       styles.avatarOption,
                       accountDetail?.accountDetail?.imageUrl === file &&
-                      styles.avatarOptionSelected,
+                        styles.avatarOptionSelected,
                     ]}
                     onPress={() => handleAvatarPress(file)}
                     disabled={savingAvatar}
