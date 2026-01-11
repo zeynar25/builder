@@ -826,11 +826,32 @@ export default function Index() {
       <PageHeader accountDetail={accountDetail} />
       <PageFiller />
       <View style={globalStyles.pageContainer}>
-        <Text variant="headlineMedium" style={{ ...globalStyles.variantLabel, fontWeight: theme.typography.fontWeight.bold }}>
+        <Text
+          variant="headlineMedium"
+          style={{
+            ...globalStyles.variantLabel,
+            fontWeight: theme.typography.fontWeight.bold,
+          }}
+        >
           Bu
-          <Text style={{ color: theme.colors.highlight, fontWeight: theme.typography.fontWeight.bold }}>i</Text>
-          lder 
-          <Text style={{ color: theme.colors.highlight, fontWeight: theme.typography.fontWeight.bold }}> Village</Text>
+          <Text
+            style={{
+              color: theme.colors.highlight,
+              fontWeight: theme.typography.fontWeight.bold,
+            }}
+          >
+            i
+          </Text>
+          lder
+          <Text
+            style={{
+              color: theme.colors.highlight,
+              fontWeight: theme.typography.fontWeight.bold,
+            }}
+          >
+            {" "}
+            Village
+          </Text>
         </Text>
       </View>
 
@@ -1079,8 +1100,6 @@ export default function Index() {
                           style={{
                             width: tileSize,
                             height: tileSize,
-                            marginRight: 1,
-                            marginBottom: 1,
                             borderWidth: isGhostTarget || isSelected ? 2 : 0,
                             borderColor,
                           }}
