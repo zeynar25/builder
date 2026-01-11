@@ -36,7 +36,7 @@ export const globalStyles = StyleSheet.create({
         height: 3,
         backgroundColor: theme.colors.highlight,
         borderRadius: theme.radii.sm,
-        marginBottom: theme.spacing.max,
+        marginBottom: theme.spacing.lg,
     },
 
     pageContainer: {
@@ -163,6 +163,13 @@ export const globalStyles = StyleSheet.create({
         fontFamily: theme.typography.fontFamily.primary,
         fontWeight: theme.typography.fontWeight.bold,
     },
+
+    variantAccent:{
+        color: theme.colors.accent_2,
+        fontFamily: theme.typography.fontFamily.primary,
+    },
+
+
     // ==== buttonStyles ====
 
     primaryButton: {

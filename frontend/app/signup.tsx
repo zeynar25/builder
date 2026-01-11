@@ -11,8 +11,9 @@ import {
   Platform,
   Image,
   Dimensions,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
 } from "react-native";
-
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { API_BASE_URL } from "../src/config";
 import { useRouter } from "expo-router";
@@ -83,8 +84,6 @@ export default function Signup() {
       }
 
       if (Platform.OS === "web") {
-        // React Native's Alert isn't fully supported on web; use window.alert
-        // and then redirect so the user sees the message.
         window.alert("Account created. Welcome!");
         router.replace("/onboarding");
       } else {
@@ -100,100 +99,107 @@ export default function Signup() {
   }
 
   return (
-    <Animated.View style={[globalStyles.main, animatedStyle]}>
-      <View style={styles.headerContainer}>
-        <Image
-          source={require("../assets/images/Vector.png")}
-          style={styles.headerImage}
-          resizeMode="stretch"
-        />
-      </View>
-
-      <View style={[globalStyles.userform, styles.formWithHeaderOffset]}>
-        <Text style={globalStyles.textTitle}>Sign Up</Text>
-        <View style={globalStyles.titleUnderline} />
-
-        <Text style={globalStyles.TextLabel}>Email or Username</Text>
-        <View style={globalStyles.inputContainer}>
-          <Feather
-            name="mail"
-            size={theme.icon.form}
-            color={theme.colors.highlight}
-          />
-
-          <TextInput
-            style={globalStyles.textInput}
-            placeholder="demo@email.com"
-            placeholderTextColor={theme.colors.text.secondary}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-          />
-        </View>
-
-        <Text style={globalStyles.TextLabel}>Password</Text>
-        <View style={globalStyles.inputContainer}>
-          <Feather
-            name="lock"
-            size={theme.icon.form}
-            color={theme.colors.highlight}
-          />
-          <TextInput
-            ref={passwordRef}
-            style={globalStyles.textInput}
-            placeholder="Enter your password"
-            placeholderTextColor={theme.colors.text.secondary}
-            secureTextEntry={!showPassword}
-            value={password}
-            onChangeText={setPassword}
-            returnKeyType="done"
-            onSubmitEditing={() => {
-              handleSubmit();
-              passwordRef.current?.blur();
-              Keyboard.dismiss();
-            }}
-            autoCorrect={false}
-            autoCapitalize="none"
-          />
-          <Pressable onPress={() => setShowPassword(!showPassword)}>
-            <Ionicons
-              name={showPassword ? "eye-outline" : "eye-off-outline"}
-              size={theme.icon.form}
-              color={theme.colors.accent_1}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <Animated.View style={[globalStyles.main, animatedStyle]}>
+          <View style={styles.headerContainer}>
+            <Image
+              source={require("../assets/images/Vector.png")}
+              style={styles.headerImage}
+              resizeMode="stretch"
             />
-          </Pressable>
-        </View>
+          </View>
 
-        {error && <Text style={globalStyles.textError}>{error}</Text>}
+          <View style={[globalStyles.userform, styles.formWithHeaderOffset]}>
+            <Text style={globalStyles.textTitle}>Sign Up</Text>
+            <View style={globalStyles.titleUnderline} />
 
-        <Pressable
-          style={[
-            globalStyles.primaryButton,
-            styles.customButton,
-            loading && globalStyles.primaryButtonDisabled,
-          ]}
-          onPress={handleSubmit}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color={theme.colors.mono} />
-          ) : (
-            <Text style={globalStyles.primaryButtonText}>Create Account</Text>
-          )}
-        </Pressable>
+            <Text style={globalStyles.TextLabel}>Email or Username</Text>
+            <View style={globalStyles.inputContainer}>
+              <Feather
+                name="mail"
+                size={theme.icon.form}
+                color={theme.colors.highlight}
+              />
 
-        <Text style={styles.signupText}>
-          Already have an account?{" "}
-          <Text
-            style={styles.signupLink}
-            onPress={() => router.replace("/login")}
-          >
-            Sign in
-          </Text>
-        </Text>
-      </View>
-    </Animated.View>
+              <TextInput
+                style={globalStyles.textInput}
+                placeholder="demo@email.com"
+                placeholderTextColor={theme.colors.text.secondary}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
+              />
+            </View>
+
+            <Text style={globalStyles.TextLabel}>Password</Text>
+            <View style={globalStyles.inputContainer}>
+              <Feather
+                name="lock"
+                size={theme.icon.form}
+                color={theme.colors.highlight}
+              />
+              <TextInput
+                ref={passwordRef}
+                style={globalStyles.textInput}
+                placeholder="Enter your password"
+                placeholderTextColor={theme.colors.text.secondary}
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
+                returnKeyType="done"
+                onSubmitEditing={() => {
+                  handleSubmit();
+                  passwordRef.current?.blur();
+                  Keyboard.dismiss();
+                }}
+                autoCorrect={false}
+                autoCapitalize="none"
+              />
+              <Pressable onPress={() => setShowPassword(!showPassword)}>
+                <Ionicons
+                  name={showPassword ? "eye-outline" : "eye-off-outline"}
+                  size={theme.icon.form}
+                  color={theme.colors.accent_1}
+                />
+              </Pressable>
+            </View>
+
+            {error && <Text style={globalStyles.textError}>{error}</Text>}
+
+            <Pressable
+              style={[
+                globalStyles.primaryButton,
+                styles.customButton,
+                loading && globalStyles.primaryButtonDisabled,
+              ]}
+              onPress={handleSubmit}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color={theme.colors.mono} />
+              ) : (
+                <Text style={globalStyles.primaryButtonText}>Create Account</Text>
+              )}
+            </Pressable>
+
+            <Text style={styles.signupText}>
+              Already have an account?{" "}
+              <Text
+                style={styles.signupLink}
+                onPress={() => router.replace("/login")}
+              >
+                Sign in
+              </Text>
+            </Text>
+          </View>
+        </Animated.View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 

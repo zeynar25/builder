@@ -9,8 +9,11 @@ import {
   Keyboard,
   Image,
   Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  ScrollView,
 } from "react-native";
-
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { API_BASE_URL } from "../src/config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -82,7 +85,6 @@ export default function Login() {
         return;
       }
 
-      // backend may return tokens in different shapes; normalize common forms
       const accessToken =
         body?.accessToken ??
         body?.tokens?.access ??
@@ -92,7 +94,6 @@ export default function Login() {
 
       if (accessToken) await AsyncStorage.setItem("accessToken", accessToken);
 
-      // store account id and attempt to select a default map for the user
       const accountId =
         body?.account?.id ?? body?.account?._id ?? body?.id ?? null;
 
@@ -117,7 +118,6 @@ export default function Login() {
           await AsyncStorage.setItem("accountEmail", accountEmail);
         }
 
-        // try to pick the first map for this account and save as currentMapId
         try {
           const mapsRes = await fetch(
             `${API_BASE_URL}/api/maps/account/${accountId}`
@@ -132,11 +132,9 @@ export default function Login() {
             }
           }
         } catch {
-          // ignore map fetch failures; user can pick later
         }
       }
 
-      // Navigate to the tabs index screen
       router.replace("/");
     } catch (e: any) {
       setError(e.message || String(e));
@@ -146,120 +144,106 @@ export default function Login() {
   }
 
   return (
-    <Animated.View style={[globalStyles.main, animatedStyle]}>
-      <View style={styles.headerContainer}>
-        <Image
-          source={require("../assets/images/Vector.png")}
-          style={styles.headerImage}
-          resizeMode="stretch"
-        />
-      </View>
-
-      <View style={[globalStyles.userform, styles.formWithHeaderOffset]}>
-        <Text style={globalStyles.textTitle}>Sign In</Text>
-        <View style={globalStyles.titleUnderline} />
-
-        <Text style={globalStyles.TextLabel}>Email or Username</Text>
-        <View style={globalStyles.inputContainer}>
-          <Feather
-            name="mail"
-            size={theme.icon.form}
-            color={theme.colors.highlight}
-          />
-
-          <TextInput
-            style={globalStyles.textInput}
-            placeholder="demo@email.com"
-            placeholderTextColor={theme.colors.text.secondary}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-          />
-        </View>
-
-        <Text style={globalStyles.TextLabel}>Password</Text>
-        <View style={globalStyles.inputContainer}>
-          <Feather
-            name="lock"
-            size={theme.icon.form}
-            color={theme.colors.highlight}
-          />
-          <TextInput
-            ref={passwordRef}
-            style={globalStyles.textInput}
-            placeholder="Enter your password"
-            placeholderTextColor={theme.colors.text.secondary}
-            secureTextEntry={!showPassword}
-            value={password}
-            onChangeText={setPassword}
-            returnKeyType="done"
-            onSubmitEditing={() => {
-              handleSubmit();
-              passwordRef.current?.blur();
-              Keyboard.dismiss();
-            }}
-            autoCorrect={false}
-            autoCapitalize="none"
-          />
-          <Pressable onPress={() => setShowPassword(!showPassword)}>
-            <Ionicons
-              name={showPassword ? "eye-outline" : "eye-off-outline"}
-              size={theme.icon.form}
-              color={theme.colors.accent_1}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <Animated.View style={[globalStyles.main, animatedStyle]}>
+          <View style={styles.headerContainer}>
+            <Image
+              source={require("../assets/images/Vector.png")}
+              style={styles.headerImage}
+              resizeMode="stretch"
             />
-          </Pressable>
-        </View>
+          </View>
 
-        {error && <Text style={globalStyles.textError}>{error}</Text>}
+          <View style={[globalStyles.userform, styles.formWithHeaderOffset]}>
+            <Text style={globalStyles.textTitle}>Sign In</Text>
+            <View style={globalStyles.titleUnderline} />
 
-        <View style={styles.optionsRow}>
-          <Pressable
-            onPress={() => setRememberMe(!rememberMe)}
-            style={styles.checkboxRow}
-          >
-            <View
-              style={[styles.checkbox, rememberMe && styles.checkboxChecked]}
-            >
-              {rememberMe && (
-                <Feather
-                  name="check"
-                  size={theme.icon.form}
-                  color={theme.colors.mono}
-                />
-              )}
+            <Text style={globalStyles.TextLabel}>Email or Username</Text>
+            <View style={globalStyles.inputContainer}>
+              <Feather
+                name="mail"
+                size={theme.icon.form}
+                color={theme.colors.highlight}
+              />
+
+              <TextInput
+                style={globalStyles.textInput}
+                placeholder="demo@email.com"
+                placeholderTextColor={theme.colors.text.secondary}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
+              />
             </View>
-            <Text style={styles.checkboxLabel}>Remember Me</Text>
-          </Pressable>
-          <Text style={styles.forgotPassword}>Forgot Password?</Text>
-        </View>
 
-        <Pressable
-          style={[
-            globalStyles.primaryButton,
-            loading && globalStyles.primaryButtonDisabled,
-          ]}
-          onPress={handleSubmit}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color={theme.colors.mono} />
-          ) : (
-            <Text style={globalStyles.primaryButtonText}>Login</Text>
-          )}
-        </Pressable>
+            <Text style={globalStyles.TextLabel}>Password</Text>
+            <View style={globalStyles.inputContainer}>
+              <Feather
+                name="lock"
+                size={theme.icon.form}
+                color={theme.colors.highlight}
+              />
+              <TextInput
+                ref={passwordRef}
+                style={globalStyles.textInput}
+                placeholder="Enter your password"
+                placeholderTextColor={theme.colors.text.secondary}
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
+                returnKeyType="done"
+                onSubmitEditing={() => {
+                  handleSubmit();
+                  passwordRef.current?.blur();
+                  Keyboard.dismiss();
+                }}
+                autoCorrect={false}
+                autoCapitalize="none"
+              />
+              <Pressable onPress={() => setShowPassword(!showPassword)}>
+                <Ionicons
+                  name={showPassword ? "eye-outline" : "eye-off-outline"}
+                  size={theme.icon.form}
+                  color={theme.colors.accent_1}
+                />
+              </Pressable>
+            </View>
 
-        <Text style={styles.signupText}>
-          Don&apos;t have an Account?{" "}
-          <Text
-            style={styles.signupLink}
-            onPress={() => router.replace("/signup")}
-          >
-            Sign up
-          </Text>
-        </Text>
-      </View>
-    </Animated.View>
+            {error && <Text style={globalStyles.textError}>{error}</Text>}
+
+            <Pressable
+              style={[
+                globalStyles.primaryButton,
+                loading && globalStyles.primaryButtonDisabled,
+              ]}
+              onPress={handleSubmit}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color={theme.colors.mono} />
+              ) : (
+                <Text style={globalStyles.primaryButtonText}>Login</Text>
+              )}
+            </Pressable>
+
+            <Text style={styles.signupText}>
+              Don&apos;t have an Account?{" "}
+              <Text
+                style={styles.signupLink}
+                onPress={() => router.replace("/signup")}
+              >
+                Sign up
+              </Text>
+            </Text>
+          </View>
+        </Animated.View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -283,47 +267,8 @@ const styles = StyleSheet.create({
   formWithHeaderOffset: {
     marginTop: 80,
   },
-
-  optionsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    marginBottom: theme.spacing.lg,
-    paddingVertical: theme.spacing.sm,
-  },
-
-  checkboxRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  checkbox: {
-    width: theme.icon.form,
-    height: theme.icon.form,
-    borderWidth: 1,
-    borderColor: theme.colors.highlight,
-    borderRadius: theme.radii.sm,
-    marginRight: theme.spacing.md,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "transparent",
-  },
-
-  checkboxChecked: {
-    backgroundColor: theme.colors.highlight,
-  },
-
-  checkboxLabel: {
-    fontSize: theme.typography.fontSize.detail,
-    color: theme.colors.text.primary,
-    fontFamily: theme.typography.fontFamily.primary,
-  },
-
-  forgotPassword: {
-    fontSize: theme.typography.fontSize.detail,
-    color: theme.colors.highlight,
-    fontWeight: theme.typography.fontWeight.medium,
-    fontFamily: theme.typography.fontFamily.primary,
+  customButton: {
+    marginTop: theme.spacing.xl,
   },
 
   signupText: {
