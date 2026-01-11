@@ -12,7 +12,7 @@ export const theme = {
         primary: '#2D3434',
         secondary: '#9B9B9B',
         inverse: '#FDFDFB',
-        error: '#640000ff',
+        error: 'rgb(219, 39, 39)',
     },
 
   },

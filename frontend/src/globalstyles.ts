@@ -97,7 +97,7 @@ export const globalStyles = StyleSheet.create({
         alignItems: "center", 
         paddingVertical: theme.spacing.xs,
         paddingHorizontal: theme.spacing.sm,
-        backgroundColor: theme.colors.accent_3,
+        backgroundColor: theme.colors.highlight,
         borderRadius: theme.radii.md,
     },
 
