@@ -67,11 +67,11 @@ export default function Signup() {
       if (Platform.OS === "web") {
         // React Native's Alert isn't fully supported on web; use window.alert
         // and then redirect so the user sees the message.
-        window.alert("Account created. Please sign in.");
-        router.replace("/login");
+        window.alert("Account created. Welcome!");
+        router.replace("/onboarding");
       } else {
-        Alert.alert("Success", "Account created. Please sign in.", [
-          { text: "OK", onPress: () => router.replace("/login") },
+        Alert.alert("Success", "Account created. Let's get started!", [
+          { text: "OK", onPress: () => router.replace("/onboarding") },
         ]);
       }
     } catch (e: any) {

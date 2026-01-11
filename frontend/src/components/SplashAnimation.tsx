@@ -218,16 +218,15 @@ export const SplashAnimation = ({ onFinish }: { onFinish: () => void }) => {
 
     const waveAnimatedProps = useAnimatedProps(() => {
         const p = waveProgress.value;
-        const waveDepth = 150;
-        // currentY starts above the screen and moves down to cover the entire screen
-        const currentY = -waveDepth + (p * (height + waveDepth * 2));
+        const waveHeight = 300; // Even taller wave
+        // currentY starts significantly above and ends significantly below to ensure peaks pass the edge
+        const currentY = -waveHeight + (p * (height + waveHeight * 3));
 
         // Wave moving from TOP to BOTTOM
-        // The "filled" part is the rectangle from the top down to this wave line
         const d = `M 0 0
                H ${width}
                V ${currentY}
-               Q ${width * 0.75} ${currentY + 60} ${width * 0.5} ${currentY}
+               Q ${width * 0.75} ${currentY + 120} ${width * 0.5} ${currentY}
                T 0 ${currentY}
                V 0
                Z`;
@@ -273,8 +272,8 @@ export const SplashAnimation = ({ onFinish }: { onFinish: () => void }) => {
             )}
 
             {/* Phase 4: Liquid Wave Transition */}
-            <Animated.View style={[StyleSheet.absoluteFill, { zIndex: 100 }]} pointerEvents="none">
-                <Svg width={width} height={height}>
+            <Animated.View style={[StyleSheet.absoluteFill, { zIndex: 999, overflow: 'visible' }]} pointerEvents="none">
+                <Svg width={width} height={height + 500} style={{ marginTop: -250 }}>
                     <Defs>
                         <LinearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
                             <Stop offset="0" stopColor={COLORS.waveGradientStart} stopOpacity="1" />
