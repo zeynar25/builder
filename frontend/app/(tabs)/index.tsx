@@ -17,7 +17,7 @@ import { globalStyles } from "@/src/globalstyles";
 import PageHeader from "@/src/components/PageHeader";
 import PageFiller from "@/src/components/PageFiller";
 
-import { FontAwesome5 } from "@expo/vector-icons";
+import { Feather, FontAwesome5 } from "@expo/vector-icons";
 import { API_BASE_URL } from "../../src/config";
 import isTokenValid from "../../src/useAuthGuard";
 import { getImageSource } from "../../src/imageMap";
@@ -126,7 +126,7 @@ export default function Index() {
             const errBody = await detailRes.json().catch(() => null);
             throw new Error(
               errBody?.error ||
-                `Failed to fetch account details (${detailRes.status})`
+              `Failed to fetch account details (${detailRes.status})`
             );
           }
           const detailJson = await detailRes.json();
@@ -169,15 +169,15 @@ export default function Index() {
   // Derive map metadata for zoom limits
   const mapWidth = Number(
     mapData?.map?.widthTiles ??
-      mapData?.map?.width ??
-      mapData?.grid?.[0]?.length ??
-      0
+    mapData?.map?.width ??
+    mapData?.grid?.[0]?.length ??
+    0
   );
   const mapHeight = Number(
     mapData?.map?.heightTiles ??
-      mapData?.map?.height ??
-      mapData?.grid?.length ??
-      0
+    mapData?.map?.height ??
+    mapData?.grid?.length ??
+    0
   );
 
   // When fully zoomed out, show the entire map (max of width/height) inside the square.
@@ -829,7 +829,7 @@ export default function Index() {
         <Text variant="headlineMedium" style={{ ...globalStyles.variantLabel, fontWeight: theme.typography.fontWeight.bold }}>
           Bu
           <Text style={{ color: theme.colors.highlight, fontWeight: theme.typography.fontWeight.bold }}>i</Text>
-          lder 
+          lder
           <Text style={{ color: theme.colors.highlight, fontWeight: theme.typography.fontWeight.bold }}> Village</Text>
         </Text>
       </View>
@@ -869,9 +869,12 @@ export default function Index() {
                     placeholder="Map name"
                     style={{
                       borderBottomWidth: 1,
+                      borderBottomColor: theme.colors.highlight,
                       flex: 1,
                       paddingVertical: 4,
                       textAlign: "center",
+                      fontSize: 18,
+                      color: theme.colors.text.secondary,
                     }}
                     editable={!savingMapName}
                   />
@@ -911,13 +914,13 @@ export default function Index() {
                     }}
                     style={{ padding: 8, marginLeft: 8 }}
                   >
-                    <FontAwesome5 name="check" size={16} color="#22C55E" />
+                    <Feather name="check" size={20} color="#11aa49" />
                   </Pressable>
                   <Pressable
                     onPress={() => setEditingMapName(false)}
                     style={{ padding: 8, marginLeft: 8 }}
                   >
-                    <FontAwesome5 name="times" size={16} color="#888" />
+                    <Feather name="x" size={20} color={theme.colors.text.secondary} />
                   </Pressable>
                 </View>
               </View>
@@ -931,7 +934,7 @@ export default function Index() {
                   }}
                 >
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <Text style={{ fontWeight: "bold", fontSize: 18 }}>
+                    <Text variant="titleLarge" style={{ fontWeight: theme.typography.fontWeight.bold, color: theme.colors.text.primary }}>
                       {mapData.map?.name
                         ? `${mapData.map.name}`
                         : "Someone's Domain"}
@@ -943,7 +946,7 @@ export default function Index() {
                       }}
                       style={{ padding: 6, marginLeft: 8 }}
                     >
-                      <FontAwesome5 name="edit" size={16} color="#FFA500" />
+                      <FontAwesome5 name="edit" size={16} color={theme.colors.highlight} />
                     </Pressable>
                   </View>
                 </View>
@@ -955,12 +958,12 @@ export default function Index() {
               style={{
                 width: containerSize,
                 height: containerSize,
-                borderWidth: 2,
-                borderColor: "#333",
+                borderWidth: 1,
+                borderColor: theme.colors.accent_3,
                 borderRadius: 8,
                 padding: 4,
                 alignSelf: "center",
-                backgroundColor: "#fff",
+                backgroundColor: theme.colors.support,
                 overflow: "hidden", // Crucial: hide tiles that overflow the square
               }}
             >
@@ -1040,11 +1043,11 @@ export default function Index() {
                       : resolveTileImage(cell?.item?.imageUrl);
                     const borderColor = isGhostTarget
                       ? isOccupiedTarget
-                        ? "#EF4444" // red when trying to build over an occupied tile
+                        ? "#ca2525" // red when trying to build over an occupied tile
                         : "#22C55E" // green when empty
                       : isSelected
-                      ? "#3B82F6" // blue highlight for selected occupied tile
-                      : "transparent";
+                        ? "#2569d7" // blue highlight for selected occupied tile
+                        : "transparent";
                     cols.push(
                       <Pressable
                         key={`cell-${r}-${c}`}
@@ -1079,10 +1082,8 @@ export default function Index() {
                           style={{
                             width: tileSize,
                             height: tileSize,
-                            marginRight: 1,
-                            marginBottom: 1,
                             borderWidth: isGhostTarget || isSelected ? 2 : 0,
-                            borderColor,
+                        
                           }}
                           resizeMode="cover"
                         />
@@ -1194,7 +1195,7 @@ export default function Index() {
             paddingHorizontal: 12,
             paddingVertical: 6,
             borderRadius: 999,
-            backgroundColor: "#111",
+            backgroundColor: theme.colors.highlight,
           }}
         >
           <Pressable
@@ -1204,14 +1205,14 @@ export default function Index() {
           >
             <FontAwesome5 name="times" size={16} color="#EF4444" />
           </Pressable>
-          <Text style={{ marginHorizontal: 8, color: "#fff" }}>
+          <Text variant="labelLarge" style={{ marginHorizontal: 8, color: theme.colors.text.inverse, fontWeight: theme.typography.fontWeight.bold }}>
             {placing || moving
               ? moveSource
                 ? "Moving..."
                 : "Placing..."
               : moveSource
-              ? `Moving: ${moveSource.item?.name ?? "Item"}`
-              : `Placing: ${buildItem?.name ?? "Item"}`}
+                ? `Moving: ${moveSource.item?.name ?? "Item"}`
+                : `Placing: ${buildItem?.name ?? "Item"}`}
           </Text>
           <Pressable
             onPress={moveSource ? confirmMove : confirmBuild}
@@ -1234,7 +1235,7 @@ export default function Index() {
             moveSource && tx === moveSource.x && ty === moveSource.y;
           return cell?.item && !sameSource;
         })() && (
-          <Text style={{ marginTop: 4, color: "#EF4444" }}>
+          <Text variant="labelMedium" style={{ textAlign: "center", marginTop: 6, color: theme.colors.text.error }}>
             Selected tile is already occupied.
           </Text>
         )}
@@ -1244,7 +1245,6 @@ export default function Index() {
           alignItems: "center",
           marginBottom: 20,
           alignSelf: "flex-end",
-          backgroundColor: "rgba(255,255,255,0.7)",
           borderRadius: 20,
           padding: 4,
         }}
@@ -1257,7 +1257,7 @@ export default function Index() {
           }
           style={{ padding: 10, marginRight: 6 }}
         >
-          <FontAwesome5 name="search-minus" size={20} color="#FFA500" />
+          <Feather name="zoom-out" size={24} color="#FFA500" />
         </Pressable>
         <Pressable
           onPress={() =>
@@ -1267,7 +1267,7 @@ export default function Index() {
           }
           style={{ padding: 10 }}
         >
-          <FontAwesome5 name="search-plus" size={20} color="#FFA500" />
+          <Feather name="zoom-in" size={24} color="#FFA500" />
         </Pressable>
       </View>
       <PageFiller />
