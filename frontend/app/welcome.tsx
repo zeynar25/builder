@@ -8,6 +8,7 @@ import {
     Dimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { theme } from "@/src/theme";
 import { globalStyles } from "@/src/globalstyles";
 
@@ -15,40 +16,53 @@ const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
 
 export default function Welcome() {
     const router = useRouter();
+    const opacity = useSharedValue(0);
+
+    React.useEffect(() => {
+        // Content fades in
+        opacity.value = withTiming(1, { duration: 500 });
+    }, []);
+
+    const animatedStyle = useAnimatedStyle(() => ({
+        opacity: opacity.value,
+    }));
 
     return (
-        <View style={globalStyles.main}>
-            <View style={styles.headerContainer}>
-                <Image
-                    source={require("../assets/images/Vector.png")}
-                    style={styles.headerImage}
-                    resizeMode="stretch"
-                />
-            </View>
-
-            <View style={[styles.content, styles.contentWithHeaderOffset]}>
-                <Text style={styles.welcomeText}>Welcome to</Text>
-                <Text style={styles.brandText}>Builder App</Text>
-
-                <View style={styles.imagePlaceholder}>
+        <View style={{ flex: 1 }}>
+            {/* 1. Original content structure inside an Animated.View for fade-in */}
+            <Animated.View style={[globalStyles.main, animatedStyle]}>
+                <View style={styles.headerContainer}>
                     <Image
-                        source={require("../assets/images/builder-logo.png")}
-                        style={styles.illustration}
-                        resizeMode="contain"
+                        source={require("../assets/images/Vector.png")}
+                        style={styles.headerImage}
+                        resizeMode="stretch"
                     />
                 </View>
 
-                <Text style={styles.description}>
-                    The best way to manage your progress and build your future.
-                </Text>
+                <View style={[styles.content, styles.contentWithHeaderOffset]}>
+                    <Text style={styles.welcomeText}>Welcome to</Text>
+                    <Text style={styles.brandText}>Builder App</Text>
 
-                <Pressable
-                    style={globalStyles.primaryButton}
-                    onPress={() => router.replace("/login")}
-                >
-                    <Text style={globalStyles.primaryButtonText}>Next</Text>
-                </Pressable>
-            </View>
+                    <View style={styles.imagePlaceholder}>
+                        <Image
+                            source={require("../assets/images/builder-logo.png")}
+                            style={styles.illustration}
+                            resizeMode="contain"
+                        />
+                    </View>
+
+                    <Text style={styles.description}>
+                        The best way to manage your progress and build your future.
+                    </Text>
+
+                    <Pressable
+                        style={globalStyles.primaryButton}
+                        onPress={() => router.replace("/login")}
+                    >
+                        <Text style={globalStyles.primaryButtonText}>Next</Text>
+                    </Pressable>
+                </View>
+            </Animated.View>
         </View>
     );
 }
