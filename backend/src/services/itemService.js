@@ -57,6 +57,7 @@ export async function buyItemById(
 
   // deduct chrons and persist
   accountDetails.chron = (accountDetails.chron ?? 0) - priceNumber;
+  accountDetails.exp = (accountDetails.exp ?? 0) + priceNumber; // grant 1 exp per chron spent
   await accountDetails.save();
 
   return { success: true, item, placement: placeRes.placement };
