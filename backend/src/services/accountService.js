@@ -32,7 +32,14 @@ export async function createAccount({ email, password }) {
 
   const passwordHash = await bcrypt.hash(password, HASH_ROUNDS);
 
-  const detail = await AccountDetail.create({ chron: 500, exp: 0 });
+  // Pick a random default profile image 1–5
+  const n = Math.floor(Math.random() * 5) + 1;
+
+  const detail = await AccountDetail.create({
+    imageUrl: `${n}.png`,
+    chron: 500,
+    exp: 0,
+  });
 
   const account = await Account.create({
     email,
