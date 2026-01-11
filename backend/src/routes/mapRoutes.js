@@ -1,5 +1,9 @@
 import express from "express";
-import { getMap, updateMapName } from "../controllers/mapController.js";
+import {
+  getMap,
+  updateMapName,
+  expandMap,
+} from "../controllers/mapController.js";
 
 const router = express.Router();
 
@@ -14,5 +18,8 @@ router.get("/:id", getMap);
 
 // Update map name
 router.put("/:id/name", updateMapName);
+
+// Expand map dimensions, spending chrons
+router.post("/:id/expand", expandMap);
 
 export default router;

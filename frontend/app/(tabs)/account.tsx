@@ -39,6 +39,7 @@ export default function Account() {
   const [savingGameName, setSavingGameName] = useState(false);
   const [avatarModalVisible, setAvatarModalVisible] = useState(false);
   const [savingAvatar, setSavingAvatar] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -90,6 +91,26 @@ export default function Account() {
       cancelled = true;
     };
   }, [router]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const storedEmail = await AsyncStorage.getItem("accountEmail");
+        if (!cancelled) {
+          setEmail(storedEmail);
+        }
+      } catch {
+        if (!cancelled) {
+          setEmail(null);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function handleLogout() {
     try {
@@ -195,8 +216,6 @@ export default function Account() {
     );
   }
 
-  const email = AsyncStorage.getItem("accountEmail");
-
   const profileImg = `../../assets/images/profiles/${accountDetail?.accountDetail?.imageUrl}`;
 
   const avatarFiles = ["1.png", "2.png", "3.png", "4.png", "5.png"];
@@ -228,11 +247,15 @@ export default function Account() {
           </Pressable>
 
           {editingGameName ? (
-            <View style={styles.editNameActive}>
+            <View
+              style={[
+                styles.editNameActive,
+                { width: "75%", alignSelf: "center" },
+              ]}
+            >
               <TextInput
                 value={newGameName}
                 onChangeText={setNewGameName}
-                placeholder="Enter your Name"
                 style={{
                   borderWidth: 0,
                   borderBottomWidth: 1,
@@ -286,7 +309,7 @@ export default function Account() {
           )}
 
           <Text variant="labelLarge" style={globalStyles.variantLabel}>
-            {email || "@Email not available"}
+            {email ?? "@Email not available"}
           </Text>
         </View>
 

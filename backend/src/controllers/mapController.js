@@ -38,4 +38,26 @@ export async function updateMapName(req, res) {
   }
 }
 
-export default { getMap, getMapsByAccount, updateMapName };
+export async function expandMap(req, res) {
+  try {
+    const { id } = req.params;
+    const { accountDetailsId } = req.body;
+
+    if (!accountDetailsId) {
+      return res.status(400).json({ error: "accountDetailsId_required" });
+    }
+
+    const result = await mapService.expandMap(id, accountDetailsId);
+    if (!result) return res.status(404).json({ error: "map_not_found" });
+
+    return res.json({ success: true, ...result });
+  } catch (err) {
+    const msg = err?.message || "cannot_expand_map";
+    if (msg === "account_details_not_found" || msg === "insufficient_chrons") {
+      return res.status(400).json({ error: msg });
+    }
+    return res.status(500).json({ error: msg });
+  }
+}
+
+export default { getMap, getMapsByAccount, updateMapName, expandMap };
