@@ -16,7 +16,11 @@ import {
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { API_BASE_URL } from "../src/config";
 import { useRouter } from "expo-router";
-import Animated, { useSharedValue, useAnimatedStyle, withTiming } from "react-native-reanimated";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from "react-native-reanimated";
 
 import { theme } from "@/src/theme";
 import { globalStyles } from "@/src/globalstyles";
@@ -29,7 +33,7 @@ export default function Signup() {
 
   React.useEffect(() => {
     opacity.value = withTiming(1, { duration: 500 });
-  }, []);
+  }, [opacity]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
@@ -46,6 +50,20 @@ export default function Signup() {
     setError(null);
     if (!email || !password) {
       setError("Email and password are required");
+      return;
+    }
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordPattern.test(password)) {
+      setError(
+        "Password must be at least 8 characters and include upper and lower case letters and a number."
+      );
       return;
     }
 

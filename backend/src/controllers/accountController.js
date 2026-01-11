@@ -6,8 +6,26 @@ export async function signup(req, res) {
     return res.status(400).json({ message: "Email and password are required" });
 
   const result = await accountService.createAccount({ email, password });
-  if (!result.success)
-    return res.status(409).json({ message: "Email already registered" });
+  if (!result.success) {
+    if (result.reason === "invalid_email") {
+      return res
+        .status(400)
+        .json({ message: "Please enter a valid email address." });
+    }
+
+    if (result.reason === "weak_password") {
+      return res.status(400).json({
+        message:
+          "Password must be at least 8 characters and include upper and lower case letters and a number.",
+      });
+    }
+
+    if (result.reason === "email_taken") {
+      return res.status(409).json({ message: "Email already registered" });
+    }
+
+    return res.status(400).json({ message: result.reason || "signup_failed" });
+  }
 
   return res
     .status(201)
