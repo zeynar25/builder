@@ -21,9 +21,12 @@ import { API_BASE_URL } from "../../src/config";
 import isTokenValid from "../../src/useAuthGuard";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import { getImageSource } from "../../src/imageMap";
 
 const { width: screenWidth } = Dimensions.get("window");
 const { height: screenHeight } = Dimensions.get("window");
+
+const defaultTile = require("../../assets/images/road-connectors/default-tile.png");
 
 export default function Account() {
   const router = useRouter();
@@ -151,7 +154,7 @@ export default function Account() {
 
   const email = AsyncStorage.getItem("accountEmail");
 
-  const profileImg = `../../assets/images/profiles/${accountDetail.imageUrl}`;
+  const profileImg = `../../assets/images/profiles/${accountDetail?.accountDetail?.imageUrl}`;
 
   return (
     <View style={globalStyles.page}>
@@ -164,7 +167,9 @@ export default function Account() {
         <View style={styles.accountDetails}>
           <View style={styles.imageContainer}>
             <Image
-              source={{ uri: profileImg }}
+              source={
+                getImageSource(profileImg) || defaultTile
+              }
               style={{
                 width: "100%",
                 height: "100%",
@@ -288,6 +293,7 @@ export default function Account() {
                   >
                     {exp} XP (Next Level: {(level + 1) * 100} XP)
                   </Text>
+                  <Text>{profileImg}</Text>
                 </View>
               );
             })()}

@@ -138,6 +138,27 @@ const map: Record<string, any> = {
   "../../assets/images/builder-logo.png": require("../assets/images/builder-logo.png"),
   "../assets/images/builder-logo.png": require("../assets/images/builder-logo.png"),
   "assets/images/builder-logo.png": require("../assets/images/builder-logo.png"),
+
+  // profiles
+  "../../assets/images/profiles/1.png": require("../assets/images/profiles/1.png"),
+  "../assets/images/profiles/1.png": require("../assets/images/profiles/1.png"),
+  "assets/images/profiles/1.png": require("../assets/images/profiles/1.png"),
+
+  "../../assets/images/profiles/2.png": require("../assets/images/profiles/2.png"),
+  "../assets/images/profiles/2.png": require("../assets/images/profiles/2.png"),
+  "assets/images/profiles/2.png": require("../assets/images/profiles/2.png"),
+
+  "../../assets/images/profiles/3.png": require("../assets/images/profiles/3.png"),
+  "../assets/images/profiles/3.png": require("../assets/images/profiles/3.png"),
+  "assets/images/profiles/3.png": require("../assets/images/profiles/3.png"),
+
+  "../../assets/images/profiles/4.png": require("../assets/images/profiles/4.png"),
+  "../assets/images/profiles/4.png": require("../assets/images/profiles/4.png"),
+  "assets/images/profiles/4.png": require("../assets/images/profiles/4.png"),
+
+  "../../assets/images/profiles/5.png": require("../assets/images/profiles/5.png"),
+  "../assets/images/profiles/5.png": require("../assets/images/profiles/5.png"),
+  "assets/images/profiles/5.png": require("../assets/images/profiles/5.png"),
 };
 
 export function getImageSource(path?: string | null) {

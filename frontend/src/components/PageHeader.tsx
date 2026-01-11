@@ -3,22 +3,26 @@ import { View, Image } from "react-native";
 import { Text } from "react-native-paper";
 import { globalStyles } from "@/src/globalstyles";
 import { theme } from "@/src/theme";
+import { getImageSource } from "../imageMap";
 
 const chronIcon = require("../../assets/images/chrons.png");
+const defaultTile = require("../../assets/images/road-connectors/default-tile.png");
 
 interface PageHeaderProps {
   accountDetail?: any;
 }
 
 export default function PageHeader({ accountDetail }: PageHeaderProps) {
-  const profileImg = `../../assets/images/profiles/${accountDetail.imageUrl}`;
+  const profileImg =
+    `../../assets/images/profiles/${accountDetail?.accountDetail?.imageUrl}` ||
+    `../../assets/images/profiles/1.png`;
 
   return (
     <View style={globalStyles.pageHeader}>
       <View style={globalStyles.headerContent}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Image
-            source={{ uri: profileImg }}
+            source={getImageSource(profileImg) || defaultTile}
             style={{
               width: theme.icon.navbar,
               height: theme.icon.navbar,
