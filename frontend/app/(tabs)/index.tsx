@@ -166,33 +166,48 @@ export default function Index() {
   const { width: screenWidth } = Dimensions.get("window");
   const containerSize = screenWidth * 0.9;
 
+  // Derive map metadata for zoom limits
+  const mapWidth = Number(
+    mapData?.map?.widthTiles ??
+    mapData?.map?.width ??
+    mapData?.grid?.[0]?.length ??
+    0
+  );
+  const mapHeight = Number(
+    mapData?.map?.heightTiles ??
+    mapData?.map?.height ??
+    mapData?.grid?.length ??
+    0
+  );
+
+  // minTileSize: The map must always fill the square container.
+  // The smallest scale where the smaller dimension of the map covers containerSize.
+  const minTileSize =
+    mapWidth > 0 && mapHeight > 0
+      ? containerSize / Math.min(mapWidth, mapHeight)
+      : 12;
+
+  // maxTileSize: Exactly one tile fills the entire container.
+  const maxTileSize = containerSize;
+
   useEffect(() => {
     function computeViewport() {
-      // Use the fixed container size for both available columns and rows (square)
-      const availableCols = Math.max(1, Math.floor(containerSize / tileSize));
-      const availableRows = Math.max(1, Math.floor(containerSize / tileSize));
+      if (!mapWidth || !mapHeight) return;
 
-      const mapW = Number(
-        mapData?.map?.widthTiles ??
-        mapData?.map?.width ??
-        mapData?.grid?.[0]?.length ??
-        0
-      );
-      const mapH = Number(
-        mapData?.map?.heightTiles ??
-        mapData?.map?.height ??
-        mapData?.grid?.length ??
-        0
-      );
+      // Ensure current tileSize adheres to the dynamic limits
+      let effectiveTileSize = clamp(tileSize, minTileSize, maxTileSize);
+      if (effectiveTileSize !== tileSize) {
+        setTileSize(effectiveTileSize);
+      }
 
-      // Cap viewport to available screen tiles, but never exceed actual map size when known.
-      let cols = availableCols;
-      let rows = availableRows;
+      // We need enough columns/rows to cover the containerSize.
+      // Use ceil because partial tiles might be visible.
+      const availableCols = Math.max(1, Math.ceil(containerSize / effectiveTileSize));
+      const availableRows = Math.max(1, Math.ceil(containerSize / effectiveTileSize));
 
-      if (mapW > 0) cols = Math.min(availableCols, mapW);
-      if (mapH > 0) rows = Math.min(availableRows, mapH);
+      let cols = Math.min(availableCols, mapWidth);
+      let rows = Math.min(availableRows, mapHeight);
 
-      // ensure at least 1 tile shown
       cols = Math.max(1, cols);
       rows = Math.max(1, rows);
 
@@ -209,7 +224,7 @@ export default function Index() {
         // ignore
       }
     };
-  }, [tileSize, mapData]);
+  }, [tileSize, mapData, minTileSize, maxTileSize, mapWidth, mapHeight]);
 
   // Listen for chron updates emitted from other components (e.g. the Stopwatch)
   useEffect(() => {
@@ -236,21 +251,12 @@ export default function Index() {
   // initialize center when mapData is loaded
   useEffect(() => {
     if (!mapData?.map) return;
-    const w = Number(
-      mapData.map.widthTiles ??
-      mapData.map.width ??
-      mapData.grid?.[0]?.length ??
-      0
-    );
-    const h = Number(
-      mapData.map.heightTiles ?? mapData.map.height ?? mapData.grid?.length ?? 0
-    );
-    if (w > 0 && h > 0) {
+    if (mapWidth > 0 && mapHeight > 0) {
       // start in the top-left corner
       setCenterX(0);
       setCenterY(0);
     }
-  }, [mapData]);
+  }, [mapData, mapWidth, mapHeight]);
 
   // when map is available, see if there is a pending build item from the shop
   useEffect(() => {
@@ -315,22 +321,10 @@ export default function Index() {
   const pan = React.useCallback(
     (dx: number, dy: number) => {
       if (centerX === null || centerY === null || !mapData?.map) return;
-      const w = Number(
-        mapData.map.widthTiles ??
-        mapData.map.width ??
-        mapData.grid?.[0]?.length ??
-        0
-      );
-      const h = Number(
-        mapData.map.heightTiles ??
-        mapData.map.height ??
-        mapData.grid?.length ??
-        0
-      );
-      setCenterX((cx) => clamp((cx ?? 0) + dx, 0, Math.max(0, w - 1)));
-      setCenterY((cy) => clamp((cy ?? 0) + dy, 0, Math.max(0, h - 1)));
+      setCenterX((cx) => clamp((cx ?? 0) + dx, 0, Math.max(0, mapWidth - 1)));
+      setCenterY((cy) => clamp((cy ?? 0) + dy, 0, Math.max(0, mapHeight - 1)));
     },
-    [mapData, centerX, centerY]
+    [mapData, centerX, centerY, mapWidth, mapHeight]
   );
 
   // drag-to-pan support (touch / mouse drag)
@@ -378,8 +372,7 @@ export default function Index() {
             const scale = dist / (pinchInitialDistanceRef.current || 1);
             let nextSize = pinchInitialTileSizeRef.current * scale;
             if (!Number.isFinite(nextSize)) return;
-            if (nextSize < 12) nextSize = 12;
-            if (nextSize > 128) nextSize = 128;
+            nextSize = clamp(nextSize, minTileSize, maxTileSize);
             setTileSize(nextSize);
             return;
           }
@@ -424,28 +417,16 @@ export default function Index() {
           // The viewport will follow it based on buildX/buildY when rendering.
           if (!mapData?.map) return;
 
-          const mapW = Number(
-            mapData.map.widthTiles ??
-            mapData.map.width ??
-            mapData.grid?.[0]?.length ??
-            0
-          );
-          const mapH = Number(
-            mapData.map.heightTiles ??
-            mapData.map.height ??
-            mapData.grid?.length ??
-            0
-          );
-          if (!mapW || !mapH) return;
+          if (!mapWidth || !mapHeight) return;
 
           let targetX = buildX ?? centerX ?? 0;
           let targetY = buildY ?? centerY ?? 0;
 
           if (stepsX !== 0) {
-            targetX = clamp(targetX + stepsX, 0, mapW - 1);
+            targetX = clamp(targetX + stepsX, 0, mapWidth - 1);
           }
           if (stepsY !== 0) {
-            targetY = clamp(targetY + stepsY, 0, mapH - 1);
+            targetY = clamp(targetY + stepsY, 0, mapHeight - 1);
           }
 
           setBuildX(targetX);
@@ -467,6 +448,10 @@ export default function Index() {
       buildY,
       centerX,
       centerY,
+      minTileSize,
+      maxTileSize,
+      mapWidth,
+      mapHeight,
     ]
   );
 
@@ -510,8 +495,7 @@ export default function Index() {
             next = current / 1.1;
           }
           if (!Number.isFinite(next)) return current;
-          if (next < 12) next = 12;
-          if (next > 128) next = 128;
+          next = clamp(next, minTileSize, maxTileSize);
           return Math.round(next);
         });
         return;
@@ -1227,21 +1211,31 @@ export default function Index() {
           </Text>
         )}
       <View
-        style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginBottom: 20,
+          alignSelf: "flex-end",
+          backgroundColor: "rgba(255,255,255,0.7)",
+          borderRadius: 20,
+          padding: 4,
+        }}
       >
         <Pressable
-          onPress={() => setTileSize((s) => Math.max(12, Math.round(s / 1.25)))}
-          style={{ padding: 6, marginRight: 6 }}
+          onPress={() =>
+            setTileSize((s) => clamp(Math.round(s / 1.25), minTileSize, maxTileSize))
+          }
+          style={{ padding: 10, marginRight: 6 }}
         >
-          <FontAwesome5 name="search-minus" size={16} color="#FFA500" />
+          <FontAwesome5 name="search-minus" size={20} color="#FFA500" />
         </Pressable>
         <Pressable
           onPress={() =>
-            setTileSize((s) => Math.min(128, Math.round(s * 1.25)))
+            setTileSize((s) => clamp(Math.round(s * 1.25), minTileSize, maxTileSize))
           }
-          style={{ padding: 6, marginRight: 6 }}
+          style={{ padding: 10 }}
         >
-          <FontAwesome5 name="search-plus" size={16} color="#FFA500" />
+          <FontAwesome5 name="search-plus" size={20} color="#FFA500" />
         </Pressable>
       </View>
       <PageFiller />
