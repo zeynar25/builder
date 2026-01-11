@@ -17,22 +17,14 @@ const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
 export default function Welcome() {
     const router = useRouter();
     const opacity = useSharedValue(0);
-    const highlightOpacity = useSharedValue(1);
 
     React.useEffect(() => {
         // Content fades in
-        opacity.value = withTiming(1, { duration: 600 });
-        // Highlight overlay fades out
-        highlightOpacity.value = withTiming(0, { duration: 800 });
+        opacity.value = withTiming(1, { duration: 500 });
     }, []);
 
     const animatedStyle = useAnimatedStyle(() => ({
         opacity: opacity.value,
-    }));
-
-    const overlayStyle = useAnimatedStyle(() => ({
-        opacity: highlightOpacity.value,
-        backgroundColor: theme.colors.highlight,
     }));
 
     return (
@@ -71,9 +63,6 @@ export default function Welcome() {
                     </Pressable>
                 </View>
             </Animated.View>
-
-            {/* 2. Highlight overlay that fades out, placed outside the fade-in container */}
-            <Animated.View style={[StyleSheet.absoluteFill, overlayStyle, { zIndex: 100 }]} pointerEvents="none" />
         </View>
     );
 }

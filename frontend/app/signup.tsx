@@ -16,6 +16,7 @@ import {
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { API_BASE_URL } from "../src/config";
 import { useRouter } from "expo-router";
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from "react-native-reanimated";
 
 import { theme } from "@/src/theme";
 import { globalStyles } from "@/src/globalstyles";
@@ -24,6 +25,16 @@ const { height: screenHeight } = Dimensions.get("window");
 
 export default function Signup() {
   const router = useRouter();
+  const opacity = useSharedValue(0);
+
+  React.useEffect(() => {
+    opacity.value = withTiming(1, { duration: 500 });
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
+
   const passwordRef = useRef<TextInput | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -71,7 +82,7 @@ export default function Signup() {
   }
 
   return (
-    <View style={globalStyles.main}>
+    <Animated.View style={[globalStyles.main, animatedStyle]}>
       <View style={styles.headerContainer}>
         <Image
           source={require("../assets/images/Vector.png")}
@@ -164,7 +175,7 @@ export default function Signup() {
           </Text>
         </Text>
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
