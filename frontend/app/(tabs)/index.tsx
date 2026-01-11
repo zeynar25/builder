@@ -12,10 +12,8 @@ import {
   PanResponder,
 } from "react-native";
 
-import { Card, Text, Button } from "react-native-paper";
+import { Text } from "react-native-paper";
 import { globalStyles } from "@/src/globalstyles";
-import { theme } from "@/src/theme";
-const chronIcon = require("../../assets/images/chrons.png");
 import PageHeader from "@/src/components/PageHeader";
 import PageFiller from "@/src/components/PageFiller";
 
@@ -24,7 +22,7 @@ import { API_BASE_URL } from "../../src/config";
 import { getImageSource } from "../../src/imageMap";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter, useFocusEffect } from "expo-router";
-// default tile asset
+
 const defaultTile = require("../../assets/images/road-connectors/default-tile.png");
 
 function resolveTileImage(imageUrl: any) {
@@ -67,10 +65,6 @@ export default function Index() {
   {
     /* pan controls (render inside the returned JSX) */
   }
-  const [editingGameName, setEditingGameName] = useState(false);
-  const [newGameName, setNewGameName] = useState("");
-  const [savingGameName, setSavingGameName] = useState(false);
-  const [showExp, setShowExp] = useState(false);
   const [editingMapName, setEditingMapName] = useState(false);
   const [newMapName, setNewMapName] = useState("");
   const [savingMapName, setSavingMapName] = useState(false);
@@ -157,7 +151,7 @@ export default function Index() {
             const errBody = await detailRes.json().catch(() => null);
             throw new Error(
               errBody?.error ||
-              `Failed to fetch account details (${detailRes.status})`
+                `Failed to fetch account details (${detailRes.status})`
             );
           }
           const detailJson = await detailRes.json();
@@ -210,15 +204,15 @@ export default function Index() {
 
       const mapW = Number(
         mapData?.map?.widthTiles ??
-        mapData?.map?.width ??
-        mapData?.grid?.[0]?.length ??
-        0
+          mapData?.map?.width ??
+          mapData?.grid?.[0]?.length ??
+          0
       );
       const mapH = Number(
         mapData?.map?.heightTiles ??
-        mapData?.map?.height ??
-        mapData?.grid?.length ??
-        0
+          mapData?.map?.height ??
+          mapData?.grid?.length ??
+          0
       );
 
       // Cap viewport to available screen tiles, but never exceed actual map size when known.
@@ -274,9 +268,9 @@ export default function Index() {
     if (!mapData?.map) return;
     const w = Number(
       mapData.map.widthTiles ??
-      mapData.map.width ??
-      mapData.grid?.[0]?.length ??
-      0
+        mapData.map.width ??
+        mapData.grid?.[0]?.length ??
+        0
     );
     const h = Number(
       mapData.map.heightTiles ?? mapData.map.height ?? mapData.grid?.length ?? 0
@@ -353,15 +347,15 @@ export default function Index() {
       if (centerX === null || centerY === null || !mapData?.map) return;
       const w = Number(
         mapData.map.widthTiles ??
-        mapData.map.width ??
-        mapData.grid?.[0]?.length ??
-        0
+          mapData.map.width ??
+          mapData.grid?.[0]?.length ??
+          0
       );
       const h = Number(
         mapData.map.heightTiles ??
-        mapData.map.height ??
-        mapData.grid?.length ??
-        0
+          mapData.map.height ??
+          mapData.grid?.length ??
+          0
       );
       setCenterX((cx) => clamp((cx ?? 0) + dx, 0, Math.max(0, w - 1)));
       setCenterY((cy) => clamp((cy ?? 0) + dy, 0, Math.max(0, h - 1)));
@@ -462,15 +456,15 @@ export default function Index() {
 
           const mapW = Number(
             mapData.map.widthTiles ??
-            mapData.map.width ??
-            mapData.grid?.[0]?.length ??
-            0
+              mapData.map.width ??
+              mapData.grid?.[0]?.length ??
+              0
           );
           const mapH = Number(
             mapData.map.heightTiles ??
-            mapData.map.height ??
-            mapData.grid?.length ??
-            0
+              mapData.map.height ??
+              mapData.grid?.length ??
+              0
           );
           if (!mapW || !mapH) return;
 
@@ -587,20 +581,6 @@ export default function Index() {
       window.removeEventListener("wheel", onWheel as any);
     };
   }, [mapData, pan, tileSize]);
-
-  async function handleLogout() {
-    try {
-      await fetch(`${API_BASE_URL}/api/account/signout`, { method: "POST" });
-    } catch {
-      // ignore network errors; continue clearing client state
-    }
-    await AsyncStorage.removeItem("accessToken");
-    await AsyncStorage.removeItem("refreshToken");
-    await AsyncStorage.removeItem("accountId");
-    await AsyncStorage.removeItem("accountDetailId");
-    await AsyncStorage.removeItem("currentMapId");
-    router.replace("/login");
-  }
 
   const cancelBuild = React.useCallback(async () => {
     setBuildItem(null);
@@ -874,9 +854,7 @@ export default function Index() {
   }, [selectedTile]);
 
   return (
-    <View
-      style={globalStyles.page}
-    >
+    <View style={globalStyles.page}>
       <PageHeader accountDetail={accountDetail} />
       <PageFiller />
       <View style={globalStyles.pageContainer}>
@@ -1084,8 +1062,8 @@ export default function Index() {
                         ? "#EF4444" // red when trying to build over an occupied tile
                         : "#22C55E" // green when empty
                       : isSelected
-                        ? "#3B82F6" // blue highlight for selected occupied tile
-                        : "transparent";
+                      ? "#3B82F6" // blue highlight for selected occupied tile
+                      : "transparent";
                     cols.push(
                       <Pressable
                         key={`cell-${r}-${c}`}
@@ -1244,8 +1222,8 @@ export default function Index() {
                 ? "Moving..."
                 : "Placing..."
               : moveSource
-                ? `Moving: ${moveSource.item?.name ?? "Item"}`
-                : `Placing: ${buildItem?.name ?? "Item"}`}
+              ? `Moving: ${moveSource.item?.name ?? "Item"}`
+              : `Placing: ${buildItem?.name ?? "Item"}`}
           </Text>
           <Pressable
             onPress={moveSource ? confirmMove : confirmBuild}
