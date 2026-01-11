@@ -278,8 +278,8 @@ export const SplashAnimation = ({ onFinish }: { onFinish: () => void }) => {
                             lder
                         </Animated.Text>
                         <Animated.Text
-                            style={{ color: theme.colors.text.secondary, fontSize: 24, marginTop: 4 }}
-                        >Construct your best self.</Animated.Text>
+                            style={{ color: theme.colors.text.secondary, fontSize: 16, marginTop: 4 }}
+                            >Earn Chrons, Build Worlds, Stay Focused.</Animated.Text>
                     </Animated.View>
                 </>
             )}
