@@ -1,16 +1,19 @@
 import React from "react";
 import {
     View,
-    Text,
     Pressable,
     StyleSheet,
     Image,
     Dimensions,
 } from "react-native";
+
+import { Text, Button } from "react-native-paper";
+
 import { useRouter } from "expo-router";
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { theme } from "@/src/theme";
 import { globalStyles } from "@/src/globalstyles";
+import { Background } from "@react-navigation/elements";
 
 const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
 
@@ -30,7 +33,7 @@ export default function Welcome() {
     return (
         <View style={{ flex: 1 }}>
             {/* 1. Original content structure inside an Animated.View for fade-in */}
-            <Animated.View style={[globalStyles.main, animatedStyle]}>
+            <Animated.View style={[styles.main, animatedStyle]}>
                 <View style={styles.headerContainer}>
                     <Image
                         source={require("../assets/images/Vector.png")}
@@ -40,20 +43,18 @@ export default function Welcome() {
                 </View>
 
                 <View style={[styles.content, styles.contentWithHeaderOffset]}>
-                    <Text style={styles.welcomeText}>Welcome to</Text>
-                    <Text style={styles.brandText}>Builder App</Text>
+                    <View style={styles.welcomeTextContainer}>
+                        <Text variant="titleLarge" style={globalStyles.variantLabel}>Welcome to</Text>
+                        <Text variant="displayLarge" style={{...globalStyles.variantTitle, fontWeight: theme.typography.fontWeight.bold}}>
+                            Bu
+                            <Text style={{ color: theme.colors.highlight }}>i</Text>
+                            lder
+                        </Text>
 
-                    <View style={styles.imagePlaceholder}>
-                        <Image
-                            source={require("../assets/images/builder-logo.png")}
-                            style={styles.illustration}
-                            resizeMode="contain"
-                        />
+                        <Text variant="titleSmall" style={globalStyles.variantLabel}>
+                            The best way to manage your progress and build your habits.
+                        </Text>
                     </View>
-
-                    <Text style={styles.description}>
-                        The best way to manage your progress and build your future.
-                    </Text>
 
                     <Pressable
                         style={globalStyles.primaryButton}
@@ -68,20 +69,26 @@ export default function Welcome() {
 }
 
 const styles = StyleSheet.create({
+    main: {
+        backgroundColor: theme.colors.mono,
+        flex: 1,
+    },
+    
     headerContainer: {
         position: "absolute",
         top: 0,
         left: 0,
         right: 0,
-        height: screenHeight * 0.4,
+        height: screenHeight * 0.8,
         overflow: "hidden",
     },
     headerImage: {
         width: "100%",
-        height: screenHeight * 0.4,
+        height: screenHeight * 0.8,
         position: "absolute",
         bottom: 0,
     },
+    
     content: {
         flex: 1,
         paddingHorizontal: theme.spacing.xl,
@@ -89,8 +96,15 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         width: "100%",
     },
+
     contentWithHeaderOffset: {
-        paddingTop: screenHeight * 0.1,
+        marginBottom: screenHeight * 0.04,
+        justifyContent: "flex-end",
+        alignItems: "flex-start",
+    },
+
+    welcomeTextContainer: {
+        marginBottom: theme.spacing.lg,
     },
     welcomeText: {
         fontSize: theme.typography.fontSize.title,
@@ -98,24 +112,8 @@ const styles = StyleSheet.create({
         fontFamily: theme.typography.fontFamily.primary,
         textAlign: "center",
     },
-    brandText: {
-        fontSize: 42,
-        fontWeight: "800",
-        color: theme.colors.highlight,
-        marginBottom: theme.spacing.xl,
-        textAlign: "center",
-    },
-    imagePlaceholder: {
-        width: screenWidth * 0.6,
-        height: screenWidth * 0.6,
-        marginBottom: theme.spacing.xl,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    illustration: {
-        width: "100%",
-        height: "100%",
-    },
+
+
     description: {
         fontSize: theme.typography.fontSize.text,
         color: theme.colors.text.secondary,

@@ -36,7 +36,7 @@ export const globalStyles = StyleSheet.create({
         height: 3,
         backgroundColor: theme.colors.highlight,
         borderRadius: theme.radii.sm,
-        marginBottom: theme.spacing.max,
+        marginBottom: theme.spacing.lg,
     },
 
     pageContainer: {

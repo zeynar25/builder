@@ -213,27 +213,6 @@ export default function Login() {
 
         {error && <Text style={globalStyles.textError}>{error}</Text>}
 
-        <View style={styles.optionsRow}>
-          <Pressable
-            onPress={() => setRememberMe(!rememberMe)}
-            style={styles.checkboxRow}
-          >
-            <View
-              style={[styles.checkbox, rememberMe && styles.checkboxChecked]}
-            >
-              {rememberMe && (
-                <Feather
-                  name="check"
-                  size={theme.icon.form}
-                  color={theme.colors.mono}
-                />
-              )}
-            </View>
-            <Text style={styles.checkboxLabel}>Remember Me</Text>
-          </Pressable>
-          <Text style={styles.forgotPassword}>Forgot Password?</Text>
-        </View>
-
         <Pressable
           style={[
             globalStyles.primaryButton,
