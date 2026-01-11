@@ -21,6 +21,7 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import { API_BASE_URL } from "../../src/config";
 import isTokenValid from "../../src/useAuthGuard";
 import { getImageSource } from "../../src/imageMap";
+import apiFetch from "../../src/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter, useFocusEffect } from "expo-router";
 
@@ -116,7 +117,7 @@ export default function Index() {
 
         const accountDetailId = await AsyncStorage.getItem("accountDetailId");
         if (accountDetailId) {
-          const detailRes = await fetch(
+          const detailRes = await apiFetch(
             `${API_BASE_URL}/api/account-detail/${accountDetailId}`
           );
 
@@ -134,7 +135,7 @@ export default function Index() {
         // try to load a map if we have a currentMapId stored
         const mapId = await AsyncStorage.getItem("currentMapId");
         if (mapId) {
-          const res = await fetch(`${API_BASE_URL}/api/maps/${mapId}`);
+          const res = await apiFetch(`${API_BASE_URL}/api/maps/${mapId}`);
           if (res.ok) {
             const json = await res.json();
             if (!cancelled) setMapData(json);
@@ -214,7 +215,7 @@ export default function Index() {
         try {
           const accountDetailId = await AsyncStorage.getItem("accountDetailId");
           if (!accountDetailId) return;
-          const detailRes = await fetch(
+          const detailRes = await apiFetch(
             `${API_BASE_URL}/api/account-detail/${accountDetailId}`
           );
           if (!detailRes.ok) return;
@@ -235,7 +236,7 @@ export default function Index() {
         const mapId = await AsyncStorage.getItem("currentMapId");
         if (!mapId) return;
 
-        const res = await fetch(`${API_BASE_URL}/api/maps/${mapId}`);
+        const res = await apiFetch(`${API_BASE_URL}/api/maps/${mapId}`);
         if (!res.ok) return;
         const json = await res.json();
         setMapData(json);
@@ -532,7 +533,7 @@ export default function Index() {
     return () => {
       window.removeEventListener("wheel", onWheel as any);
     };
-  }, [mapData, pan, tileSize]);
+  }, [mapData, pan, tileSize, minTileSize, maxTileSize]);
 
   const cancelBuild = React.useCallback(async () => {
     setBuildItem(null);
@@ -590,7 +591,7 @@ export default function Index() {
         throw new Error("Missing account or map information");
       }
 
-      const res = await fetch(`${API_BASE_URL}/api/items/buy`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/items/buy`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -611,7 +612,7 @@ export default function Index() {
 
       // refresh map
       try {
-        const mapRes = await fetch(`${API_BASE_URL}/api/maps/${mapId}`);
+        const mapRes = await apiFetch(`${API_BASE_URL}/api/maps/${mapId}`);
         if (mapRes.ok) {
           const mapJson = await mapRes.json();
           setMapData(mapJson);
@@ -623,7 +624,7 @@ export default function Index() {
       // refresh account detail (for updated chrons)
       try {
         if (accountDetailId) {
-          const detailRes = await fetch(
+          const detailRes = await apiFetch(
             `${API_BASE_URL}/api/account-detail/${accountDetailId}`
           );
           if (detailRes.ok) {
@@ -692,7 +693,7 @@ export default function Index() {
         throw new Error("Missing account or map information");
       }
 
-      const res = await fetch(`${API_BASE_URL}/api/items/move`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/items/move`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -713,7 +714,7 @@ export default function Index() {
 
       // refresh map
       try {
-        const mapRes = await fetch(`${API_BASE_URL}/api/maps/${mapId}`);
+        const mapRes = await apiFetch(`${API_BASE_URL}/api/maps/${mapId}`);
         if (mapRes.ok) {
           const mapJson = await mapRes.json();
           setMapData(mapJson);
@@ -752,7 +753,7 @@ export default function Index() {
         throw new Error("Missing account or map information");
       }
 
-      const res = await fetch(`${API_BASE_URL}/api/items/sell`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/items/sell`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -772,7 +773,7 @@ export default function Index() {
 
       // refresh map
       try {
-        const mapRes = await fetch(`${API_BASE_URL}/api/maps/${mapId}`);
+        const mapRes = await apiFetch(`${API_BASE_URL}/api/maps/${mapId}`);
         if (mapRes.ok) {
           const mapJson = await mapRes.json();
           setMapData(mapJson);
@@ -784,7 +785,7 @@ export default function Index() {
       // refresh account detail (for updated chrons)
       try {
         if (accountDetailId) {
-          const detailRes = await fetch(
+          const detailRes = await apiFetch(
             `${API_BASE_URL}/api/account-detail/${accountDetailId}`
           );
           if (detailRes.ok) {
@@ -864,7 +865,7 @@ export default function Index() {
                       try {
                         const mapId = mapData?.map?._id ?? mapData?.map?.id;
                         if (!mapId) throw new Error("no_map_id");
-                        const res = await fetch(
+                        const res = await apiFetch(
                           `${API_BASE_URL}/api/maps/${mapId}/name`,
                           {
                             method: "PUT",

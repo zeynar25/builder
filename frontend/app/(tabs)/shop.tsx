@@ -15,6 +15,7 @@ import { Card, Text, Button } from "react-native-paper";
 import { API_BASE_URL } from "../../src/config";
 import isTokenValid from "../../src/useAuthGuard";
 import { getImageSource } from "../../src/imageMap";
+import apiFetch from "../../src/api";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -78,7 +79,7 @@ export default function Shop() {
       try {
         const accountDetailId = await AsyncStorage.getItem("accountDetailId");
         if (accountDetailId) {
-          const detailRes = await fetch(
+          const detailRes = await apiFetch(
             `${API_BASE_URL}/api/account-detail/${accountDetailId}`
           );
           if (detailRes.ok) {
@@ -98,7 +99,7 @@ export default function Shop() {
     let cancelled = false;
     async function load() {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/items`);
+        const res = await apiFetch(`${API_BASE_URL}/api/items`);
         if (!res.ok) throw new Error(`Request failed (${res.status})`);
         const json = await res.json();
         if (!cancelled) {
@@ -158,7 +159,7 @@ export default function Shop() {
         return;
       }
 
-      const res = await fetch(`${API_BASE_URL}/api/maps/${mapId}/expand`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/maps/${mapId}/expand`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ accountDetailsId: accountDetailId }),
@@ -181,7 +182,7 @@ export default function Shop() {
 
       // Refresh account detail so header shows updated chrons
       try {
-        const detailRes = await fetch(
+        const detailRes = await apiFetch(
           `${API_BASE_URL}/api/account-detail/${accountDetailId}`
         );
         if (detailRes.ok) {

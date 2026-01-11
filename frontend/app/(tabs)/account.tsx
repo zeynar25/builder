@@ -20,6 +20,7 @@ import PageFiller from "@/src/components/PageFiller";
 import { Feather } from "@expo/vector-icons";
 import { API_BASE_URL } from "../../src/config";
 import isTokenValid from "../../src/useAuthGuard";
+import apiFetch from "../../src/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { getImageSource } from "../../src/imageMap";
@@ -63,7 +64,7 @@ export default function Account() {
 
         const accountDetailId = await AsyncStorage.getItem("accountDetailId");
         if (accountDetailId) {
-          const detailRes = await fetch(
+          const detailRes = await apiFetch(
             `${API_BASE_URL}/api/account-detail/${accountDetailId}`
           );
 
@@ -114,7 +115,9 @@ export default function Account() {
 
   async function handleLogout() {
     try {
-      await fetch(`${API_BASE_URL}/api/account/signout`, { method: "POST" });
+      await apiFetch(`${API_BASE_URL}/api/account/signout`, {
+        method: "POST",
+      });
     } catch {
       // ignore network errors; continue clearing client state
     }
@@ -132,7 +135,7 @@ export default function Account() {
     try {
       const accountDetailId = await AsyncStorage.getItem("accountDetailId");
       if (!accountDetailId) throw new Error("no_accountDetailId");
-      const res = await fetch(
+      const res = await apiFetch(
         `${API_BASE_URL}/api/account-detail/${accountDetailId}/game-name`,
         {
           method: "PUT",
@@ -162,7 +165,7 @@ export default function Account() {
       const accountDetailId = await AsyncStorage.getItem("accountDetailId");
       if (!accountDetailId) throw new Error("no_accountDetailId");
 
-      const res = await fetch(
+      const res = await apiFetch(
         `${API_BASE_URL}/api/account-detail/${accountDetailId}/avatar`,
         {
           method: "PUT",

@@ -10,6 +10,7 @@ import itemRoutes from "./routes/itemRoutes.js";
 import itemCategoryRoutes from "./routes/itemCategoryRoutes.js";
 import mapRoutes from "./routes/mapRoutes.js";
 import accountDetailRoutes from "./routes/accountDetailRoutes.js";
+import authenticateToken from "./middleware/authMiddleware.js";
 import express from "express";
 import cors from "cors";
 import swaggerUi from "swagger-ui-express";
@@ -43,6 +44,21 @@ try {
 
 app.get("/", (req, res) => {
   res.status(200).send("Welcome to Builder!");
+});
+
+// Protect all /api routes with JWT authentication, except for
+// POST /api/account/signup and POST /api/account/signin.
+app.use("/api", (req, res, next) => {
+  const { method, path } = req;
+
+  if (
+    method === "POST" &&
+    (path === "/account/signup" || path === "/account/signin")
+  ) {
+    return next();
+  }
+
+  return authenticateToken(req, res, next);
 });
 
 app.use("/api/account", accountRoutes);

@@ -17,6 +17,7 @@ import PageFiller from "@/src/components/PageFiller";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "../../src/config";
 import isTokenValid from "../../src/useAuthGuard";
+import apiFetch from "../../src/api";
 import BuildingAnimation from "../../src/components/BuildingAnimation";
 import { useRouter } from "expo-router";
 
@@ -63,7 +64,7 @@ export default function StopWatch() {
       try {
         const accountDetailId = await AsyncStorage.getItem("accountDetailId");
         if (accountDetailId) {
-          const detailRes = await fetch(
+          const detailRes = await apiFetch(
             `${API_BASE_URL}/api/account-detail/${accountDetailId}`
           );
           if (detailRes.ok) {
@@ -108,14 +109,12 @@ export default function StopWatch() {
       if (!accountDetailId)
         return showAlert("No account detail", "Please log in first.");
 
-      const token = await AsyncStorage.getItem("accessToken");
-      const res = await fetch(
+      const res = await apiFetch(
         `${API_BASE_URL}/api/account-detail/${accountDetailId}/chron`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
           body: JSON.stringify({ minutes: flooredMinutes }),
         }
