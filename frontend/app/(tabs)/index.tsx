@@ -961,7 +961,7 @@ export default function Index() {
               }}
             >
               {(() => {
-                // render the full map grid, but show a clipped viewport and translate the inner grid
+                // Render only the visible window of the map (for performance)
                 const w = mapData.grid[0]?.length ?? 0;
                 const h = mapData.grid.length;
                 const centerCol = centerX ?? Math.floor(w / 2);
@@ -1001,25 +1001,26 @@ export default function Index() {
                 if (startRow > maxStartRow) startRow = maxStartRow;
                 if (startCol > maxStartCol) startCol = maxStartCol;
 
-                const viewportStyle = {
-                  width: containerSize,
-                  height: containerSize,
-                  overflow: "hidden" as const,
-                };
-
-                const translateStyle = {
-                  transform: [
-                    { translateX: -startCol * tileSize },
-                    { translateY: -startRow * tileSize },
-                  ],
-                };
+                // Expand render window by 2 tiles on each side so
+                // tiles are already rendered as you pan into them.
+                const buffer = 2;
+                const renderStartRow = Math.max(0, startRow - buffer);
+                const renderStartCol = Math.max(0, startCol - buffer);
+                const renderEndRow = Math.min(
+                  h,
+                  startRow + visibleRows + buffer
+                );
+                const renderEndCol = Math.min(
+                  w,
+                  startCol + visibleCols + buffer
+                );
 
                 const rows = [] as any[];
                 const activeGhostItem = moveSource?.item || buildItem;
                 const hasGhost = !!activeGhostItem;
-                for (let r = 0; r < h; r++) {
+                for (let r = renderStartRow; r < renderEndRow; r++) {
                   const cols = [] as any[];
-                  for (let c = 0; c < w; c++) {
+                  for (let c = renderStartCol; c < renderEndCol; c++) {
                     const cell = mapData.grid[r][c];
                     const targetCol = buildX ?? centerCol;
                     const targetRow = buildY ?? centerRow;
@@ -1095,8 +1096,15 @@ export default function Index() {
                 }
 
                 return (
-                  <View style={viewportStyle} {...dragResponder.panHandlers}>
-                    <View style={translateStyle}>{rows}</View>
+                  <View
+                    style={{
+                      width: containerSize,
+                      height: containerSize,
+                      overflow: "hidden",
+                    }}
+                    {...dragResponder.panHandlers}
+                  >
+                    {rows}
                   </View>
                 );
               })()}
