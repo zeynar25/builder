@@ -15,6 +15,18 @@ function generateTokens(id) {
 }
 
 export async function createAccount({ email, password }) {
+  // basic email format check
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(email || "")) {
+    return { success: false, reason: "invalid_email" };
+  }
+
+  // password must be 8+ chars, include upper, lower, and digit
+  const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+  if (!passwordPattern.test(password || "")) {
+    return { success: false, reason: "weak_password" };
+  }
+
   const existing = await Account.findOne({ email });
   if (existing) return { success: false, reason: "email_taken" };
 
