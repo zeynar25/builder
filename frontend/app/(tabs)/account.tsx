@@ -162,7 +162,7 @@ export default function Account() {
         <View style={styles.accountDetails}>
           <View style={styles.imageContainer}>
             <Image
-              source={require("../../assets/images/default-profile.png")}
+              source={require("../../assets/images/profiles/default-profile.png")}
               style={{
                 width: "100%",
                 height: "100%",
