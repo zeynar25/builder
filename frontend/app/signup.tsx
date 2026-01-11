@@ -16,6 +16,8 @@ import {
 } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { API_BASE_URL } from "../src/config";
+import apiFetch from "../src/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import Animated, {
   useSharedValue,
@@ -87,6 +89,77 @@ export default function Signup() {
         const msg = body?.message || `Request failed (${res.status})`;
         setError(msg);
         return;
+      }
+
+      setLoading(true);
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/account/signin`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const body = await res.json().catch(() => null);
+        if (!res.ok) {
+          const msg = body?.message || `Request failed (${res.status})`;
+          setError(msg);
+          return;
+        }
+
+        const accessToken =
+          body?.accessToken ??
+          body?.tokens?.access ??
+          body?.tokens?.accessToken ??
+          body?.tokens?.access_token ??
+          body?.access;
+
+        if (accessToken) await AsyncStorage.setItem("accessToken", accessToken);
+
+        const accountId =
+          body?.account?.id ?? body?.account?._id ?? body?.id ?? null;
+
+        const accountDetailId =
+          body?.account?.detailId ??
+          body?.account?.accountDetailId ??
+          body?.account?.accountDetail ??
+          body?.accountDetailId ??
+          body?.accountDetail ??
+          null;
+
+        const accountEmail = body?.account?.email ?? body?.email ?? null;
+
+        if (accountId) {
+          await AsyncStorage.setItem("accountId", accountId);
+
+          if (accountDetailId) {
+            await AsyncStorage.setItem("accountDetailId", accountDetailId);
+          }
+
+          if (accountEmail) {
+            await AsyncStorage.setItem("accountEmail", accountEmail);
+          }
+
+          try {
+            const mapsRes = await apiFetch(
+              `${API_BASE_URL}/api/maps/account/${accountId}`
+            );
+            if (mapsRes.ok) {
+              const json = await mapsRes.json().catch(() => null);
+              const firstMap = json?.maps?.[0];
+              const firstMapId = firstMap?._id ?? firstMap?.id ?? null;
+              if (firstMapId) {
+                await AsyncStorage.setItem("currentMapId", firstMapId);
+                console.log("firstMapId:", firstMapId);
+              }
+            }
+          } catch {}
+        }
+
+        router.replace("/");
+      } catch (e: any) {
+        setError(e.message || String(e));
+      } finally {
+        setLoading(false);
       }
 
       if (Platform.OS === "web") {
