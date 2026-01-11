@@ -13,9 +13,13 @@ import Animated, {
     Easing,
     SharedValue,
 } from 'react-native-reanimated';
+
+import { Text } from 'react-native-paper';
+
 import Svg, { Path, Defs, LinearGradient, Stop } from 'react-native-svg';
 
 import { theme } from "@/src/theme";
+import { globalStyles } from '../globalstyles';
 
 const { width, height } = Dimensions.get('window');
 
@@ -266,7 +270,16 @@ export const SplashAnimation = ({ onFinish }: { onFinish: () => void }) => {
                         />
                     </Animated.View>
                     <Animated.View style={[styles.textContainer, textStyle]}>
-                        <Animated.Text style={styles.builderText}>Builder</Animated.Text>
+                        <Animated.Text
+                            style={{ ...globalStyles.textBuilder }}
+                        >
+                            Bu
+                            <Animated.Text style={{ ...globalStyles.textBuilder, color: theme.colors.highlight }}>i</Animated.Text>
+                            lder
+                        </Animated.Text>
+                        <Animated.Text
+                            style={{ color: theme.colors.text.secondary, fontSize: 24, marginTop: 4 }}
+                        >Construct your best self.</Animated.Text>
                     </Animated.View>
                 </>
             )}
@@ -306,23 +319,24 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         position: 'absolute',
-        width: width,
-        height: height,
-    },
-    logo: {
         width: 220,
         height: 220,
+        backgroundColor: theme.colors.mono,
+        borderRadius: 110, // half of width/height for perfect circle
+        overflow: 'hidden',
+    },
+    logo: {
+        width: '90%',
+        height: '90%',
+        borderRadius: 110,
+        resizeMode: 'contain',
     },
     textContainer: {
         position: 'absolute',
         top: height / 2 + 80,
+        marginTop: 28,
         width: width,
         alignItems: 'center',
-    },
-    builderText: {
-        fontSize: 48,
-        fontWeight: '900',
-        color: '#333',
-        letterSpacing: 2,
+        marginBottom: 48,
     },
 });
