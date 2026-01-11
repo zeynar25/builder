@@ -33,8 +33,7 @@ export const theme = {
         text: 16,
         title: 20,
         highlight: 48,
-        stopwatch_active: 156,
-        stopwatch_inactive: 64
+        onboard: 32,
     },
     fontWeight: {
         regular: '400' as const,

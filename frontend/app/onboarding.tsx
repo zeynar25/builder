@@ -6,6 +6,7 @@ import {
     Dimensions,
     Pressable,
     FlatList,
+    Image,
     NativeSyntheticEvent,
     NativeScrollEvent,
 } from 'react-native';
@@ -20,37 +21,37 @@ import Animated, {
     SharedValue,
 } from 'react-native-reanimated';
 import { theme } from '@/src/theme';
-import { Feather } from '@expo/vector-icons';
+const { width: screenWidth } = Dimensions.get('window');
 
 const { width, height } = Dimensions.get('window');
 
 const SLIDES = [
     {
         id: '1',
-        title: 'Plan Your Vision',
-        description: 'Transform your ideas into structured plans. Builder helps you organize every brick of your project.',
-        icon: 'edit-3',
+        title: 'Start Building!',
+        description: 'You’re all set. Your journey to better focus starts now.',
+        image: require('../assets/images/onboarding/onboard-01.png'),
         color: theme.colors.highlight,
     },
     {
         id: '2',
-        title: 'Track Progress',
-        description: 'Monitor your development in real-time. See your growth and hit your milestones faster.',
-        icon: 'trending-up',
+        title: 'Build Your Focus',
+        description: 'Start a timer, stay distraction-free, and watch your village come to life with every completed session.',
+        image: require('../assets/images/onboarding/onboard-02.png'),
         color: theme.colors.accent_1,
     },
     {
         id: '3',
-        title: 'Collaborate Easily',
-        description: 'Work with your team seamlessly. Share progress and build together in one unified space.',
-        icon: 'users',
+        title: 'Level Up as You Progress',
+        description: 'Each focus session adds new display to your village. More focus = more upgrades.',
+        image: require('../assets/images/onboarding/onboard-03.png'),
         color: theme.colors.accent_3,
     },
     {
         id: '4',
-        title: 'Build the Future',
-        description: 'Your masterpieces are just a few steps away. Start building your dream project today.',
-        icon: 'zap',
+        title: 'Ready to Build?',
+        description: 'Begin your first focus session and start building your world.',
+        image: require('../assets/images/onboarding/onboard-04.png'),
         color: theme.colors.support,
         isLast: true,
     },
@@ -61,13 +62,13 @@ const Slide = ({ item, scrollX, index }: { item: typeof SLIDES[0], scrollX: Shar
         const scale = interpolate(
             scrollX.value,
             [(index - 1) * width, index * width, (index + 1) * width],
-            [0.8, 1, 0.8],
+            [0.9, 1, 0.9],
             Extrapolate.CLAMP
         );
         const opacity = interpolate(
             scrollX.value,
             [(index - 1) * width, index * width, (index + 1) * width],
-            [0.4, 1, 0.4],
+            [0, 1, 0],
             Extrapolate.CLAMP
         );
 
@@ -79,9 +80,9 @@ const Slide = ({ item, scrollX, index }: { item: typeof SLIDES[0], scrollX: Shar
 
     return (
         <View style={styles.slideContainer}>
-            <Animated.View style={[styles.card, animatedStyle, { borderColor: item.color }]}>
-                <View style={[styles.iconWrapper, { backgroundColor: item.color + '20' }]}>
-                    <Feather name={item.icon as any} size={80} color={item.color} />
+            <Animated.View style={[styles.card, animatedStyle]}>
+                <View style={styles.imageWrapper}>
+                    <Image source={item.image} style={styles.illustration} resizeMode="contain" />
                 </View>
                 <Text style={styles.title}>{item.title}</Text>
                 <Text style={styles.description}>{item.description}</Text>
@@ -191,52 +192,49 @@ const styles = StyleSheet.create({
     },
     skipText: {
         color: theme.colors.text.secondary,
-        fontSize: 16,
+        fontSize: theme.typography.fontSize.text,
         fontFamily: theme.typography.fontFamily.primary,
     },
+
     slideContainer: {
         width: width,
         height: height,
         justifyContent: 'center',
         alignItems: 'center',
         padding: 24,
+        backgroundColor: "transparent",
     },
     card: {
         width: '100%',
-        padding: 40,
-        borderRadius: 32,
-        backgroundColor: theme.colors.mono,
         alignItems: 'center',
-        borderWidth: 2,
-        // Shadow
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.05,
-        shadowRadius: 20,
-        elevation: 5,
     },
-    iconWrapper: {
-        width: 140,
-        height: 140,
-        borderRadius: 70,
+
+    imageWrapper: {
+        width: '100%',
+        height: width * 0.75,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 40,
     },
+
+    illustration: {
+        width: '100%',
+        height: '100%',
+    },
+
     title: {
-        fontSize: 28,
-        fontWeight: '800',
+        fontSize: theme.typography.fontSize.onboard,
+        fontWeight: theme.typography.fontWeight.bold,
         color: theme.colors.text.primary,
-        marginBottom: 16,
+        marginBottom: theme.spacing.xs,
         textAlign: 'center',
         fontFamily: theme.typography.fontFamily.primary,
     },
     description: {
-        fontSize: 16,
+        fontSize: theme.typography.fontSize.text,
         color: theme.colors.text.secondary,
         textAlign: 'center',
-        lineHeight: 24,
         fontFamily: theme.typography.fontFamily.primary,
+        paddingHorizontal: 20,
     },
     footer: {
         position: 'absolute',
@@ -244,33 +242,33 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         alignItems: 'center',
-        paddingHorizontal: 30,
+        paddingHorizontal: screenWidth * 0.1,
     },
     indicatorContainer: {
         flexDirection: 'row',
-        marginBottom: 40,
+        marginBottom: theme.spacing.xxl,
     },
     dot: {
         height: 8,
         borderRadius: 4,
-        backgroundColor: theme.colors.highlight,
+        backgroundColor: theme.colors.accent_4,
         marginHorizontal: 4,
     },
     button: {
         backgroundColor: theme.colors.highlight,
-        paddingVertical: 18,
-        paddingHorizontal: 40,
-        borderRadius: 20,
+        paddingVertical: theme.spacing.md,
+        paddingHorizontal: theme.spacing.xl,
+        borderRadius: theme.radii.md,
         width: '100%',
         alignItems: 'center',
     },
     buttonLast: {
-        backgroundColor: theme.colors.accent_1,
+        backgroundColor: theme.colors.accent_3,
     },
     buttonText: {
         color: theme.colors.mono,
-        fontSize: 18,
-        fontWeight: '700',
+        fontSize: theme.typography.fontSize.text,
+        fontWeight: theme.typography.fontWeight.bold,
         fontFamily: theme.typography.fontFamily.primary,
     },
 });
