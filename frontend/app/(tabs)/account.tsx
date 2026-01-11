@@ -247,11 +247,15 @@ export default function Account() {
           </Pressable>
 
           {editingGameName ? (
-            <View style={styles.editNameActive}>
+            <View
+              style={[
+                styles.editNameActive,
+                { width: "75%", alignSelf: "center" },
+              ]}
+            >
               <TextInput
                 value={newGameName}
                 onChangeText={setNewGameName}
-                placeholder="Enter new game name"
                 style={{
                   borderWidth: 0,
                   borderBottomWidth: 1,
