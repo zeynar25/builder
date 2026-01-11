@@ -29,7 +29,7 @@ export default function PageHeader({ accountDetail }: PageHeaderProps) {
               borderRadius: theme.icon.navbar / 2,
               marginRight: theme.spacing.md,
               borderWidth: 2,
-              borderColor: theme.colors.support,
+              borderColor: theme.colors.highlight,
             }}
             resizeMode="cover"
           />
@@ -39,7 +39,7 @@ export default function PageHeader({ accountDetail }: PageHeaderProps) {
             </Text>
             <Text
               variant="bodySmall"
-              style={{ color: theme.colors.text.secondary }}
+              style={{ color: theme.colors.accent_3, }}
             >
               Lvl {Math.floor((accountDetail?.accountDetail?.exp ?? 0) / 1000)}{" "}
               • {accountDetail?.accountDetail?.exp ?? 0} XP
