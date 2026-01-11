@@ -8,6 +8,7 @@ import {
     Dimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { theme } from "@/src/theme";
 import { globalStyles } from "@/src/globalstyles";
 
@@ -15,9 +16,18 @@ const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
 
 export default function Welcome() {
     const router = useRouter();
+    const opacity = useSharedValue(0);
+
+    React.useEffect(() => {
+        opacity.value = withTiming(1, { duration: 600 });
+    }, []);
+
+    const animatedStyle = useAnimatedStyle(() => ({
+        opacity: opacity.value,
+    }));
 
     return (
-        <View style={globalStyles.main}>
+        <Animated.View style={[globalStyles.main, animatedStyle]}>
             <View style={styles.headerContainer}>
                 <Image
                     source={require("../assets/images/Vector.png")}
@@ -49,7 +59,7 @@ export default function Welcome() {
                     <Text style={globalStyles.primaryButtonText}>Next</Text>
                 </Pressable>
             </View>
-        </View>
+        </Animated.View>
     );
 }
 
