@@ -167,9 +167,7 @@ export default function Account() {
         <View style={styles.accountDetails}>
           <View style={styles.imageContainer}>
             <Image
-              source={
-                getImageSource(profileImg) || defaultTile
-              }
+              source={getImageSource(profileImg) || defaultTile}
               style={{
                 width: "100%",
                 height: "100%",
@@ -291,9 +289,8 @@ export default function Account() {
                     variant="bodyMedium"
                     style={globalStyles.variantBalance}
                   >
-                    {exp} XP (Next Level: {(level + 1) * 100} XP)
+                    {exp} XP (Next Level: {(level + 1) * 1000} XP)
                   </Text>
-                  <Text>{profileImg}</Text>
                 </View>
               );
             })()}
