@@ -1,20 +1,28 @@
 import React, { useEffect, useState } from "react";
-import { View, Alert, TextInput, Pressable, ActivityIndicator, Image, Dimensions } from "react-native";
+import {
+  View,
+  Alert,
+  TextInput,
+  Pressable,
+  ActivityIndicator,
+  Image,
+  Dimensions,
+  StyleSheet,
+} from "react-native";
 import { Text, Button, Card, ProgressBar } from "react-native-paper";
 
 import { globalStyles } from "@/src/globalstyles";
 import { theme } from "@/src/theme";
 import PageHeader from "@/src/components/PageHeader";
 import PageFiller from "@/src/components/PageFiller";
-import { StyleSheet } from "react-native";
 
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { API_BASE_URL } from "../../src/config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 
-const { width: screenWidth } = Dimensions.get('window');
-const { height: screenHeight } = Dimensions.get('window');
+const { width: screenWidth } = Dimensions.get("window");
+const { height: screenHeight } = Dimensions.get("window");
 const chronIcon = require("../../assets/images/chrons.png");
 
 export default function Account() {
@@ -80,7 +88,7 @@ export default function Account() {
             const errBody = await detailRes.json().catch(() => null);
             throw new Error(
               errBody?.error ||
-              `Failed to fetch account details (${detailRes.status})`
+                `Failed to fetch account details (${detailRes.status})`
             );
           }
           const detailJson = await detailRes.json();
@@ -146,7 +154,12 @@ export default function Account() {
 
   if (loading) {
     return (
-      <View style={[globalStyles.page, { justifyContent: "center", alignItems: "center" }]}>
+      <View
+        style={[
+          globalStyles.page,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
         <ActivityIndicator size="large" />
       </View>
     );
@@ -160,6 +173,8 @@ export default function Account() {
     );
   }
 
+  const email = AsyncStorage.getItem("accountEmail");
+
   return (
     <View style={globalStyles.page}>
       {/* Sticky Header */}
@@ -168,8 +183,6 @@ export default function Account() {
       <PageFiller />
 
       <View style={styles.pageContainer}>
-
-
         <View style={styles.accountDetails}>
           <View style={styles.imageContainer}>
             <Image
@@ -185,7 +198,6 @@ export default function Account() {
 
           {editingGameName ? (
             <View style={styles.editNameActive}>
-
               <TextInput
                 value={newGameName}
                 onChangeText={setNewGameName}
@@ -213,7 +225,11 @@ export default function Account() {
                 style={{ padding: 8, marginLeft: 8 }}
                 disabled={savingGameName}
               >
-                <Feather name="x" size={20} color={theme.colors.text.secondary} />
+                <Feather
+                  name="x"
+                  size={20}
+                  color={theme.colors.text.secondary}
+                />
               </Pressable>
             </View>
           ) : (
@@ -228,13 +244,17 @@ export default function Account() {
                 }}
                 style={{ padding: 6 }}
               >
-                <Feather name="edit-3" size={theme.icon.form} color={theme.colors.highlight} />
+                <Feather
+                  name="edit-3"
+                  size={theme.icon.form}
+                  color={theme.colors.highlight}
+                />
               </Pressable>
             </View>
           )}
 
           <Text variant="labelLarge" style={globalStyles.variantLabel}>
-            {accountDetail?.account?.email || "@Email not available"}
+            {email || "@Email not available"}
           </Text>
         </View>
 
@@ -250,13 +270,16 @@ export default function Account() {
               const progress = (exp % 100) / 100;
 
               let appleSource;
-              if (level >= 4) appleSource = require("../../assets/images/levels/level4-apple.png");
-              else if (level === 3) appleSource = require("../../assets/images/levels/level3-apple.png");
-              else if (level === 2) appleSource = require("../../assets/images/levels/level2-apple.png");
-              else appleSource = require("../../assets/images/levels/default-apple.png");
+              if (level >= 4)
+                appleSource = require("../../assets/images/levels/level4-apple.png");
+              else if (level === 3)
+                appleSource = require("../../assets/images/levels/level3-apple.png");
+              else if (level === 2)
+                appleSource = require("../../assets/images/levels/level2-apple.png");
+              else
+                appleSource = require("../../assets/images/levels/default-apple.png");
 
               return (
-
                 <View style={{ alignItems: "center", width: "100%" }}>
                   <View style={styles.appleContainer}>
                     <Image
@@ -274,11 +297,17 @@ export default function Account() {
                       marginBottom: theme.spacing.md,
                     }}
                   >
-                    <Text variant="titleMedium" style={globalStyles.variantBalance}>
+                    <Text
+                      variant="titleMedium"
+                      style={globalStyles.variantBalance}
+                    >
                       Level {level}
                     </Text>
                   </View>
-                  <Text variant="bodyMedium" style={globalStyles.variantBalance}>
+                  <Text
+                    variant="bodyMedium"
+                    style={globalStyles.variantBalance}
+                  >
                     {exp} XP (Next Level: {(level + 1) * 100} XP)
                   </Text>
                 </View>
@@ -287,17 +316,15 @@ export default function Account() {
           </Card.Content>
         </Card>
 
-
         {/* Logout Button */}
         <Button
           mode="contained"
           buttonColor={theme.colors.accent_3}
           onPress={handleLogout}
-          style={{ marginTop: screenHeight * 0.02, width: '100%' }}
+          style={{ marginTop: screenHeight * 0.02, width: "100%" }}
         >
           Log Out
         </Button>
-
       </View>
       <PageFiller />
     </View>
@@ -369,6 +396,6 @@ const styles = StyleSheet.create({
     padding: theme.spacing.xs,
     marginVertical: theme.spacing.md,
     width: screenWidth * 0.32,
-    height: screenWidth * 0.32
-  }
+    height: screenWidth * 0.32,
+  },
 });

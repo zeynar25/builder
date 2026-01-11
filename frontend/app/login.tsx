@@ -86,11 +86,17 @@ export default function Login() {
         body?.accountDetail ??
         null;
 
+      const accountEmail = body?.account?.email ?? body?.email ?? null;
+
       if (accountId) {
         await AsyncStorage.setItem("accountId", accountId);
 
         if (accountDetailId) {
           await AsyncStorage.setItem("accountDetailId", accountDetailId);
+        }
+
+        if (accountEmail) {
+          await AsyncStorage.setItem("accountEmail", accountEmail);
         }
 
         // try to pick the first map for this account and save as currentMapId
