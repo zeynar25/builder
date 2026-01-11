@@ -82,7 +82,7 @@ export default function Welcome() {
                         </Text>
 
                         <Text variant="titleSmall" style={globalStyles.variantLabel}>
-                            The best way to manage your progress and build your habits.
+                            Earn Chrons, Build Worlds, Stay Focused
                         </Text>
                     </View>
 
