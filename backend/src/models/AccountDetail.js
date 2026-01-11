@@ -14,6 +14,10 @@ const accountDetailSchema = new mongoose.Schema(
       default: "Unknown",
     },
 
+    imageUrl: {
+      type: String,
+    },
+
     chron: {
       type: Number,
       required: false,

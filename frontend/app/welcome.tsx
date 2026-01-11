@@ -1,30 +1,61 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
     View,
     Pressable,
     StyleSheet,
     Image,
     Dimensions,
+    Alert,
 } from "react-native";
 
-import { Text, Button } from "react-native-paper";
+import { Text } from "react-native-paper";
 
 import { useRouter } from "expo-router";
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { theme } from "@/src/theme";
 import { globalStyles } from "@/src/globalstyles";
-import { Background } from "@react-navigation/elements";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import isTokenValid from "@/src/useAuthGuard";
 
-const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
+const { height: screenHeight } = Dimensions.get("window");
 
 export default function Welcome() {
     const router = useRouter();
     const opacity = useSharedValue(0);
 
-    React.useEffect(() => {
-        // Content fades in
+    useEffect(() => {
+        let cancelled = false;
+        async function checkAuth() {
+            try {
+                const token = await AsyncStorage.getItem("accessToken");
+                if (!token) return;
+
+                if (!isTokenValid(token)) {
+                    await AsyncStorage.removeItem("accessToken");
+                    if (!cancelled) {
+                        Alert.alert(
+                            "Session expired",
+                            "Your session has expired and you have been logged out. Please sign in again.",
+                            [{ text: "OK" }]
+                        );
+                    }
+                    return;
+                }
+
+                if (!cancelled) {
+                    router.replace("/");
+                }
+            } catch {
+                // ignore
+            }
+        }
+        checkAuth();
+        return () => { cancelled = true; };
+    }, [router]);
+
+    useEffect(() => {
         opacity.value = withTiming(1, { duration: 500 });
-    }, []);
+    }, [opacity]);
 
     const animatedStyle = useAnimatedStyle(() => ({
         opacity: opacity.value,
@@ -32,7 +63,6 @@ export default function Welcome() {
 
     return (
         <View style={{ flex: 1 }}>
-            {/* 1. Original content structure inside an Animated.View for fade-in */}
             <Animated.View style={[styles.main, animatedStyle]}>
                 <View style={styles.headerContainer}>
                     <Image
@@ -44,8 +74,8 @@ export default function Welcome() {
 
                 <View style={[styles.content, styles.contentWithHeaderOffset]}>
                     <View style={styles.welcomeTextContainer}>
-                        <Text variant="titleLarge" style={globalStyles.variantLabel}>Welcome to</Text>
-                        <Text variant="displayLarge" style={{...globalStyles.variantTitle, fontWeight: theme.typography.fontWeight.bold}}>
+                        <Text variant="titleLarge" style={globalStyles.variantAccent}>Welcome to</Text>
+                        <Text variant="displayLarge" style={{ ...globalStyles.variantTitle, fontWeight: theme.typography.fontWeight.bold }}>
                             Bu
                             <Text style={{ color: theme.colors.highlight }}>i</Text>
                             lder
@@ -60,7 +90,7 @@ export default function Welcome() {
                         style={globalStyles.primaryButton}
                         onPress={() => router.replace("/login")}
                     >
-                        <Text style={globalStyles.primaryButtonText}>Next</Text>
+                        <Text style={globalStyles.primaryButtonText}>Build Now</Text>
                     </Pressable>
                 </View>
             </Animated.View>
@@ -73,7 +103,7 @@ const styles = StyleSheet.create({
         backgroundColor: theme.colors.mono,
         flex: 1,
     },
-    
+
     headerContainer: {
         position: "absolute",
         top: 0,
@@ -88,7 +118,7 @@ const styles = StyleSheet.create({
         position: "absolute",
         bottom: 0,
     },
-    
+
     content: {
         flex: 1,
         paddingHorizontal: theme.spacing.xl,
@@ -112,7 +142,6 @@ const styles = StyleSheet.create({
         fontFamily: theme.typography.fontFamily.primary,
         textAlign: "center",
     },
-
 
     description: {
         fontSize: theme.typography.fontSize.text,

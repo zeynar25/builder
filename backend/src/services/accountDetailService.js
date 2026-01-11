@@ -63,9 +63,24 @@ export async function addChronById(detailId, minutes) {
   return updated;
 }
 
+/**
+ * Update profile image URL directly by AccountDetail id.
+ * Returns the updated AccountDetail or null if not found.
+ */
+export async function updateImageById(detailId, imageUrl) {
+  const updated = await AccountDetail.findByIdAndUpdate(
+    detailId,
+    { imageUrl },
+    { new: true, runValidators: true }
+  ).exec();
+
+  return updated;
+}
+
 export default {
   getAccountDetailById,
   updateGameNameByAccount,
   updateGameNameById,
   addChronById,
+  updateImageById,
 };

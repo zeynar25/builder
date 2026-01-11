@@ -163,6 +163,13 @@ export const globalStyles = StyleSheet.create({
         fontFamily: theme.typography.fontFamily.primary,
         fontWeight: theme.typography.fontWeight.bold,
     },
+
+    variantAccent:{
+        color: theme.colors.accent_2,
+        fontFamily: theme.typography.fontFamily.primary,
+    },
+
+
     // ==== buttonStyles ====
 
     primaryButton: {
