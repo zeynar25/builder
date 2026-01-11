@@ -207,6 +207,13 @@ export default function Shop() {
         if (detailRes.ok) {
           const detailJson = await detailRes.json();
           setAccountDetail(detailJson);
+          try {
+            const newChron =
+              (detailJson as any)?.accountDetail?.chron ?? undefined;
+            DeviceEventEmitter.emit("chronUpdated", { newChron });
+          } catch {
+            // ignore event errors
+          }
         }
       } catch {
         // ignore refresh errors
